@@ -34,3 +34,6 @@ coverage/
 
 # Turbo
 .turbo/
+
+# Project planning & documentation
+plan/
