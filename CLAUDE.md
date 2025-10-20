@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication Rules
+
+**CRITICAL - Follow these rules at all times:**
+- NEVER suggest to "continue tomorrow" or stop working
+- NEVER say you'll "do it faster" or promise speed improvements
+- NEVER make decisions about when to stop or continue work
+- The USER decides when to stop, continue, or change direction
+- Focus ONLY on executing the current task as requested
+- Wait for USER instructions before moving to next steps
+
 ## Project Overview
 
 NoteFlow is an AI-powered platform for developers with three main features:
