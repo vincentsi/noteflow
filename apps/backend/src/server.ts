@@ -8,9 +8,11 @@ import {
 } from '@/config/redis'
 import { captureException, initializeSentry } from '@/config/sentry'
 import { startStripeWebhookWorker } from '@/queues/stripe-webhook.queue'
+import { startRSSWorker, queueRSSFetch } from '@/queues/rss.queue'
 import { BackupService } from '@/services/backup.service'
 import { CleanupService } from '@/services/cleanup.service'
 import type { FastifyInstance } from 'fastify'
+import cron from 'node-cron'
 import { createApp } from './app'
 
 /**
@@ -56,6 +58,35 @@ async function start() {
       logger.warn(
         '⚠️  Redis not available, webhooks will be processed synchronously'
       )
+    }
+
+    // Start RSS feed worker (unless explicitly disabled)
+    if (process.env.DISABLE_RSS_WORKER === 'true') {
+      logger.info('⚠️  RSS worker disabled (DISABLE_RSS_WORKER=true)')
+    } else if (isRedisAvailable()) {
+      startRSSWorker()
+      logger.info('✅ RSS feed worker started')
+
+      // Schedule RSS feed fetching every hour
+      cron.schedule('0 * * * *', async () => {
+        try {
+          await queueRSSFetch()
+          logger.info('📰 RSS feed fetch job queued (hourly)')
+        } catch (error) {
+          logger.error({ error }, '❌ Failed to queue RSS fetch job')
+        }
+      })
+      logger.info('⏰ RSS feed cron job scheduled (every hour)')
+
+      // Fetch feeds immediately on startup
+      try {
+        await queueRSSFetch()
+        logger.info('📰 Initial RSS feed fetch job queued')
+      } catch (error) {
+        logger.error({ error }, '❌ Failed to queue initial RSS fetch')
+      }
+    } else {
+      logger.warn('⚠️  Redis not available, RSS feeds will not be auto-fetched')
     }
 
     logger.info(`🚀 Server ready at http://localhost:${port}`)
