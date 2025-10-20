@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { useArticles } from '@/lib/hooks/useArticles'
+import { useArticles } from '../useArticles'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
