@@ -1,5 +1,5 @@
-import { ArticleService } from '@/services/article.service'
 import { prismaMock } from '../../helpers/test-db'
+import { ArticleService } from '../../../services/article.service'
 import { PlanType } from '@prisma/client'
 
 describe('ArticleService', () => {
@@ -90,6 +90,14 @@ describe('ArticleService', () => {
         emailVerified: true,
         planType: PlanType.FREE,
         language: 'fr',
+        stripeCustomerId: null,
+        subscriptionStatus: 'NONE',
+        subscriptionId: null,
+        currentPeriodEnd: null,
+        lastLoginAt: null,
+        lastLoginIp: null,
+        loginCount: 0,
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -122,6 +130,14 @@ describe('ArticleService', () => {
         emailVerified: true,
         planType: PlanType.FREE,
         language: 'fr',
+        stripeCustomerId: null,
+        subscriptionStatus: 'NONE',
+        subscriptionId: null,
+        currentPeriodEnd: null,
+        lastLoginAt: null,
+        lastLoginIp: null,
+        loginCount: 0,
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -148,6 +164,14 @@ describe('ArticleService', () => {
         emailVerified: true,
         planType: PlanType.PRO,
         language: 'fr',
+        stripeCustomerId: null,
+        subscriptionStatus: 'ACTIVE',
+        subscriptionId: null,
+        currentPeriodEnd: null,
+        lastLoginAt: null,
+        lastLoginIp: null,
+        loginCount: 0,
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
