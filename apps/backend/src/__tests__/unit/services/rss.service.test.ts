@@ -1,4 +1,4 @@
-import { RSSService } from '@/services/rss.service'
+import { RSSService } from '../../../services/rss.service'
 
 describe('RSSService', () => {
   let rssService: RSSService

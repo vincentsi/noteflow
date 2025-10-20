@@ -20,6 +20,7 @@ import { gdprRoutes } from '@/routes/gdpr.route'
 import { metricsRoutes } from '@/routes/metrics.route'
 import { testSetupRoutes } from '@/routes/test-setup.route'
 import { userRoutes } from '@/routes/user.routes'
+import { articleRoutes } from '@/routes/article.route'
 
 /**
  * Create and configure Fastify application
@@ -81,6 +82,7 @@ export async function createApp(): Promise<FastifyInstance> {
         { name: 'admin', description: 'Admin-only endpoints (requires ADMIN role)' },
         { name: 'stripe', description: 'Stripe subscription endpoints' },
         { name: 'premium', description: 'Premium feature endpoints (requires subscription)' },
+        { name: 'Articles', description: 'Article management endpoints (RSS feed articles)' },
       ],
       components: {
         securitySchemes: {
@@ -149,6 +151,7 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(stripeRoutes, { prefix: '/api/stripe' })
   await app.register(premiumRoutes, { prefix: '/api/premium' })
   await app.register(userRoutes, { prefix: '/api/users' })
+  await app.register(articleRoutes, { prefix: '/api/articles' })
   await app.register(testSetupRoutes, { prefix: '/api/test-setup' }) // Dev only
 
   return app
