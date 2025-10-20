@@ -48,7 +48,7 @@ describe('RSSService', () => {
 
       const articles = await rssService.parseFeed(feedUrl)
 
-      articles.forEach((article) => {
+      articles.forEach(article => {
         expect(article.excerpt.length).toBeLessThanOrEqual(500)
       })
     })

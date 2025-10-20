@@ -174,17 +174,17 @@ enum PlanType {
 }
 
 model Article {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  url         String    @unique
-  description String?
-  publishedAt DateTime?
-  source      String // Nom du flux RSS
+  url         String   @unique
+  excerpt     String   // Short description from RSS feed
+  source      String   // RSS feed name
+  tags        String[] // Tags for filtering/categorization
+  publishedAt DateTime
 
   savedBy SavedArticle[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([url])
   @@index([source])
@@ -275,4 +275,21 @@ enum SummaryStyle {
   BULLET_POINT  // Points clés
   TOP3          // Top 3 insights
   MAIN_POINTS   // Points principaux
+}
+
+model RSSFeed {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  url         String   @unique
+  description String?
+  tags        String[]
+  active      Boolean  @default(true)
+  lastFetchAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+  @@index([lastFetchAt])
+  @@map("rss_feeds")
 }
