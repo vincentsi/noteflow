@@ -1,0 +1,7 @@
+# k6 test scripts
+{
+  "globals": {
+    "__VU": "readonly",
+    "__ITER": "readonly"
+  }
+}

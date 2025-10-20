@@ -1,0 +1,9 @@
+# SSL Private Keys (NEVER commit these!)
+*.pem
+*.key
+*.crt
+*.cer
+
+# Except README
+!README.md
+!.gitignore

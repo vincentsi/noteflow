@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(docker-compose:*)",
+      "Bash(gh run view:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh run list:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl -i -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d \"{\"\"email\"\":\"\"test@example.com\"\",\"\"password\"\":\"\"SecurePassword123!\"\"}\")",
+      "Bash(curl -i -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" --data-binary @-)",
+      "Bash(npm run db:seed:*)",
+      "Bash(curl:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npm run type-check:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

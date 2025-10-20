@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String  @id @default(cuid())
+  email         String  @unique
+  password      String
+  name          String?
+  role          Role    @default(USER)
+  emailVerified Boolean @default(false)
+  language      String  @default("fr")
+
+  // Stripe fields
+  stripeCustomerId   String?            @unique
+  subscriptionStatus SubscriptionStatus @default(NONE)
+  subscriptionId     String?            @unique
+  planType           PlanType           @default(FREE)
+  currentPeriodEnd   DateTime?
+
+  // Audit trail fields
+  lastLoginAt DateTime?
+  lastLoginIp String?
+  loginCount  Int       @default(0)
+
+  // Soft delete
+  deletedAt DateTime?
+
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  refreshTokens      RefreshToken[]
+  verificationTokens VerificationToken[]
+  resetTokens        PasswordResetToken[]
+  csrfTokens         CsrfToken[]
+  subscriptions      Subscription[]
+  savedArticles      SavedArticle[]
+  summaries          Summary[]
+  notes              Note[]
+  posts              Post[]
+
+  @@index([deletedAt]) // Performance: filter out deleted users
+  @@index([role]) // Performance: admin stats & role filtering
+  @@index([emailVerified]) // Performance: filter verified users
+  @@index([createdAt]) // Performance: sort by creation date (admin pagination)
+  @@index([email, deletedAt]) // Performance: login queries (composite index)
+  @@index([role, deletedAt]) // Performance: admin stats (active users by role)
+  @@index([emailVerified, deletedAt]) // Performance: admin stats queries (verified + active users)
+  @@index([stripeCustomerId]) // Performance: Stripe customer lookups (getOrCreateCustomer)
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token, revoked])
+  @@index([revoked]) // Performance: cleanup job & queries filtering by revoked
+  @@index([userId, revoked]) // Performance: getUserActiveTokens queries
+  @@index([expiresAt]) // Performance: cleanup job expiration check
+  @@index([userId, token])
+  @@index([createdAt]) // Performance: sort by creation date
+  @@index([expiresAt, revoked]) // Performance: cleanup job composite (expired + revoked filter)
+  @@map("refresh_tokens")
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt]) // Performance: cleanup job expiration check
+  @@map("verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt]) // Performance: cleanup job expiration check
+  @@map("password_reset_tokens")
+}
+
+model CsrfToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt]) // Performance: cleanup job expiration check
+  @@map("csrf_tokens")
+}
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeSubscriptionId String @unique
+  stripePriceId        String
+  stripeCustomerId     String
+
+  status   SubscriptionStatus
+  planType PlanType
+
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean   @default(false)
+  canceledAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+  // Query: WHERE userId = ? AND status IN ('ACTIVE', 'TRIALING') ORDER BY createdAt DESC
+  @@index([userId, status, createdAt(sort: Desc)])
+  @@index([stripeCustomerId]) // Performance: webhook queries (find by customer)
+  @@index([status]) // Performance: filter by status
+  @@index([createdAt]) // Performance: sort subscriptions by date
+  @@index([currentPeriodEnd]) // Performance: find expiring subscriptions
+  @@index([status, currentPeriodEnd]) // Performance: find expiring subscriptions by status
+  @@index([stripeSubscriptionId, status]) // Performance: webhook update queries (composite lookup)
+  @@map("subscriptions")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum SubscriptionStatus {
+  NONE // Pas d'abonnement
+  ACTIVE // Abonnement actif
+  PAST_DUE // Paiement échoué
+  CANCELED // Annulé
+  INCOMPLETE // Paiement initial en cours
+  TRIALING // Période d'essai
+}
+
+enum PlanType {
+  FREE // Plan gratuit
+  STARTER // Plan Starter (6€/mois)
+  PRO // Plan Pro (15€/mois)
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  url         String    @unique
+  description String?
+  publishedAt DateTime?
+  source      String // Nom du flux RSS
+
+  savedBy SavedArticle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([url])
+  @@index([source])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model SavedArticle {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, articleId])
+  @@index([userId])
+  @@index([articleId])
+  @@map("saved_articles")
+}
+
+model Summary {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content     String      // Contenu original (texte, URL ou PDF)
+  contentType ContentType // TEXT, URL, PDF
+  summary     String      // Résumé généré
+  style       SummaryStyle // SHORT, TWEET, THREAD, etc.
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("summaries")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String
+  content   String   // Markdown content
+  tags      String[] // Array de tags
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@map("notes")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  slug      String   @unique
+  title     String
+  content   String   // Markdown content
+  isPublic  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([userId])
+  @@index([isPublic])
+  @@map("posts")
+}
+
+enum ContentType {
+  TEXT
+  URL
+  PDF
+}
+
+enum SummaryStyle {
+  SHORT         // Résumé court
+  TWEET         // Format tweet
+  THREAD        // Thread Twitter
+  BULLET_POINT  // Points clés
+  TOP3          // Top 3 insights
+  MAIN_POINTS   // Points principaux
+}

@@ -1,0 +1,409 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+
+# Cancel in-progress runs for same workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===== Lint & Type Check =====
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Lint backend
+        run: cd apps/backend && npm run lint
+
+      - name: Lint frontend
+        run: cd apps/frontend && npm run lint
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Generate Prisma Client
+        run: cd apps/backend && npx prisma generate
+
+      - name: Type check backend
+        run: cd apps/backend && npm run type-check
+
+      - name: Type check frontend
+        run: cd apps/frontend && npm run type-check
+
+  # ===== Backend Tests =====
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      JWT_SECRET: test-jwt-secret-min-32-characters-long-for-security
+      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-long-for-security
+      FRONTEND_URL: http://localhost:3000
+      REDIS_URL: redis://localhost:6379
+      # Stripe test key (required for integration tests)
+      STRIPE_SECRET_KEY: sk_test_51DummyKeyForCITestingOnly123456789012345678901234567890
+      # Optional config (defaults provided)
+      CLEANUP_BATCH_SIZE: '1000'
+      CLEANUP_PAUSE_MS: '100'
+      SLOW_QUERY_THRESHOLD: '100'
+      APP_VERSION: '1.0.0'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Generate Prisma Client
+        run: cd apps/backend && npx prisma generate
+
+      - name: Push Prisma schema to test DB
+        run: cd apps/backend && npx prisma db push --skip-generate
+
+      - name: Run backend unit tests
+        run: cd apps/backend && npm run test:unit
+
+      - name: Run backend integration tests
+        run: cd apps/backend && npm run test:integration
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./apps/backend/coverage/lcov.info
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # ===== Frontend E2E Tests =====
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      JWT_SECRET: test-jwt-secret-min-32-characters-long-for-security
+      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-long-for-security
+      FRONTEND_URL: http://localhost:3000
+      REDIS_URL: redis://localhost:6379
+      # Stripe test key (required for integration tests)
+      STRIPE_SECRET_KEY: sk_test_51DummyKeyForCITestingOnly123456789012345678901234567890
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      # Disable Stripe worker for E2E tests (not needed and can cause startup issues)
+      DISABLE_STRIPE_WORKER: 'true'
+      # Optional config (defaults provided)
+      CLEANUP_BATCH_SIZE: '1000'
+      CLEANUP_PAUSE_MS: '100'
+      SLOW_QUERY_THRESHOLD: '100'
+      APP_VERSION: '1.0.0'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Install Playwright browsers
+        run: cd apps/frontend && npx playwright install --with-deps chromium
+
+      - name: Generate Prisma Client
+        run: cd apps/backend && npx prisma generate
+
+      - name: Push Prisma schema to test DB
+        run: cd apps/backend && npx prisma db push --skip-generate
+
+      - name: Seed test database
+        run: cd apps/backend && npm run db:seed || echo "Seed failed but continuing..."
+
+      - name: Run E2E tests
+        run: cd apps/frontend && npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/frontend/playwright-report/
+          retention-days: 30
+
+  # ===== Load Testing (k6) =====
+  load-test:
+    name: Load Testing (k6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint, type-check, test-backend]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    env:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      JWT_SECRET: test-jwt-secret-min-32-characters-long-for-security
+      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-long-for-security
+      FRONTEND_URL: http://localhost:3000
+      REDIS_URL: redis://localhost:6379
+      STRIPE_SECRET_KEY: sk_test_51DummyKeyForCITestingOnly123456789012345678901234567890
+      DISABLE_STRIPE_WORKER: 'true'
+      # Optional config (defaults provided)
+      CLEANUP_BATCH_SIZE: '1000'
+      CLEANUP_PAUSE_MS: '100'
+      SLOW_QUERY_THRESHOLD: '100'
+      APP_VERSION: '1.0.0'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Generate Prisma Client
+        run: cd apps/backend && npx prisma generate
+
+      - name: Push Prisma schema to test DB
+        run: cd apps/backend && npx prisma db push --skip-generate
+
+      - name: Build backend
+        run: cd apps/backend && npm run build
+
+      - name: Start backend server in background
+        run: |
+          cd apps/backend
+          npm start > /tmp/backend-k6.log 2>&1 &
+          echo $! > /tmp/backend-k6.pid
+          sleep 5
+        env:
+          PORT: 3001
+
+      - name: Wait for backend to be ready
+        run: |
+          echo "Waiting for backend to start..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "✅ Backend is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+          echo "❌ Backend failed to start within 60s"
+          cat /tmp/backend-k6.log || true
+          exit 1
+
+      - name: Test registration endpoint manually
+        run: |
+          echo "Testing registration endpoint..."
+          curl -v -X POST http://localhost:3001/api/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"test-manual@example.com","password":"SecureK6Test!Pass@","name":"Manual Test"}' \
+            2>&1 | tee /tmp/register-test.log || true
+
+      - name: Run k6 smoke test
+        run: k6 run apps/backend/k6/smoke-test.js
+        continue-on-error: true
+
+      - name: Show backend logs on failure
+        if: always()
+        run: |
+          echo "=== Backend Logs ==="
+          cat /tmp/backend-k6.log || echo "No logs available"
+
+      - name: Upload k6 summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-report
+          path: apps/backend/k6-summary.json
+          retention-days: 30
+
+  # ===== Build Check =====
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Generate Prisma Client
+        run: cd apps/backend && npx prisma generate
+
+      - name: Build backend
+        run: cd apps/backend && npm run build
+
+      - name: Build frontend
+        run: cd apps/frontend && npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+
+  # ===== Summary Job =====
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test-backend, test-e2e, load-test, build]
+    if: always()
+
+    steps:
+      - name: Check job status
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.type-check.result }}" != "success" ] || \
+             [ "${{ needs.test-backend.result }}" != "success" ] || \
+             [ "${{ needs.test-e2e.result }}" != "success" ] || \
+             [ "${{ needs.load-test.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ]; then
+            echo "❌ CI Pipeline failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed"

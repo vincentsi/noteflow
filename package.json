@@ -1,0 +1,36 @@
+{
+  "name": "noteflow",
+  "version": "0.1.0",
+  "description": "NoteFlow - AI-powered note-taking and content summarization platform",
+  "private": true,
+  "packageManager": "npm@10.9.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules/.cache",
+    "clean:full": "turbo run clean && rm -rf node_modules **/node_modules **/dist **/.next"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.5.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.1",
+    "turbo": "^2.5.8"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "license": "MIT"
+}
