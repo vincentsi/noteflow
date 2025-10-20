@@ -63,10 +63,60 @@ async function main() {
       name: 'Admin User',
       role: Role.ADMIN,
       emailVerified: true,
-      planType: 'BUSINESS',
+      planType: 'PRO',
     },
   })
   console.log('✅ Created admin user:', adminUser.email)
+
+  // Clear existing RSS feeds for clean seed
+  await prisma.rSSFeed.deleteMany({})
+  console.log('🗑️  Cleared existing RSS feeds')
+
+  // Create RSS feeds (for Veille IA feature)
+  const feeds = [
+    {
+      name: 'Hacker News',
+      url: 'https://hnrss.org/frontpage',
+      description: 'Top stories from Hacker News',
+      tags: ['tech', 'dev', 'startup'],
+      active: true,
+    },
+    {
+      name: 'TechCrunch AI',
+      url: 'https://techcrunch.com/category/artificial-intelligence/feed/',
+      description: 'Latest AI news from TechCrunch',
+      tags: ['ai', 'tech', 'startup'],
+      active: true,
+    },
+    {
+      name: 'Dev.to',
+      url: 'https://dev.to/feed',
+      description: 'Community for developers',
+      tags: ['dev', 'programming', 'tutorial'],
+      active: true,
+    },
+    {
+      name: 'The Verge Tech',
+      url: 'https://www.theverge.com/rss/index.xml',
+      description: 'Technology news from The Verge',
+      tags: ['tech', 'news'],
+      active: true,
+    },
+    {
+      name: 'MIT Technology Review AI',
+      url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed',
+      description: 'AI research and innovation from MIT',
+      tags: ['ai', 'research', 'science'],
+      active: true,
+    },
+  ]
+
+  for (const feed of feeds) {
+    const created = await prisma.rSSFeed.create({
+      data: feed,
+    })
+    console.log('✅ Created RSS feed:', created.name)
+  }
 
   console.log('🎉 Database seeding completed!')
 }
