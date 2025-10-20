@@ -1,0 +1,26 @@
+{
+  "veille": {
+    "title": "AI Watch",
+    "subtitle": "Your curated feed of AI and tech articles",
+    "filters": {
+      "source": "Source",
+      "allSources": "All sources"
+    },
+    "planUsage": {
+      "title": "Plan Usage",
+      "savedArticles": "Saved Articles",
+      "limitWarning": "You're approaching your plan limit. Consider upgrading to save more articles."
+    },
+    "articleList": {
+      "title": "Saved Articles",
+      "empty": "No articles found",
+      "emptySubtitle": "Articles you save will appear here",
+      "errorLoading": "Failed to load articles. Please try again later."
+    },
+    "actions": {
+      "save": "Save",
+      "saved": "Saved",
+      "unsave": "Unsave"
+    }
+  }
+}

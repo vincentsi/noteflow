@@ -1,4 +1,5 @@
 import { ArticleCard } from './ArticleCard'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 import type { SavedArticle } from '@/types'
 
 export interface ArticleListProps {
@@ -9,13 +10,15 @@ export interface ArticleListProps {
 }
 
 export function ArticleList({ articles, onSave, onUnsave, isLoading = false }: ArticleListProps) {
+  const { t } = useTranslation()
+
   // Empty state
   if (articles.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-lg font-medium text-muted-foreground">No articles found</p>
+        <p className="text-lg font-medium text-muted-foreground">{t('veille.articleList.empty')}</p>
         <p className="text-sm text-muted-foreground mt-2">
-          Articles you save will appear here
+          {t('veille.articleList.emptySubtitle')}
         </p>
       </div>
     )

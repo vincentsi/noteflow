@@ -1,4 +1,5 @@
 import { Label } from '@/components/ui/label'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 import type { GetSavedArticlesParams } from '@/lib/api/articles'
 
 export interface ArticleFiltersProps {
@@ -18,6 +19,8 @@ const SOURCES = [
 ]
 
 export function ArticleFilters({ filters, onChange }: ArticleFiltersProps) {
+  const { t } = useTranslation()
+
   const handleSourceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value
     onChange({
@@ -29,14 +32,14 @@ export function ArticleFilters({ filters, onChange }: ArticleFiltersProps) {
   return (
     <div className="flex flex-col gap-4 p-4 rounded-lg border bg-card">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="source-filter">Source</Label>
+        <Label htmlFor="source-filter">{t('veille.filters.source')}</Label>
         <select
           id="source-filter"
           value={filters.source || ''}
           onChange={handleSourceChange}
           className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
-          <option value="">All sources</option>
+          <option value="">{t('veille.filters.allSources')}</option>
           {SOURCES.map((source) => (
             <option key={source} value={source}>
               {source}

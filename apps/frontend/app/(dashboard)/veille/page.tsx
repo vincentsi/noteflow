@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/providers/auth.provider'
 import { useArticles, useSaveArticle, useUnsaveArticle } from '@/lib/hooks/useArticles'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 import { ArticleFilters } from '@/components/veille/ArticleFilters'
 import { ArticleList } from '@/components/veille/ArticleList'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +18,7 @@ const PLAN_LIMITS = {
 
 export default function VeillePage() {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [filters, setFilters] = useState<GetSavedArticlesParams>({})
 
   // Fetch saved articles
@@ -44,21 +46,21 @@ export default function VeillePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Veille IA</h1>
+        <h1 className="text-3xl font-bold">{t('veille.title')}</h1>
         <p className="text-muted-foreground">
-          Your curated feed of AI and tech articles
+          {t('veille.subtitle')}
         </p>
       </div>
 
       {/* Plan Usage Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Plan Usage</CardTitle>
+          <CardTitle>{t('veille.planUsage.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="font-medium">Saved Articles</span>
+              <span className="font-medium">{t('veille.planUsage.savedArticles')}</span>
               <span className="text-muted-foreground">
                 {savedCount} / {limit === Infinity ? '∞' : limit}
               </span>
@@ -73,7 +75,7 @@ export default function VeillePage() {
             )}
             {percentage >= 80 && limit !== Infinity && (
               <p className="text-xs text-amber-600">
-                You&apos;re approaching your plan limit. Consider upgrading to save more articles.
+                {t('veille.planUsage.limitWarning')}
               </p>
             )}
           </div>
@@ -85,10 +87,10 @@ export default function VeillePage() {
 
       {/* Article List */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Saved Articles</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('veille.articleList.title')}</h2>
         {error && (
           <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-            Failed to load articles. Please try again later.
+            {t('veille.articleList.errorLoading')}
           </div>
         )}
         <ArticleList

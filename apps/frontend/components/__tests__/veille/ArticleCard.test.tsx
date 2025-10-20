@@ -59,16 +59,16 @@ describe('ArticleCard', () => {
     const onSave = jest.fn()
     render(<ArticleCard article={mockArticle} isSaved={false} onSave={onSave} />)
 
-    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sauvegarder/i })).toBeInTheDocument()
   })
 
   it('shows unsave button when saved', () => {
     const onUnsave = jest.fn()
     render(<ArticleCard article={mockArticle} isSaved={true} onUnsave={onUnsave} />)
 
-    const button = screen.getByRole('button', { name: /unsave article/i })
+    const button = screen.getByRole('button', { name: /retirer/i })
     expect(button).toBeInTheDocument()
-    expect(button).toHaveTextContent('Saved')
+    expect(button).toHaveTextContent('Sauvegardé')
   })
 
   it('renders published date', () => {

@@ -1,0 +1,26 @@
+{
+  "veille": {
+    "title": "Veille IA",
+    "subtitle": "Votre flux organisé d'articles IA et tech",
+    "filters": {
+      "source": "Source",
+      "allSources": "Toutes les sources"
+    },
+    "planUsage": {
+      "title": "Utilisation du plan",
+      "savedArticles": "Articles sauvegardés",
+      "limitWarning": "Vous approchez de la limite de votre plan. Pensez à passer à un plan supérieur pour sauvegarder plus d'articles."
+    },
+    "articleList": {
+      "title": "Articles sauvegardés",
+      "empty": "Aucun article trouvé",
+      "emptySubtitle": "Les articles que vous sauvegarderez apparaîtront ici",
+      "errorLoading": "Impossible de charger les articles. Veuillez réessayer plus tard."
+    },
+    "actions": {
+      "save": "Sauvegarder",
+      "saved": "Sauvegardé",
+      "unsave": "Retirer"
+    }
+  }
+}

@@ -48,16 +48,17 @@ describe('ArticleList', () => {
   it('should show empty state when no articles', () => {
     render(<ArticleList articles={[]} />)
 
-    expect(screen.getByText(/no articles found/i)).toBeInTheDocument()
+    expect(screen.getByText(/aucun article trouvé/i)).toBeInTheDocument()
   })
 
   it('should pass onSave callback to ArticleCard', () => {
     const onSave = jest.fn()
     render(<ArticleList articles={mockSavedArticles} onSave={onSave} />)
 
-    // ArticleCard should receive the onSave callback
-    const saveButtons = screen.getAllByRole('button', { name: /save article/i })
-    expect(saveButtons.length).toBeGreaterThan(0)
+    // ArticleCards in ArticleList are always marked as saved (isSaved=true)
+    // So they show "Retirer" buttons, not "Sauvegarder" buttons
+    const buttons = screen.getAllByRole('button')
+    expect(buttons.length).toBe(2) // 2 articles = 2 buttons
   })
 
   it('should pass onUnsave callback to ArticleCard', () => {
@@ -65,7 +66,7 @@ describe('ArticleList', () => {
     render(<ArticleList articles={mockSavedArticles} onUnsave={onUnsave} />)
 
     // ArticleCard should receive the onUnsave callback
-    const unsaveButtons = screen.getAllByRole('button', { name: /unsave article/i })
+    const unsaveButtons = screen.getAllByRole('button', { name: /retirer/i })
     expect(unsaveButtons.length).toBeGreaterThan(0)
   })
 

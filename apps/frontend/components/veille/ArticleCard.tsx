@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 import type { Article } from '@/types'
 import { Bookmark, BookmarkCheck, ExternalLink } from 'lucide-react'
 
@@ -12,6 +13,8 @@ export interface ArticleCardProps {
 }
 
 export function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoading = false }: ArticleCardProps) {
+  const { t } = useTranslation()
+
   const handleToggleSave = () => {
     if (isSaved) {
       onUnsave?.(article.id)
@@ -57,17 +60,17 @@ export function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoad
                 size="sm"
                 onClick={handleToggleSave}
                 disabled={isLoading}
-                aria-label={isSaved ? 'Unsave article' : 'Save article'}
+                aria-label={isSaved ? t('veille.actions.unsave') : t('veille.actions.save')}
               >
                 {isSaved ? (
                   <>
                     <BookmarkCheck className="h-4 w-4 mr-2" />
-                    Saved
+                    {t('veille.actions.saved')}
                   </>
                 ) : (
                   <>
                     <Bookmark className="h-4 w-4 mr-2" />
-                    Save
+                    {t('veille.actions.save')}
                   </>
                 )}
               </Button>
