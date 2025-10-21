@@ -68,10 +68,13 @@ export function handleControllerError(
 ): FastifyReply | Promise<FastifyReply> {
   // Handle Error instances
   if (error instanceof Error) {
-    // Check custom handlers first
-    const handler = customHandlers?.[error.message]
-    if (handler) {
-      return handler(error, reply, request)
+    // Check custom handlers first (supports partial matching with startsWith)
+    if (customHandlers) {
+      for (const [key, handler] of Object.entries(customHandlers)) {
+        if (error.message.startsWith(key)) {
+          return handler(error, reply, request)
+        }
+      }
     }
 
     // Handle Zod validation errors

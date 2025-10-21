@@ -177,8 +177,8 @@ model Article {
   id          String   @id @default(cuid())
   title       String
   url         String   @unique
-  excerpt     String   // Short description from RSS feed
-  source      String   // RSS feed name
+  excerpt     String // Short description from RSS feed
+  source      String // RSS feed name
   tags        String[] // Tags for filtering/categorization
   publishedAt DateTime
 
@@ -208,18 +208,18 @@ model SavedArticle {
 }
 
 model Summary {
-  id           String       @id @default(cuid())
-  userId       String
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title        String?
   originalText String       @db.Text // Contenu original (texte, URL ou PDF)
   summaryText  String       @db.Text // Résumé généré
   style        SummaryStyle // SHORT, TWEET, THREAD, etc.
-  source       String?      // URL ou nom fichier
+  source       String? // URL ou nom fichier
   language     String       @default("fr") // fr | en
 
-  createdAt    DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])
@@ -228,13 +228,13 @@ model Summary {
 }
 
 model Note {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  title     String
-  content   String   // Markdown content
-  tags      String[] // Array de tags
+  title   String
+  content String // Markdown content
+  tags    String[] // Array de tags
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -245,14 +245,14 @@ model Note {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  slug      String   @unique
-  title     String
-  content   String   // Markdown content
-  isPublic  Boolean  @default(false)
+  slug     String  @unique
+  title    String
+  content  String // Markdown content
+  isPublic Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -264,21 +264,21 @@ model Post {
 }
 
 enum SummaryStyle {
-  SHORT         // Résumé court (2-3 phrases)
-  TWEET         // Format tweet (280 caractères)
-  THREAD        // Thread Twitter (série de tweets)
-  BULLET_POINT  // Points clés en liste
-  TOP3          // Top 3 des highlights
-  MAIN_POINTS   // Points principaux détaillés
+  SHORT // Résumé court (2-3 phrases)
+  TWEET // Format tweet (280 caractères)
+  THREAD // Thread Twitter (série de tweets)
+  BULLET_POINT // Points clés en liste
+  TOP3 // Top 3 des highlights
+  MAIN_POINTS // Points principaux détaillés
 }
 
 model RSSFeed {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  url         String   @unique
+  id          String    @id @default(cuid())
+  name        String    @unique
+  url         String    @unique
   description String?
   tags        String[]
-  active      Boolean  @default(true)
+  active      Boolean   @default(true)
   lastFetchAt DateTime?
 
   createdAt DateTime @default(now())

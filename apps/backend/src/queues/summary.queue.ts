@@ -86,7 +86,7 @@ export async function queueSummary(data: SummaryJob): Promise<{ id: string }> {
 
   logger.info(`✅ Queued summary generation job: ${job.id}`)
 
-  return { id: job.id }
+  return { id: job.id || '' }
 }
 
 /**
