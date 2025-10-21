@@ -208,20 +208,21 @@ model SavedArticle {
 }
 
 model Summary {
-  id          String      @id @default(cuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  content     String      // Contenu original (texte, URL ou PDF)
-  contentType ContentType // TEXT, URL, PDF
-  summary     String      // Résumé généré
-  style       SummaryStyle // SHORT, TWEET, THREAD, etc.
+  title        String?
+  originalText String       @db.Text // Contenu original (texte, URL ou PDF)
+  summaryText  String       @db.Text // Résumé généré
+  style        SummaryStyle // SHORT, TWEET, THREAD, etc.
+  source       String?      // URL ou nom fichier
+  language     String       @default("fr") // fr | en
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt    DateTime     @default(now())
 
   @@index([userId])
-  @@index([createdAt])
+  @@index([createdAt(sort: Desc)])
   @@index([userId, createdAt])
   @@map("summaries")
 }
@@ -262,19 +263,13 @@ model Post {
   @@map("posts")
 }
 
-enum ContentType {
-  TEXT
-  URL
-  PDF
-}
-
 enum SummaryStyle {
-  SHORT         // Résumé court
-  TWEET         // Format tweet
-  THREAD        // Thread Twitter
-  BULLET_POINT  // Points clés
-  TOP3          // Top 3 insights
-  MAIN_POINTS   // Points principaux
+  SHORT         // Résumé court (2-3 phrases)
+  TWEET         // Format tweet (280 caractères)
+  THREAD        // Thread Twitter (série de tweets)
+  BULLET_POINT  // Points clés en liste
+  TOP3          // Top 3 des highlights
+  MAIN_POINTS   // Points principaux détaillés
 }
 
 model RSSFeed {
