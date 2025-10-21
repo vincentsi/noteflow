@@ -150,6 +150,42 @@ export class SummaryController {
       return handleControllerError(error, request, reply)
     }
   }
+
+  /**
+   * GET /api/summaries
+   * Get user summaries with pagination
+   */
+  async getUserSummaries(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = request.user?.userId
+
+      if (!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized',
+          message: 'User not authenticated',
+        })
+      }
+
+      // Parse query parameters
+      const query = request.query as {
+        page?: string
+        limit?: string
+      }
+      const page = query.page ? parseInt(query.page, 10) : 1
+      const limit = query.limit ? parseInt(query.limit, 10) : 20
+
+      // Get summaries
+      const result = await summaryService.getUserSummaries(userId, page, limit)
+
+      return reply.status(200).send({
+        success: true,
+        data: result,
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
 }
 
 export const summaryController = new SummaryController()

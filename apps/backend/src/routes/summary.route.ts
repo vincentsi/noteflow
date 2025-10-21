@@ -117,4 +117,56 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
     },
     summaryController.getSummaryStatus.bind(summaryController)
   )
+
+  /**
+   * Get user summaries
+   * @route GET /api/summaries
+   * @access Private
+   */
+  fastify.get(
+    '/',
+    {
+      schema: {
+        tags: ['Summaries'],
+        description: 'Get user summaries with pagination',
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', minimum: 1, default: 1 },
+            limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              data: {
+                type: 'object',
+                properties: {
+                  summaries: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      additionalProperties: true,
+                    },
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      page: { type: 'number' },
+                      limit: { type: 'number' },
+                      total: { type: 'number' },
+                      totalPages: { type: 'number' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    summaryController.getUserSummaries.bind(summaryController)
+  )
 }

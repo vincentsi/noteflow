@@ -324,4 +324,131 @@ describe('Summary API Integration Tests', () => {
       expect(response.statusCode).toBe(401)
     })
   })
+
+  describe('GET /api/summaries', () => {
+    it('should return user summaries ordered by createdAt DESC', async () => {
+      // Create summaries with different timestamps to ensure ordering
+      const now = new Date()
+      const oneMinuteAgo = new Date(now.getTime() - 60000)
+
+      await prisma.summary.create({
+        data: {
+          userId,
+          originalText: 'Text 1',
+          summaryText: 'Summary 1',
+          style: SummaryStyle.SHORT,
+          language: 'fr',
+          createdAt: oneMinuteAgo,
+        },
+      })
+
+      await prisma.summary.create({
+        data: {
+          userId,
+          originalText: 'Text 2',
+          summaryText: 'Summary 2',
+          style: SummaryStyle.TWEET,
+          language: 'fr',
+          createdAt: now,
+        },
+      })
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries',
+        headers: {
+          cookie: authToken,
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      expect(body.success).toBe(true)
+      expect(body.data.summaries).toHaveLength(2)
+      expect(body.data.summaries[0].summaryText).toBe('Summary 2') // Most recent first
+    })
+
+    it('should paginate results', async () => {
+      // Create 15 summaries
+      const summaries = Array.from({ length: 15 }, (_, i) => ({
+        userId,
+        originalText: `Text ${i}`,
+        summaryText: `Summary ${i}`,
+        style: SummaryStyle.SHORT,
+        language: 'fr',
+      }))
+      await prisma.summary.createMany({ data: summaries })
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries?page=1&limit=10',
+        headers: {
+          cookie: authToken,
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      expect(body.success).toBe(true)
+      expect(body.data.summaries).toHaveLength(10)
+      expect(body.data.pagination).toBeDefined()
+      expect(body.data.pagination.page).toBe(1)
+      expect(body.data.pagination.limit).toBe(10)
+      expect(body.data.pagination.total).toBe(15)
+    })
+
+    it('should only return summaries for authenticated user', async () => {
+      // Create summary for current user
+      await prisma.summary.create({
+        data: {
+          userId,
+          originalText: 'My text',
+          summaryText: 'My summary',
+          style: SummaryStyle.SHORT,
+          language: 'fr',
+        },
+      })
+
+      // Create another user and their summary
+      const otherUser = await prisma.user.create({
+        data: {
+          email: `other-${randomUUID()}@test.com`,
+          password: await bcrypt.hash('password', 10),
+          name: 'Other User',
+          emailVerified: true,
+        },
+      })
+      await prisma.summary.create({
+        data: {
+          userId: otherUser.id,
+          originalText: 'Other text',
+          summaryText: 'Other summary',
+          style: SummaryStyle.SHORT,
+          language: 'fr',
+        },
+      })
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries',
+        headers: {
+          cookie: authToken,
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      expect(body.data.summaries).toHaveLength(1)
+      expect(body.data.summaries[0].summaryText).toBe('My summary')
+    })
+
+    it('should require authentication', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
 })

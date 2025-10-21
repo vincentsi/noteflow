@@ -64,4 +64,69 @@ export class SummaryService {
 
     return { jobId: job.id }
   }
+
+  /**
+   * Get user summaries with pagination
+   * Returns summaries ordered by createdAt DESC (most recent first)
+   */
+  async getUserSummaries(
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
+    summaries: Array<{
+      id: string
+      title: string | null
+      originalText: string
+      summaryText: string
+      style: SummaryStyle
+      source: string | null
+      language: string
+      createdAt: Date
+    }>
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }> {
+    // Calculate pagination
+    const skip = (page - 1) * limit
+
+    // Get total count for pagination
+    const total = await prisma.summary.count({
+      where: { userId },
+    })
+
+    // Get summaries
+    const summaries = await prisma.summary.findMany({
+      where: { userId },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        originalText: true,
+        summaryText: true,
+        style: true,
+        source: true,
+        language: true,
+        createdAt: true,
+      },
+    })
+
+    return {
+      summaries,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
+  }
 }
