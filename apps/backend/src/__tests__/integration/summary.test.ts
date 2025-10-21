@@ -1,9 +1,12 @@
 import { createApp } from '../../app'
-import { FastifyInstance } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { prisma } from '../../config/prisma'
 import { randomUUID } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { PlanType, SummaryStyle } from '@prisma/client'
+import type { Queue } from 'bullmq'
+import type { SummaryJob } from '../../queues/summary.queue'
+import { getSummaryQueue, queueSummary } from '../../queues/summary.queue'
 
 jest.mock('../../queues/summary.queue', () => ({
   queueSummary: jest.fn().mockResolvedValue({ id: 'job-123' }),
@@ -26,6 +29,11 @@ describe('Summary API Integration Tests', () => {
   })
 
   beforeEach(async () => {
+    // Reset mocks
+    jest.clearAllMocks()
+    jest.mocked(getSummaryQueue).mockReturnValue(null)
+    jest.mocked(queueSummary).mockResolvedValue({ id: 'job-123' })
+
     // Clean up test database
     await prisma.$transaction([
       prisma.summary.deleteMany(),
@@ -216,6 +224,104 @@ describe('Summary API Integration Tests', () => {
       })
 
       expect(response.statusCode).toBe(202)
+    })
+  })
+
+  describe('GET /api/summaries/:jobId/status', () => {
+    it('should return job status from queue', async () => {
+      // Mock queue to return pending job
+      const mockQueue = {
+        getJob: jest.fn().mockResolvedValue({
+          id: 'job-123',
+          getState: jest.fn().mockResolvedValue('waiting'),
+          data: {
+            userId,
+            text: 'Test text',
+            style: SummaryStyle.SHORT,
+            language: 'fr',
+          },
+        }),
+      } as unknown as Queue<SummaryJob>
+      jest.mocked(getSummaryQueue).mockReturnValue(mockQueue)
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries/job-123/status',
+        headers: {
+          cookie: authToken,
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      expect(body.success).toBe(true)
+      expect(body.data).toHaveProperty('status')
+      expect(['waiting', 'active', 'completed', 'failed']).toContain(
+        body.data.status
+      )
+    })
+
+    it('should return completed status with summary from database', async () => {
+      // Create a completed summary
+      const summary = await prisma.summary.create({
+        data: {
+          userId,
+          originalText: 'This is the original text',
+          summaryText: 'This is the summary',
+          style: SummaryStyle.SHORT,
+          language: 'fr',
+        },
+      })
+
+      // Mock queue to return null (job not found, already completed)
+      const mockQueue = {
+        getJob: jest.fn().mockResolvedValue(null),
+      } as unknown as Queue<SummaryJob>
+      jest.mocked(getSummaryQueue).mockReturnValue(mockQueue)
+
+      const response = await app.inject({
+        method: 'GET',
+        url: `/api/summaries/completed-${summary.id}/status`,
+        headers: {
+          cookie: authToken,
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      expect(body.success).toBe(true)
+      expect(body.data.status).toBe('completed')
+      expect(body.data.summary).toBeDefined()
+      expect(body.data.summary.summaryText).toBe('This is the summary')
+    })
+
+    it('should return 404 if job not found and no summary', async () => {
+      // Mock queue to return null
+      const mockQueue = {
+        getJob: jest.fn().mockResolvedValue(null),
+      } as unknown as Queue<SummaryJob>
+      jest.mocked(getSummaryQueue).mockReturnValue(mockQueue)
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries/non-existent-job/status',
+        headers: {
+          cookie: authToken,
+        },
+      })
+
+      expect(response.statusCode).toBe(404)
+      const body = JSON.parse(response.body)
+      expect(body.success).toBe(false)
+    })
+
+    it('should require authentication', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/summaries/job-123/status',
+      })
+
+      expect(response.statusCode).toBe(401)
     })
   })
 })

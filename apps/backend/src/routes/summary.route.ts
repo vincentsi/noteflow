@@ -67,4 +67,54 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
     },
     summaryController.createSummary.bind(summaryController)
   )
+
+  /**
+   * Get summary job status
+   * @route GET /api/summaries/:jobId/status
+   * @access Private
+   */
+  fastify.get(
+    '/:jobId/status',
+    {
+      schema: {
+        tags: ['Summaries'],
+        description: 'Get summary job status',
+        params: {
+          type: 'object',
+          properties: {
+            jobId: { type: 'string' },
+          },
+          required: ['jobId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              data: {
+                type: 'object',
+                properties: {
+                  status: { type: 'string' },
+                  jobId: { type: 'string' },
+                  summary: {
+                    type: 'object',
+                    additionalProperties: true,
+                  },
+                },
+              },
+            },
+          },
+          404: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    summaryController.getSummaryStatus.bind(summaryController)
+  )
 }

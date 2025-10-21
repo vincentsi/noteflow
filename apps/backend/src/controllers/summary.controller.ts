@@ -6,6 +6,7 @@ import {
 } from '@/schemas/summary.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { prisma } from '@/config/prisma'
+import { getSummaryQueue } from '@/queues/summary.queue'
 
 const summaryService = new SummaryService()
 
@@ -68,6 +69,85 @@ export class SummaryController {
           })
         },
       })
+    }
+  }
+
+  /**
+   * GET /api/summaries/:jobId/status
+   * Get summary job status
+   */
+  async getSummaryStatus(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = request.user?.userId
+
+      if (!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized',
+          message: 'User not authenticated',
+        })
+      }
+
+      const { jobId } = request.params as { jobId: string }
+
+      // First check if job exists in queue
+      const queue = getSummaryQueue()
+      if (queue) {
+        const job = await queue.getJob(jobId)
+        if (job) {
+          const state = await job.getState()
+          return reply.status(200).send({
+            success: true,
+            data: {
+              status: state,
+              jobId: job.id,
+            },
+          })
+        }
+      }
+
+      // If job not in queue, check if summary was completed and stored in DB
+      // JobId convention: "completed-{summaryId}" for completed summaries
+      const summaryId = jobId.startsWith('completed-')
+        ? jobId.replace('completed-', '')
+        : null
+
+      if (summaryId) {
+        const summary = await prisma.summary.findFirst({
+          where: {
+            id: summaryId,
+            userId,
+          },
+        })
+
+        if (summary) {
+          return reply.status(200).send({
+            success: true,
+            data: {
+              status: 'completed',
+              summary: {
+                id: summary.id,
+                title: summary.title,
+                originalText: summary.originalText,
+                summaryText: summary.summaryText,
+                style: summary.style,
+                source: summary.source,
+                language: summary.language,
+                createdAt: summary.createdAt,
+              },
+            },
+          })
+        }
+      }
+
+      // Job not found in queue or database
+      return reply.status(404).send({
+        success: false,
+        error: 'Job not found',
+        message: 'Summary job not found',
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
     }
   }
 }
