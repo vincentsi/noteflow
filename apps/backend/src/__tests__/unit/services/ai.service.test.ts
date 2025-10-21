@@ -17,6 +17,11 @@ jest.mock('openai', () => {
   }
 })
 
+// Mock pdf-parse
+jest.mock('pdf-parse', () => {
+  return jest.fn()
+})
+
 describe('AIService', () => {
   let aiService: AIService
   let mockOpenAI: any
@@ -223,6 +228,54 @@ describe('AIService', () => {
       )
 
       expect(result).toBe('')
+    })
+  })
+
+  describe('extractTextFromPDF', () => {
+    it('should extract text from PDF buffer', async () => {
+      const pdfParse = require('pdf-parse')
+      const mockPDFData = {
+        text: 'This is extracted text from PDF.\nSecond line of text.',
+        numpages: 2,
+        info: { Title: 'Test PDF' },
+      }
+
+      pdfParse.mockResolvedValue(mockPDFData)
+
+      const pdfBuffer = Buffer.from('mock-pdf-content')
+      const text = await aiService.extractTextFromPDF(pdfBuffer)
+
+      expect(text).toBeDefined()
+      expect(typeof text).toBe('string')
+      expect(text).toBe('This is extracted text from PDF.\nSecond line of text.')
+      expect(pdfParse).toHaveBeenCalledWith(pdfBuffer)
+    })
+
+    it('should throw error for invalid PDF', async () => {
+      const pdfParse = require('pdf-parse')
+      pdfParse.mockRejectedValue(new Error('Invalid PDF format'))
+
+      const invalidBuffer = Buffer.from('not-a-pdf')
+
+      await expect(aiService.extractTextFromPDF(invalidBuffer)).rejects.toThrow(
+        'Failed to extract text from PDF'
+      )
+    })
+
+    it('should handle empty PDF', async () => {
+      const pdfParse = require('pdf-parse')
+      const mockPDFData = {
+        text: '',
+        numpages: 1,
+        info: {},
+      }
+
+      pdfParse.mockResolvedValue(mockPDFData)
+
+      const pdfBuffer = Buffer.from('empty-pdf')
+      const text = await aiService.extractTextFromPDF(pdfBuffer)
+
+      expect(text).toBe('')
     })
   })
 })

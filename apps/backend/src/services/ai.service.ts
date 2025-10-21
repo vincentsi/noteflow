@@ -1,6 +1,20 @@
 import OpenAI from 'openai'
 import { SummaryStyle } from '@prisma/client'
 
+type PDFData = {
+  text: string
+  numpages: number
+  info: Record<string, unknown>
+}
+
+type PDFParseFunction = (buffer: Buffer) => Promise<PDFData>
+
+// Dynamic import workaround for CommonJS pdf-parse
+const loadPdfParse = async (): Promise<PDFParseFunction> => {
+  const module = await import('pdf-parse')
+  return module.default as unknown as PDFParseFunction
+}
+
 const PROMPTS = {
   [SummaryStyle.SHORT]: {
     fr: 'Résume ce texte en 2-3 phrases courtes et claires.',
@@ -42,28 +56,36 @@ export class AIService {
     style: SummaryStyle,
     language: 'fr' | 'en'
   ): Promise<string> {
+    const systemPrompt = PROMPTS[style][language]
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: style === SummaryStyle.TWEET ? 100 : 1000,
+    })
+
+    return response.choices[0]?.message?.content || ''
+  }
+
+  async extractTextFromPDF(buffer: Buffer): Promise<string> {
     try {
-      const systemPrompt = PROMPTS[style][language]
-
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt,
-          },
-          {
-            role: 'user',
-            content: text,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: style === SummaryStyle.TWEET ? 100 : 1000,
-      })
-
-      return response.choices[0]?.message?.content || ''
+      const parse = await loadPdfParse()
+      const data = await parse(buffer)
+      return data.text
     } catch (error) {
-      throw error
+      throw new Error(
+        `Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 }
