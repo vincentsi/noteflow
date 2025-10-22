@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { StyleSelector, type SummaryStyle } from './StyleSelector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,9 +27,16 @@ const MIN_URL_LENGTH = 10
 
 export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: SummaryFormProps) {
   const [source, setSource] = useState<SourceType>('url')
-  const [url, setUrl] = useState(initialUrl || '')
+  const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [style, setStyle] = useState<SummaryStyle>('SHORT')
+
+  // Update URL when initialUrl changes
+  useEffect(() => {
+    if (initialUrl) {
+      setUrl(initialUrl)
+    }
+  }, [initialUrl])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
