@@ -5,6 +5,7 @@ export type GetArticlesParams = {
   source?: string
   tags?: string
   search?: string
+  dateRange?: '24h' | '7d' | '30d' | 'all'
   skip?: number
   take?: number
 }

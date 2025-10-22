@@ -27,6 +27,7 @@ export async function articleRoutes(fastify: FastifyInstance): Promise<void> {
             source: { type: 'string' },
             tags: { type: 'string', description: 'Comma-separated tags' },
             search: { type: 'string' },
+            dateRange: { type: 'string', enum: ['24h', '7d', '30d', 'all'] },
             skip: { type: 'number', minimum: 0 },
             take: { type: 'number', minimum: 1, maximum: 100 },
           },

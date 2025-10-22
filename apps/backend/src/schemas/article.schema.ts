@@ -7,6 +7,7 @@ export const getArticlesSchema = z.object({
   source: z.string().optional(),
   tags: z.string().optional(), // comma-separated tags
   search: z.string().optional(),
+  dateRange: z.enum(['24h', '7d', '30d', 'all']).optional(), // Date filter
   skip: z.coerce.number().int().min(0).optional(),
   take: z.coerce.number().int().min(1).max(100).optional(),
 })

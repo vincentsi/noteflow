@@ -9,6 +9,7 @@ export interface GetArticlesFilters {
   source?: string
   tags?: string
   search?: string
+  dateRange?: '24h' | '7d' | '30d' | 'all'
   skip?: number
   take?: number
 }
@@ -28,7 +29,7 @@ export class ArticleService {
    * Get all articles with optional filters (for Veille page)
    */
   async getArticles(filters: GetArticlesFilters = {}) {
-    const { source, tags, search, skip = 0, take } = filters
+    const { source, tags, search, dateRange, skip = 0, take } = filters
 
     // Enforce pagination limits
     const limit = Math.min(
@@ -57,6 +58,30 @@ export class ArticleService {
         { title: { contains: search, mode: 'insensitive' } },
         { excerpt: { contains: search, mode: 'insensitive' } },
       ]
+    }
+
+    // Filter by date range
+    if (dateRange && dateRange !== 'all') {
+      const now = new Date()
+      let startDate: Date
+
+      switch (dateRange) {
+        case '24h':
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+          break
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          break
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          break
+        default:
+          startDate = new Date(0) // All time
+      }
+
+      where.publishedAt = {
+        gte: startDate,
+      }
     }
 
     const [articles, total] = await Promise.all([
