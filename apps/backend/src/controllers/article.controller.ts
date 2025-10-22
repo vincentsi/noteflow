@@ -5,8 +5,6 @@ import {
   getSavedArticlesSchema,
   saveArticleSchema,
   unsaveArticleSchema,
-  type GetArticlesDTO,
-  type GetSavedArticlesDTO,
 } from '@/schemas/article.schema'
 import { handleControllerError } from '@/utils/error-response'
 

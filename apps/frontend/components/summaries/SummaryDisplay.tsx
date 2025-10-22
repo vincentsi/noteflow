@@ -26,7 +26,7 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
     try {
       await navigator.clipboard.writeText(summary.summaryText)
       toast.success('Résumé copié dans le presse-papiers')
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la copie')
     }
   }

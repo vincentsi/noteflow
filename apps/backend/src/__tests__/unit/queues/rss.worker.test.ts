@@ -2,7 +2,7 @@
 import { prismaMock } from '../../helpers/test-db'
 import { processRSSFeeds } from '../../../queues/rss.worker'
 import { RSSService } from '../../../services/rss.service'
-import { PlanType } from '@prisma/client'
+import type { PrismaClient } from '@prisma/client'
 
 // Mock RSSService
 jest.mock('../../../services/rss.service')
@@ -56,7 +56,7 @@ describe('RSS Worker', () => {
       lastFetchAt: new Date(),
     })
 
-    await processRSSFeeds(prismaMock as any)
+    await processRSSFeeds(prismaMock as unknown as PrismaClient)
 
     expect(prismaMock.rSSFeed.findMany).toHaveBeenCalledWith({
       where: { active: true },
@@ -108,7 +108,7 @@ describe('RSS Worker', () => {
       lastFetchAt: new Date(),
     })
 
-    await processRSSFeeds(prismaMock as any)
+    await processRSSFeeds(prismaMock as unknown as PrismaClient)
 
     expect(prismaMock.rSSFeed.findMany).toHaveBeenCalledWith({
       where: { active: true },
@@ -174,7 +174,7 @@ describe('RSS Worker', () => {
       lastFetchAt: new Date(),
     })
 
-    await processRSSFeeds(prismaMock as any)
+    await processRSSFeeds(prismaMock as unknown as PrismaClient)
 
     // Should have called parseFeed for both feeds
     expect(RSSService.prototype.parseFeed).toHaveBeenCalledTimes(2)

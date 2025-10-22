@@ -9,6 +9,30 @@ export interface ParsedArticle {
   source: string
 }
 
+interface RSSItem {
+  title?: string
+  link?: string
+  contentSnippet?: string
+  content?: string
+  pubDate?: string
+  isoDate?: string
+  enclosure?: {
+    url?: string
+    type?: string
+  }
+  'media:content'?: {
+    $?: {
+      url?: string
+    }
+  }
+  'media:thumbnail'?: {
+    $?: {
+      url?: string
+    }
+  }
+  'content:encoded'?: string
+}
+
 export class RSSService {
   private parser: Parser
 
@@ -46,7 +70,7 @@ export class RSSService {
    * Extract image URL from RSS feed item
    * Tries multiple common fields where images are stored in RSS feeds
    */
-  private extractImageUrl(item: any): string | undefined {
+  private extractImageUrl(item: RSSItem): string | undefined {
     // Try common image fields in order of preference
     // 1. enclosure with image type (common in podcasts and media RSS)
     if (item.enclosure?.url && item.enclosure?.type?.startsWith('image/')) {

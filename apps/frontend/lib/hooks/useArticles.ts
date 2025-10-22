@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { articlesApi, type GetArticlesParams, type GetSavedArticlesParams, type ArticlesWithTotal } from '@/lib/api/articles'
-import type { Article, SavedArticle } from '@/types'
+import type { SavedArticle } from '@/types'
 
 /**
  * Query key for articles cache

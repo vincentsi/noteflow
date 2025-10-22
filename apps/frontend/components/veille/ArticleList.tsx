@@ -1,6 +1,6 @@
 import { ArticleCard } from './ArticleCard'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import type { Article, SavedArticle } from '@/types'
+import type { Article } from '@/types'
 
 export interface ArticleListProps {
   articles: Article[]

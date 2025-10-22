@@ -75,7 +75,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">PowerPost</h3>
               <p className="text-muted-foreground">
-                Résumez vos textes et PDFs avec l'IA. 6 styles disponibles : court, tweet, thread, bullet points...
+                Résumez vos textes et PDFs avec l&apos;IA. 6 styles disponibles : court, tweet, thread, bullet points...
               </p>
             </div>
 
@@ -107,7 +107,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>NoteFlow - Propulsé par l'IA pour les développeurs</p>
+          <p>NoteFlow - Propulsé par l&apos;IA pour les développeurs</p>
         </div>
       </footer>
     </div>

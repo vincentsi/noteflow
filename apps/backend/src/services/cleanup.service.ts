@@ -1,7 +1,6 @@
 import { logger } from '@/utils/logger'
 import { prisma } from '@/config/prisma'
 import type { FastifyInstance } from 'fastify'
-import type { PrismaClient } from '@prisma/client'
 import cron from 'node-cron'
 import { DistributedLockService } from './distributed-lock.service'
 import { CLEANUP_CONFIG } from '@/constants/performance'

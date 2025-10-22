@@ -1,10 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { SummaryService } from '@/services/summary.service'
 import { CacheService } from '@/services/cache.service'
-import {
-  createSummarySchema,
-  type CreateSummaryDTO,
-} from '@/schemas/summary.schema'
+import { createSummarySchema } from '@/schemas/summary.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
