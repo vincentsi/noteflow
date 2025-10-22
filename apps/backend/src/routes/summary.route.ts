@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authMiddleware } from '@/middlewares/auth.middleware'
 import { summaryController } from '@/controllers/summary.controller'
+import { env } from '@/config/env'
 
 /**
  * Summary routes
@@ -14,10 +15,30 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
    * Create a summary
    * @route POST /api/summaries
    * @access Private
+   * @rateLimit 10 requests/15 minutes per user (prevents OpenAI API abuse)
    */
   fastify.post(
     '/',
     {
+      config:
+        env.NODE_ENV !== 'test'
+          ? {
+              rateLimit: {
+                max: env.NODE_ENV === 'production' ? 10 : 100,
+                timeWindow: '15 minutes',
+                keyGenerator: request => {
+                  const userId = request.user?.userId || 'anonymous'
+                  return `summary:create:${userId}`
+                },
+                errorResponseBuilder: () => ({
+                  statusCode: 429,
+                  error: 'Too Many Requests',
+                  message:
+                    'You have reached the summary generation limit. Please try again in 15 minutes.',
+                }),
+              },
+            }
+          : {},
       schema: {
         tags: ['Summaries'],
         description: 'Create a new summary generation job',
