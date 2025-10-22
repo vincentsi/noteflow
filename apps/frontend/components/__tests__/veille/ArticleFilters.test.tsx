@@ -4,6 +4,13 @@ import { ArticleFilters } from '@/components/veille/ArticleFilters'
 import type { GetArticlesParams } from '@/lib/api/articles'
 import * as articlesApi from '@/lib/api/articles'
 
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+  })),
+}))
+
 // Mock the articles API
 jest.mock('@/lib/api/articles', () => ({
   articlesApi: {

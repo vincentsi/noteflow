@@ -2,24 +2,24 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SummaryForm } from '../../summaries/SummaryForm'
 
 describe('SummaryForm', () => {
-  it('should render source selector with Text and PDF options', () => {
+  it('should render source selector with URL and PDF options', () => {
     render(<SummaryForm onSubmit={jest.fn()} />)
 
     // Should show both source options as buttons
-    const texteElements = screen.getAllByText(/texte/i)
+    const urlElements = screen.getAllByText(/url/i)
     const pdfElements = screen.getAllByText(/pdf/i)
 
-    expect(texteElements.length).toBeGreaterThan(0)
+    expect(urlElements.length).toBeGreaterThan(0)
     expect(pdfElements.length).toBeGreaterThan(0)
   })
 
-  it('should show textarea when text source is selected', () => {
+  it('should show URL input when url source is selected', () => {
     render(<SummaryForm onSubmit={jest.fn()} />)
 
-    // Text should be selected by default
-    const textarea = screen.getByRole('textbox')
-    expect(textarea).toBeInTheDocument()
-    expect(textarea).toHaveAttribute('placeholder')
+    // URL should be selected by default
+    const urlInput = screen.getByPlaceholderText(/https:\/\/example.com\/article/i)
+    expect(urlInput).toBeInTheDocument()
+    expect(urlInput).toHaveAttribute('type', 'url')
   })
 
   it('should show file input when PDF source is selected', () => {
@@ -45,20 +45,20 @@ describe('SummaryForm', () => {
     expect(screen.getByText('THREAD')).toBeInTheDocument()
   })
 
-  it('should disable submit button when no text provided', () => {
+  it('should disable submit button when no URL provided', () => {
     render(<SummaryForm onSubmit={jest.fn()} />)
 
     const submitButton = screen.getByRole('button', { name: /générer/i })
     expect(submitButton).toBeDisabled()
   })
 
-  it('should enable submit button when text is provided', () => {
+  it('should enable submit button when URL is provided', () => {
     render(<SummaryForm onSubmit={jest.fn()} />)
 
-    const textarea = screen.getByRole('textbox')
-    // Need at least 50 characters
-    const longText = 'This is a sufficiently long text to summarize that meets the minimum character requirement'
-    fireEvent.change(textarea, { target: { value: longText } })
+    const urlInput = screen.getByPlaceholderText(/https:\/\/example.com\/article/i)
+    // Need at least 10 characters (MIN_URL_LENGTH)
+    const testUrl = 'https://example.com/article'
+    fireEvent.change(urlInput, { target: { value: testUrl } })
 
     const submitButton = screen.getByRole('button', { name: /générer/i })
     expect(submitButton).not.toBeDisabled()
@@ -68,10 +68,10 @@ describe('SummaryForm', () => {
     const onSubmit = jest.fn()
     render(<SummaryForm onSubmit={onSubmit} />)
 
-    // Fill in text (need at least 50 characters)
-    const textarea = screen.getByRole('textbox')
-    const longText = 'This is a sufficiently long text that I want to summarize using the AI tool'
-    fireEvent.change(textarea, { target: { value: longText } })
+    // Fill in URL
+    const urlInput = screen.getByPlaceholderText(/https:\/\/example.com\/article/i)
+    const testUrl = 'https://example.com/article'
+    fireEvent.change(urlInput, { target: { value: testUrl } })
 
     // Select style
     const tweetStyle = screen.getByText('TWEET')
@@ -83,9 +83,9 @@ describe('SummaryForm', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
-        text: longText,
+        text: testUrl,
         style: 'TWEET',
-        source: 'text',
+        source: 'url',
       })
     })
   })
@@ -97,14 +97,14 @@ describe('SummaryForm', () => {
     expect(submitButton).toBeDisabled()
   })
 
-  it('should validate minimum text length', () => {
+  it('should validate minimum URL length', () => {
     render(<SummaryForm onSubmit={jest.fn()} />)
 
-    const textarea = screen.getByRole('textbox')
-    fireEvent.change(textarea, { target: { value: 'short' } })
+    const urlInput = screen.getByPlaceholderText(/https:\/\/example.com\/article/i)
+    fireEvent.change(urlInput, { target: { value: 'short' } })
 
     const submitButton = screen.getByRole('button', { name: /générer/i })
-    // Should be disabled for too short text
+    // Should be disabled for too short URL
     expect(submitButton).toBeDisabled()
   })
 

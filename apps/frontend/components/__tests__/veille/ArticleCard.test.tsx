@@ -2,6 +2,13 @@ import { render, screen } from '@testing-library/react'
 import { ArticleCard } from '../../veille/ArticleCard'
 import type { Article } from '@/types'
 
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+  })),
+}))
+
 const mockArticle: Article = {
   id: 'article-1',
   title: 'Test Article Title',

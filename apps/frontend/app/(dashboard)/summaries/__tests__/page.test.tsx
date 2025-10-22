@@ -2,6 +2,13 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import SummariesPage from '../page'
 import { useAuth } from '@/providers/auth.provider'
 
+// Mock Next.js navigation
+jest.mock('next/navigation', () => ({
+  useSearchParams: jest.fn(() => ({
+    get: jest.fn(() => null),
+  })),
+}))
+
 // Mock les hooks
 jest.mock('@/providers/auth.provider')
 jest.mock('@/lib/hooks/useSummaries', () => ({
@@ -92,7 +99,7 @@ describe('Summaries Page', () => {
   it('should render form', () => {
     render(<SummariesPage />)
 
-    expect(screen.getByRole('textbox')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/https:\/\/example.com\/article/i)).toBeInTheDocument()
   })
 
   it('should render page title', () => {
@@ -114,9 +121,9 @@ describe('Summaries Page', () => {
 
     render(<SummariesPage />)
 
-    const textarea = screen.getByRole('textbox')
-    const longText = 'This is a sufficiently long text to summarize that meets the minimum character requirement for the summary generation'
-    fireEvent.change(textarea, { target: { value: longText } })
+    const urlInput = screen.getByPlaceholderText(/https:\/\/example.com\/article/i)
+    const testUrl = 'https://example.com/test-article'
+    fireEvent.change(urlInput, { target: { value: testUrl } })
 
     const submitButton = screen.getByRole('button', { name: /générer/i })
     fireEvent.click(submitButton)

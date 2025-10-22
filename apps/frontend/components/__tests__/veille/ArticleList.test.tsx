@@ -2,6 +2,13 @@ import { render, screen } from '@testing-library/react'
 import { ArticleList } from '@/components/veille/ArticleList'
 import type { Article } from '@/types'
 
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+  })),
+}))
+
 const mockArticles: Article[] = [
   {
     id: 'article-1',
@@ -44,8 +51,9 @@ describe('ArticleList', () => {
     render(<ArticleList articles={mockArticles} onSave={onSave} />)
 
     // Articles are not saved by default, so they show "Sauvegarder" buttons
+    // Each article has 2 buttons: save/unsave button + "Résumer avec IA" button
     const buttons = screen.getAllByRole('button')
-    expect(buttons.length).toBe(2) // 2 articles = 2 buttons
+    expect(buttons.length).toBe(4) // 2 articles × 2 buttons each = 4 buttons
   })
 
   it('should pass onUnsave callback to ArticleCard with saved articles', () => {
@@ -62,9 +70,10 @@ describe('ArticleList', () => {
     const onSave = jest.fn()
     render(<ArticleList articles={mockArticles} onSave={onSave} isLoading />)
 
-    // All buttons should be disabled when loading
-    const buttons = screen.getAllByRole('button')
-    buttons.forEach((button) => {
+    // Only save/unsave buttons should be disabled when loading
+    // The "Résumer avec IA" buttons remain enabled
+    const saveButtons = screen.getAllByRole('button', { name: /sauvegarder/i })
+    saveButtons.forEach((button) => {
       expect(button).toBeDisabled()
     })
   })
