@@ -14,26 +14,32 @@ export function DashboardNav() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/dashboard" className="text-xl font-bold" prefetch>
-            Boilerplate
+            NoteFlow
           </Link>
 
-          <div className="flex gap-4">
-            <Link href="/dashboard" className="text-sm hover:text-primary" prefetch>
+          <div className="flex gap-6">
+            <Link href="/dashboard" className="text-sm hover:text-primary transition-colors" prefetch>
               Dashboard
             </Link>
-            <Link href="/profile" className="text-sm hover:text-primary" prefetch>
-              Profile
+            <Link href="/veille" className="text-sm hover:text-primary transition-colors" prefetch>
+              Veille IA
             </Link>
-            <Link href="/pricing" className="text-sm hover:text-primary" prefetch>
+            <Link href="/summaries" className="text-sm hover:text-primary transition-colors" prefetch>
+              PowerPost
+            </Link>
+            <Link href="/notes" className="text-sm hover:text-primary transition-colors" prefetch>
+              PowerNote
+            </Link>
+            <Link href="/pricing" className="text-sm hover:text-primary transition-colors" prefetch>
               Pricing
             </Link>
             {user?.role === 'ADMIN' && (
               <Link
                 href="/admin"
-                className="text-sm hover:text-primary font-semibold text-red-600"
+                className="text-sm hover:text-primary font-semibold text-red-600 transition-colors"
                 prefetch
               >
-                Admin Panel
+                Admin
               </Link>
             )}
           </div>
