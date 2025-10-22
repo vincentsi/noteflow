@@ -31,6 +31,10 @@ interface RSSItem {
     }
   }
   'content:encoded'?: string
+  itunes?: {
+    image?: string
+  }
+  image?: string
 }
 
 export class RSSService {
