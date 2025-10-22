@@ -1,10 +1,23 @@
 import { apiClient } from './client'
-import type { SavedArticle } from '@/types'
+import type { SavedArticle, Article } from '@/types'
+
+export type GetArticlesParams = {
+  source?: string
+  tags?: string
+  search?: string
+  skip?: number
+  take?: number
+}
 
 export type GetSavedArticlesParams = {
   source?: string
   skip?: number
   take?: number
+}
+
+export type ArticlesResponse = {
+  success: boolean
+  data: Article[]
 }
 
 export type SavedArticlesResponse = {
@@ -22,6 +35,24 @@ export type SaveArticleResponse = {
  * Manages RSS feed articles and saved articles
  */
 export const articlesApi = {
+  /**
+   * Get all articles (for Veille page)
+   */
+  getArticles: async (params?: GetArticlesParams): Promise<Article[]> => {
+    const response = await apiClient.get<ArticlesResponse>('/api/articles', {
+      params,
+    })
+    return response.data.data
+  },
+
+  /**
+   * Get list of article sources
+   */
+  getSources: async (): Promise<string[]> => {
+    const response = await apiClient.get<{ success: boolean; data: string[] }>('/api/articles/sources')
+    return response.data.data
+  },
+
   /**
    * Get user's saved articles
    */

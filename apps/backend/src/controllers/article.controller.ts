@@ -1,9 +1,11 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { ArticleService } from '@/services/article.service'
 import {
+  getArticlesSchema,
   getSavedArticlesSchema,
   saveArticleSchema,
   unsaveArticleSchema,
+  type GetArticlesDTO,
   type GetSavedArticlesDTO,
 } from '@/schemas/article.schema'
 import { handleControllerError } from '@/utils/error-response'
@@ -15,6 +17,44 @@ const articleService = new ArticleService()
  * Handles article-related routes
  */
 export class ArticleController {
+  /**
+   * GET /api/articles
+   * Get all articles with optional filters (for Veille page)
+   */
+  async getArticles(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      // Validate query parameters
+      const filters = getArticlesSchema.parse(request.query)
+
+      // Get articles
+      const articles = await articleService.getArticles(filters)
+
+      return reply.status(200).send({
+        success: true,
+        data: articles,
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
+
+  /**
+   * GET /api/articles/sources
+   * Get list of unique article sources
+   */
+  async getSources(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const sources = await articleService.getSources()
+
+      return reply.status(200).send({
+        success: true,
+        data: sources,
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
+
   /**
    * GET /api/articles/saved
    * Get user's saved articles with optional filters

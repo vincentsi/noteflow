@@ -178,6 +178,7 @@ model Article {
   title       String
   url         String   @unique
   excerpt     String // Short description from RSS feed
+  imageUrl    String? // Article image from RSS feed or Open Graph
   source      String // RSS feed name
   tags        String[] // Tags for filtering/categorization
   publishedAt DateTime

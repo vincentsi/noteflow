@@ -35,67 +35,87 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
   }, [article.publishedAt])
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <CardTitle className="text-lg">
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline inline-flex items-center gap-2"
-              >
-                {article.title}
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </CardTitle>
-            <CardDescription className="mt-2">
-              <span className="font-medium">{article.source}</span> · {formattedDate}
-            </CardDescription>
+    <Card className="hover:shadow-md transition-shadow overflow-hidden">
+      <div className="flex flex-col md:flex-row">
+        {/* Article Image */}
+        {article.imageUrl && (
+          <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0">
+            <img
+              src={article.imageUrl}
+              alt={article.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Hide image if it fails to load
+                e.currentTarget.style.display = 'none'
+              }}
+            />
           </div>
-          {(onSave || onUnsave) && (
-            <CardAction>
-              <Button
-                variant={isSaved ? 'default' : 'outline'}
-                size="sm"
-                onClick={handleToggleSave}
-                disabled={isLoading}
-                aria-label={isSaved ? t('veille.actions.unsave') : t('veille.actions.save')}
-              >
-                {isSaved ? (
-                  <>
-                    <BookmarkCheck className="h-4 w-4 mr-2" />
-                    {t('veille.actions.saved')}
-                  </>
-                ) : (
-                  <>
-                    <Bookmark className="h-4 w-4 mr-2" />
-                    {t('veille.actions.save')}
-                  </>
-                )}
-              </Button>
-            </CardAction>
+        )}
+
+        {/* Article Content */}
+        <div className="flex-1 flex flex-col">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <CardTitle className="text-lg">
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline inline-flex items-center gap-2"
+                  >
+                    {article.title}
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  <span className="font-medium">{article.source}</span> · {formattedDate}
+                </CardDescription>
+              </div>
+              {(onSave || onUnsave) && (
+                <CardAction>
+                  <Button
+                    variant={isSaved ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={handleToggleSave}
+                    disabled={isLoading}
+                    aria-label={isSaved ? t('veille.actions.unsave') : t('veille.actions.save')}
+                  >
+                    {isSaved ? (
+                      <>
+                        <BookmarkCheck className="h-4 w-4 mr-2" />
+                        {t('veille.actions.saved')}
+                      </>
+                    ) : (
+                      <>
+                        <Bookmark className="h-4 w-4 mr-2" />
+                        {t('veille.actions.save')}
+                      </>
+                    )}
+                  </Button>
+                </CardAction>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground line-clamp-3">{article.excerpt}</p>
+          </CardContent>
+          {article.tags && article.tags.length > 0 && (
+            <CardFooter>
+              <div className="flex gap-2 flex-wrap">
+                {article.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </CardFooter>
           )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground line-clamp-3">{article.excerpt}</p>
-      </CardContent>
-      {article.tags && article.tags.length > 0 && (
-        <CardFooter>
-          <div className="flex gap-2 flex-wrap">
-            {article.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </CardFooter>
-      )}
+      </div>
     </Card>
   )
 })

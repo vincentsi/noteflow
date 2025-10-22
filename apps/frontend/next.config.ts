@@ -60,51 +60,10 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@radix-ui/react-label', 'class-variance-authority'],
 
   /**
-   * Security Headers - Content Security Policy (CSP)
-   * Protects against XSS, clickjacking, and other code injection attacks
+   * Security Headers are now handled by middleware.ts
+   * This allows for dynamic nonce generation on each request
+   * See: middleware.ts for CSP and other security headers
    */
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' https://js.stripe.com https://browser.sentry-cdn.com",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https: blob:",
-              "font-src 'self' data:",
-              "connect-src 'self' https://api.stripe.com https://sentry.io https://*.sentry.io http://localhost:3001",
-              "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'self'",
-              "upgrade-insecure-requests",
-            ].join('; '),
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-          },
-        ],
-      },
-    ]
-  },
 }
 
 // Sentry configuration options

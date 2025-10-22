@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAuth } from '@/providers/auth.provider'
-import { useArticles, useSaveArticle, useUnsaveArticle } from '@/lib/hooks/useArticles'
+import { useAllArticles, useArticles, useSaveArticle, useUnsaveArticle } from '@/lib/hooks/useArticles'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { ArticleFilters } from '@/components/veille/ArticleFilters'
 import { ArticleList } from '@/components/veille/ArticleList'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { GetSavedArticlesParams } from '@/lib/api/articles'
+import type { GetArticlesParams } from '@/lib/api/articles'
 
 // Plan limits for saved articles
 const PLAN_LIMITS = {
@@ -19,14 +19,22 @@ const PLAN_LIMITS = {
 export default function VeillePage() {
   const { user } = useAuth()
   const { t } = useTranslation()
-  const [filters, setFilters] = useState<GetSavedArticlesParams>({})
+  const [filters, setFilters] = useState<GetArticlesParams>({})
 
-  // Fetch saved articles
-  const { data: savedArticles = [], isLoading, error } = useArticles(filters)
+  // Fetch all articles from RSS feeds
+  const { data: allArticles = [], isLoading, error } = useAllArticles(filters)
+
+  // Fetch saved articles to know which ones are saved
+  const { data: savedArticles = [] } = useArticles()
 
   // Mutations for save/unsave
   const saveArticle = useSaveArticle()
   const unsaveArticle = useUnsaveArticle()
+
+  // Create a Set of saved article IDs for fast lookup
+  const savedArticleIds = useMemo(() => {
+    return new Set(savedArticles.map(saved => saved.articleId))
+  }, [savedArticles])
 
   // Calculate plan usage
   const planType = (user?.planType || 'FREE') as keyof typeof PLAN_LIMITS
@@ -94,7 +102,8 @@ export default function VeillePage() {
           </div>
         )}
         <ArticleList
-          articles={savedArticles}
+          articles={allArticles}
+          savedArticleIds={savedArticleIds}
           onSave={handleSave}
           onUnsave={handleUnsave}
           isLoading={isLoading || saveArticle.isPending || unsaveArticle.isPending}

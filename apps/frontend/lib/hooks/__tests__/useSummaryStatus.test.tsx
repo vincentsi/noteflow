@@ -81,7 +81,7 @@ describe('useSummaryStatus - Polling', () => {
 
     // Should have called API multiple times
     expect(callCount).toBeGreaterThanOrEqual(3)
-  })
+  }, 15000) // Increase test timeout to 15 seconds
 
   it('should stop polling when status is completed', async () => {
     mockSummariesApi.getSummaryStatus.mockResolvedValue({

@@ -32,11 +32,14 @@ export async function processRSSFeeds(
       for (const article of articles) {
         await prisma.article.upsert({
           where: { url: article.url },
-          update: {},
+          update: {
+            imageUrl: article.imageUrl, // Update imageUrl if article already exists
+          },
           create: {
             title: article.title,
             url: article.url,
             excerpt: article.excerpt,
+            imageUrl: article.imageUrl,
             source: article.source,
             tags: feed.tags, // Use feed tags
             publishedAt: article.publishedAt,

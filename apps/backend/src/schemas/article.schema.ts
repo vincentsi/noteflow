@@ -1,6 +1,19 @@
 import { z } from 'zod'
 
 /**
+ * Schema for getting all articles with filters
+ */
+export const getArticlesSchema = z.object({
+  source: z.string().optional(),
+  tags: z.string().optional(), // comma-separated tags
+  search: z.string().optional(),
+  skip: z.coerce.number().int().min(0).optional(),
+  take: z.coerce.number().int().min(1).max(100).optional(),
+})
+
+export type GetArticlesDTO = z.infer<typeof getArticlesSchema>
+
+/**
  * Schema for getting saved articles with filters
  */
 export const getSavedArticlesSchema = z.object({

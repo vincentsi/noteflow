@@ -11,6 +11,85 @@ export async function articleRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.addHook('preHandler', authMiddleware)
 
   /**
+   * Get all articles (for Veille page)
+   * @route GET /api/articles
+   * @access Private
+   */
+  fastify.get(
+    '/',
+    {
+      schema: {
+        tags: ['Articles'],
+        description: 'Get all articles with optional filters',
+        querystring: {
+          type: 'object',
+          properties: {
+            source: { type: 'string' },
+            tags: { type: 'string', description: 'Comma-separated tags' },
+            search: { type: 'string' },
+            skip: { type: 'number', minimum: 0 },
+            take: { type: 'number', minimum: 1, maximum: 100 },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              data: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    title: { type: 'string' },
+                    url: { type: 'string' },
+                    excerpt: { type: 'string' },
+                    imageUrl: { type: 'string', nullable: true },
+                    source: { type: 'string' },
+                    tags: { type: 'array', items: { type: 'string' } },
+                    publishedAt: { type: 'string' },
+                    createdAt: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    articleController.getArticles.bind(articleController)
+  )
+
+  /**
+   * Get article sources
+   * @route GET /api/articles/sources
+   * @access Private
+   */
+  fastify.get(
+    '/sources',
+    {
+      schema: {
+        tags: ['Articles'],
+        description: 'Get list of unique article sources',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              data: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+    articleController.getSources.bind(articleController)
+  )
+
+  /**
    * Get saved articles
    * @route GET /api/articles/saved
    * @access Private
@@ -50,6 +129,7 @@ export async function articleRoutes(fastify: FastifyInstance): Promise<void> {
                         title: { type: 'string' },
                         url: { type: 'string' },
                         excerpt: { type: 'string' },
+                        imageUrl: { type: 'string', nullable: true },
                         source: { type: 'string' },
                         tags: { type: 'array', items: { type: 'string' } },
                         publishedAt: { type: 'string' },

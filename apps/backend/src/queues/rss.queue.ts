@@ -1,6 +1,7 @@
 import { logger } from '@/utils/logger'
 import { Queue, Worker } from 'bullmq'
-import { getRedis, isRedisAvailable } from '@/config/redis'
+import { isRedisAvailable } from '@/config/redis'
+import { env } from '@/config/env'
 import { processRSSFeeds } from './rss.worker'
 
 /**
@@ -27,16 +28,21 @@ export interface RSSFeedJob {
  * Returns null if Redis not available
  */
 export function createRSSQueue(): Queue<RSSFeedJob> | null {
-  if (!isRedisAvailable()) {
+  if (!isRedisAvailable() || !env.REDIS_URL) {
     logger.warn('⚠️  Redis not available, RSS feeds will not be processed in queue')
     return null
   }
 
-  const redis = getRedis()
-  if (!redis) return null
+  // Parse Redis URL for BullMQ connection
+  const url = new URL(env.REDIS_URL)
 
   return new Queue<RSSFeedJob>(QUEUE_NAME, {
-    connection: redis,
+    connection: {
+      host: url.hostname,
+      port: parseInt(url.port || '6379'),
+      password: url.password || undefined,
+      username: url.username || undefined,
+    },
     defaultJobOptions: {
       attempts: 3, // Retry up to 3 times
       backoff: {
@@ -88,20 +94,54 @@ export async function queueRSSFetch(): Promise<void> {
 }
 
 /**
+ * Setup automatic RSS feed fetching with cron schedule
+ * Runs every hour to fetch new articles
+ */
+export async function setupRSSCron(): Promise<void> {
+  const rssQueue = getRSSQueue()
+
+  if (!rssQueue) {
+    logger.warn('⚠️  RSS queue not available, skipping cron setup')
+    return
+  }
+
+  // Remove any existing repeatable jobs first to avoid duplicates
+  const repeatableJobs = await rssQueue.getRepeatableJobs()
+  for (const job of repeatableJobs) {
+    await rssQueue.removeRepeatableByKey(job.key)
+  }
+
+  // Add repeatable job - runs every hour
+  await rssQueue.add(
+    'fetch-all-feeds',
+    { type: 'fetch-all-feeds' },
+    {
+      repeat: {
+        pattern: '0 * * * *', // Cron: Every hour at minute 0 (e.g., 10:00, 11:00, 12:00)
+        // Alternative patterns:
+        // '0 */2 * * *' - Every 2 hours
+        // '0 */6 * * *' - Every 6 hours
+        // '0 0 * * *'   - Every day at midnight
+      },
+      jobId: 'rss-cron', // Unique ID for the cron job
+    }
+  )
+
+  logger.info('✅ RSS cron job scheduled: runs every hour')
+}
+
+/**
  * Start RSS feed worker
  * Processes jobs from the queue
  */
 export function startRSSWorker(): Worker<RSSFeedJob> | null {
-  if (!isRedisAvailable()) {
+  if (!isRedisAvailable() || !env.REDIS_URL) {
     logger.warn('⚠️  Redis not available, RSS worker not started')
     return null
   }
 
-  const redis = getRedis()
-  if (!redis) {
-    logger.warn('⚠️  Redis client not available, RSS worker not started')
-    return null
-  }
+  // Parse Redis URL for BullMQ connection
+  const url = new URL(env.REDIS_URL)
 
   try {
     const worker = new Worker<RSSFeedJob>(
@@ -117,7 +157,12 @@ export function startRSSWorker(): Worker<RSSFeedJob> | null {
         }
       },
       {
-        connection: redis,
+        connection: {
+          host: url.hostname,
+          port: parseInt(url.port || '6379'),
+          password: url.password || undefined,
+          username: url.username || undefined,
+        },
         concurrency: 1, // Process one RSS fetch job at a time
       }
     )

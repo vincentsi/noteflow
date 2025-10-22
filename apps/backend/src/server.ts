@@ -9,12 +9,11 @@ import {
 } from '@/config/redis'
 import { captureException, initializeSentry } from '@/config/sentry'
 import { startStripeWebhookWorker } from '@/queues/stripe-webhook.queue'
-import { startRSSWorker, queueRSSFetch } from '@/queues/rss.queue'
+import { startRSSWorker, queueRSSFetch, setupRSSCron } from '@/queues/rss.queue'
 import { startSummaryWorker } from '@/queues/summary.queue'
 import { BackupService } from '@/services/backup.service'
 import { CleanupService } from '@/services/cleanup.service'
 import type { FastifyInstance } from 'fastify'
-import cron from 'node-cron'
 import { createApp } from './app'
 
 /**
@@ -72,16 +71,13 @@ async function start() {
       startRSSWorker()
       logger.info('✅ RSS feed worker started')
 
-      // Schedule RSS feed fetching every hour
-      cron.schedule('0 * * * *', async () => {
-        try {
-          await queueRSSFetch()
-          logger.info('📰 RSS feed fetch job queued (hourly)')
-        } catch (error) {
-          logger.error({ error }, '❌ Failed to queue RSS fetch job')
-        }
-      })
-      logger.info('⏰ RSS feed cron job scheduled (every hour)')
+      // Setup automatic RSS feed fetching with BullMQ repeatable jobs
+      try {
+        await setupRSSCron()
+        logger.info('⏰ RSS feed cron job scheduled (every hour via BullMQ)')
+      } catch (error) {
+        logger.error({ error }, '❌ Failed to setup RSS cron job')
+      }
 
       // Fetch feeds immediately on startup
       try {

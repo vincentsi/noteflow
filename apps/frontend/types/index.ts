@@ -14,6 +14,7 @@ export type Article = {
   title: string
   url: string
   excerpt: string
+  imageUrl?: string
   source: string
   tags: string[]
   publishedAt: string

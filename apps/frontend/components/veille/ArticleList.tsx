@@ -1,15 +1,16 @@
 import { ArticleCard } from './ArticleCard'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import type { SavedArticle } from '@/types'
+import type { Article, SavedArticle } from '@/types'
 
 export interface ArticleListProps {
-  articles: SavedArticle[]
+  articles: Article[]
+  savedArticleIds?: Set<string>
   onSave?: (articleId: string) => void
   onUnsave?: (articleId: string) => void
   isLoading?: boolean
 }
 
-export function ArticleList({ articles, onSave, onUnsave, isLoading = false }: ArticleListProps) {
+export function ArticleList({ articles, savedArticleIds = new Set(), onSave, onUnsave, isLoading = false }: ArticleListProps) {
   const { t } = useTranslation()
 
   // Empty state
@@ -26,11 +27,11 @@ export function ArticleList({ articles, onSave, onUnsave, isLoading = false }: A
 
   return (
     <div className="grid gap-4 md:gap-6">
-      {articles.map((savedArticle) => (
+      {articles.map((article) => (
         <ArticleCard
-          key={savedArticle.id}
-          article={savedArticle.article}
-          isSaved={true}
+          key={article.id}
+          article={article}
+          isSaved={savedArticleIds.has(article.id)}
           onSave={onSave}
           onUnsave={onUnsave}
           isLoading={isLoading}

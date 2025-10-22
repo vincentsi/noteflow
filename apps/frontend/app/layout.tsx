@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/providers/theme.provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { Toaster } from "@/components/ui/sonner";
+import { getNonce } from "@/lib/utils/nonce";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,13 +52,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = await getNonce()
+
   return (
     <html lang="fr" suppressHydrationWarning>
+      <head>
+        {/* Expose nonce to client-side for script injection if needed */}
+        {nonce && (
+          <meta property="csp-nonce" content={nonce} />
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

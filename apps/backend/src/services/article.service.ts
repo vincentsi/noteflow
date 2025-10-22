@@ -7,6 +7,8 @@ import { CACHE_TTL } from '@/constants/performance'
 
 export interface GetArticlesFilters {
   source?: string
+  tags?: string
+  search?: string
   skip?: number
   take?: number
 }
@@ -15,12 +17,69 @@ export interface CreateArticleData {
   title: string
   url: string
   excerpt: string
+  imageUrl?: string
   source: string
   tags: string[]
   publishedAt: Date
 }
 
 export class ArticleService {
+  /**
+   * Get all articles with optional filters (for Veille page)
+   */
+  async getArticles(filters: GetArticlesFilters = {}) {
+    const { source, tags, search, skip = 0, take } = filters
+
+    // Enforce pagination limits
+    const limit = Math.min(
+      take || PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
+      PAGINATION_CONFIG.MAX_PAGE_SIZE
+    )
+
+    const where: Prisma.ArticleWhereInput = {}
+
+    // Filter by source
+    if (source) {
+      where.source = source
+    }
+
+    // Filter by tags (comma-separated)
+    if (tags) {
+      const tagList = tags.split(',').map((t) => t.trim())
+      where.tags = {
+        hasSome: tagList,
+      }
+    }
+
+    // Search in title or excerpt
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { excerpt: { contains: search, mode: 'insensitive' } },
+      ]
+    }
+
+    return await prisma.article.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        excerpt: true,
+        imageUrl: true,
+        source: true,
+        tags: true,
+        publishedAt: true,
+        createdAt: true,
+      },
+      orderBy: {
+        publishedAt: 'desc',
+      },
+      skip,
+      take: limit,
+    })
+  }
+
   /**
    * Get user's saved articles with optional filters
    */
@@ -50,10 +109,10 @@ export class ArticleService {
             title: true,
             url: true,
             excerpt: true,
+            imageUrl: true,
             source: true,
             tags: true,
             publishedAt: true,
-            // Exclude large fields: originalText and summaryText
           },
         },
       },
@@ -146,5 +205,24 @@ export class ArticleService {
       update: {},
       create: data,
     })
+  }
+
+  /**
+   * Get list of unique article sources
+   */
+  async getSources(): Promise<string[]> {
+    const sources = await prisma.article.groupBy({
+      by: ['source'],
+      _count: {
+        source: true,
+      },
+      orderBy: {
+        _count: {
+          source: 'desc',
+        },
+      },
+    })
+
+    return sources.map((s) => s.source)
   }
 }
