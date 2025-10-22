@@ -5,10 +5,10 @@ import { StyleSelector, type SummaryStyle } from './StyleSelector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { FileText, Upload } from 'lucide-react'
+import { Link, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type SourceType = 'text' | 'pdf'
+type SourceType = 'url' | 'pdf'
 
 export interface SummaryFormData {
   text?: string
@@ -22,11 +22,11 @@ export interface SummaryFormProps {
   isLoading?: boolean
 }
 
-const MIN_TEXT_LENGTH = 50
+const MIN_URL_LENGTH = 10
 
 export function SummaryForm({ onSubmit, isLoading = false }: SummaryFormProps) {
-  const [source, setSource] = useState<SourceType>('text')
-  const [text, setText] = useState('')
+  const [source, setSource] = useState<SourceType>('url')
+  const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [style, setStyle] = useState<SummaryStyle>('SHORT')
 
@@ -45,8 +45,8 @@ export function SummaryForm({ onSubmit, isLoading = false }: SummaryFormProps) {
       source,
     }
 
-    if (source === 'text') {
-      formData.text = text
+    if (source === 'url') {
+      formData.text = url
     } else {
       formData.file = file || undefined
     }
@@ -54,8 +54,8 @@ export function SummaryForm({ onSubmit, isLoading = false }: SummaryFormProps) {
     onSubmit(formData)
   }
 
-  const isValid = source === 'text'
-    ? text.trim().length >= MIN_TEXT_LENGTH
+  const isValid = source === 'url'
+    ? url.trim().length >= MIN_URL_LENGTH
     : file !== null
 
   return (
@@ -70,18 +70,18 @@ export function SummaryForm({ onSubmit, isLoading = false }: SummaryFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
-              onClick={() => setSource('text')}
+              onClick={() => setSource('url')}
               className={cn(
                 'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
                 'hover:border-primary/50 hover:bg-accent/50',
-                source === 'text'
+                source === 'url'
                   ? 'border-primary bg-primary/5'
                   : 'border-border bg-background'
               )}
             >
-              <FileText className={cn('h-6 w-6', source === 'text' ? 'text-primary' : 'text-muted-foreground')} />
-              <span className={cn('font-medium', source === 'text' ? 'text-primary' : 'text-foreground')}>
-                Texte
+              <Link className={cn('h-6 w-6', source === 'url' ? 'text-primary' : 'text-muted-foreground')} />
+              <span className={cn('font-medium', source === 'url' ? 'text-primary' : 'text-foreground')}>
+                URL
               </span>
             </button>
 
@@ -110,23 +110,24 @@ export function SummaryForm({ onSubmit, isLoading = false }: SummaryFormProps) {
         <CardHeader>
           <CardTitle>Contenu</CardTitle>
           <CardDescription>
-            {source === 'text'
-              ? `Collez votre texte (minimum ${MIN_TEXT_LENGTH} caractères)`
+            {source === 'url'
+              ? 'Entrez l\'URL de l\'article à résumer'
               : 'Uploadez votre fichier PDF'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {source === 'text' ? (
+          {source === 'url' ? (
             <div className="space-y-2">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Collez votre texte ici..."
-                className="w-full min-h-[200px] p-4 rounded-lg border border-input bg-background resize-y focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/article"
+                className="w-full h-12 px-4 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 disabled={isLoading}
               />
               <p className="text-sm text-muted-foreground">
-                {text.length} / {MIN_TEXT_LENGTH} caractères minimum
+                Entrez l'URL d'un article web à résumer
               </p>
             </div>
           ) : (
