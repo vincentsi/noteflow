@@ -37,10 +37,15 @@ export function createSummaryQueue(): Queue<SummaryJob> | null {
     return null
   }
 
+  // Parse Redis URL for BullMQ connection
+  const url = new URL(env.REDIS_URL)
+
   return new Queue<SummaryJob>(QUEUE_NAME, {
     connection: {
-      host: 'localhost',
-      port: 6379,
+      host: url.hostname,
+      port: parseInt(url.port || '6379'),
+      password: url.password || undefined,
+      username: url.username || undefined,
     },
     defaultJobOptions: {
       attempts: 3, // Retry up to 3 times
@@ -100,6 +105,9 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
     return null
   }
 
+  // Parse Redis URL for BullMQ connection
+  const url = new URL(env.REDIS_URL)
+
   try {
     const worker = new Worker<SummaryJob>(
       QUEUE_NAME,
@@ -115,8 +123,10 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
       },
       {
         connection: {
-          host: 'localhost',
-          port: 6379,
+          host: url.hostname,
+          port: parseInt(url.port || '6379'),
+          password: url.password || undefined,
+          username: url.username || undefined,
         },
         concurrency: 2, // Process 2 summaries at a time
       }
