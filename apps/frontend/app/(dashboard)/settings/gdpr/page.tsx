@@ -5,6 +5,7 @@ import { useAuth } from '@/providers/auth.provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Download, Trash2, Shield, FileText } from 'lucide-react'
+import { logError } from '@/lib/utils/logger'
 
 export default function GDPRSettingsPage() {
   const { user } = useAuth()
@@ -42,7 +43,7 @@ export default function GDPRSettingsPage() {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Failed to export data:', error)
+      logError(error, 'GDPR Data Export')
     } finally {
       setIsExporting(false)
     }
@@ -62,7 +63,7 @@ export default function GDPRSettingsPage() {
       await new Promise(resolve => setTimeout(resolve, 1000))
       alert('Account deletion requested. You will receive a confirmation email.')
     } catch (error) {
-      console.error('Failed to delete account:', error)
+      logError(error, 'GDPR Account Deletion')
     } finally {
       setIsDeleting(false)
     }

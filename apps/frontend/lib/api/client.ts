@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
 import { env } from '@/lib/env'
 import { API_CONFIG } from '@/lib/constants/api'
+import { logWarn, logError } from '@/lib/utils/logger'
 
 // API URL from validated env (Zod ensures it's valid)
 const API_URL = env.NEXT_PUBLIC_API_URL
@@ -23,6 +24,18 @@ export const apiClient: AxiosInstance = axios.create({
 // ========================================
 // REQUEST INTERCEPTOR: Attach CSRF token for protection
 // ========================================
+
+// Cache CSRF token to avoid parsing cookies on every request
+let cachedCsrfToken: string | null = null
+
+/**
+ * Clear the cached CSRF token
+ * Call this after logout or when token is refreshed
+ */
+export function clearCsrfTokenCache(): void {
+  cachedCsrfToken = null
+}
+
 apiClient.interceptors.request.use(
   config => {
     // Add CSRF token on all mutating requests (POST, PUT, PATCH, DELETE)
@@ -31,14 +44,16 @@ apiClient.interceptors.request.use(
     )
 
     if (isMutatingRequest && typeof document !== 'undefined') {
-      // Get token from csrfToken cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrfToken='))
-        ?.split('=')[1]
+      // Use cached token or parse from cookie once
+      if (!cachedCsrfToken) {
+        cachedCsrfToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('csrfToken='))
+          ?.split('=')[1] || null
+      }
 
-      if (csrfToken) {
-        config.headers['X-CSRF-Token'] = csrfToken
+      if (cachedCsrfToken) {
+        config.headers['X-CSRF-Token'] = cachedCsrfToken
       }
     }
 
@@ -64,9 +79,9 @@ let refreshAttempts = 0
 if (typeof window !== 'undefined') {
   const cleanupInterval = setInterval(() => {
     if (refreshSubscribers.length > 0 && !isRefreshing) {
-      console.warn(
-        `⚠️ Cleaning up ${refreshSubscribers.length} stale refresh subscribers`
-      )
+      logWarn('Cleaning up stale refresh subscribers', {
+        count: refreshSubscribers.length,
+      })
       refreshSubscribers = []
     }
   }, API_CONFIG.TOKEN_REFRESH.SUBSCRIBER_CLEANUP_INTERVAL_MS)
@@ -98,7 +113,10 @@ const onRefreshed = () => {
 
 const addRefreshSubscriber = (callback: () => void) => {
   if (refreshSubscribers.length >= MAX_SUBSCRIBERS) {
-    console.error('⚠️ Too many refresh subscribers - clearing queue')
+    logError(
+      new Error('Too many refresh subscribers - clearing queue'),
+      'TokenRefresh'
+    )
     refreshSubscribers = []
   }
   refreshSubscribers.push(callback)
@@ -138,8 +156,9 @@ apiClient.interceptors.response.use(
       // Check if max attempts reached
       const currentAttempts = getRefreshAttempts()
       if (currentAttempts >= MAX_REFRESH_ATTEMPTS) {
-        console.error(
-          '❌ Max refresh attempts reached. Redirecting to login...'
+        logError(
+          new Error('Max refresh attempts reached'),
+          'TokenRefresh'
         )
         resetRefreshAttempts() // Reset for next session
         if (
