@@ -169,9 +169,14 @@ apiClient.interceptors.response.use(
 
           // Retry original request
           return apiClient(originalRequest)
-        } catch {
+        } catch (refreshError: unknown) {
           // Refresh failed
           isRefreshing = false
+
+          // Convert to Error if needed
+          const err = refreshError instanceof Error
+            ? refreshError
+            : new Error('Token refresh failed')
 
           // If we've exhausted attempts, redirect
           const attempts = getRefreshAttempts()
@@ -185,7 +190,7 @@ apiClient.interceptors.response.use(
             }
           }
 
-          return Promise.reject(error)
+          return Promise.reject(err)
         }
       }
 

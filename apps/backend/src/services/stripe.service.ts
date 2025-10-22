@@ -45,6 +45,26 @@ const subscriptionMetadataSchema = z.object({
 })
 
 /**
+ * Type guard to validate Stripe subscription structure
+ */
+function isStripeSubscriptionData(data: unknown): data is StripeSubscriptionData {
+  if (!data || typeof data !== 'object') return false
+
+  const obj = data as Record<string, unknown>
+
+  return (
+    typeof obj.id === 'string' &&
+    typeof obj.customer === 'string' &&
+    typeof obj.status === 'string' &&
+    obj.items !== null &&
+    typeof obj.items === 'object' &&
+    'data' in obj.items &&
+    Array.isArray((obj.items as { data: unknown }).data) &&
+    (obj.items as { data: unknown[] }).data.length > 0
+  )
+}
+
+/**
  * Stripe Subscription Service
  *
  * Handles subscription lifecycle with enterprise-grade patterns:
@@ -301,7 +321,11 @@ export class StripeService {
       session.subscription as string
     )
 
-    const sub = stripeSubscription as unknown as StripeSubscriptionData
+    if (!isStripeSubscriptionData(stripeSubscription)) {
+      throw new Error('Invalid Stripe subscription structure')
+    }
+
+    const sub = stripeSubscription
     const priceId = sub.items.data[0]?.price.id
 
     if (!priceId) {
@@ -355,7 +379,11 @@ export class StripeService {
   async handleSubscriptionUpdated(
     stripeSubscription: Stripe.Subscription
   ): Promise<void> {
-    const subscription = stripeSubscription as unknown as StripeSubscriptionData
+    if (!isStripeSubscriptionData(stripeSubscription)) {
+      throw new Error('Invalid Stripe subscription structure')
+    }
+
+    const subscription = stripeSubscription
 
     // Extract userId and planType with database fallback
     const { userId, planType } = await this.extractUserIdFromWebhook(
@@ -456,7 +484,11 @@ export class StripeService {
       invoice.subscription
     )
 
-    const subscription = stripeSubscription as unknown as StripeSubscriptionData
+    if (!isStripeSubscriptionData(stripeSubscription)) {
+      throw new Error('Invalid Stripe subscription structure')
+    }
+
+    const subscription = stripeSubscription
 
     const { userId } = await this.extractUserIdFromWebhook(
       subscription.metadata,

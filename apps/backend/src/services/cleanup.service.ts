@@ -1,8 +1,21 @@
 import { logger } from '@/utils/logger'
 import { prisma } from '@/config/prisma'
 import type { FastifyInstance } from 'fastify'
+import type { PrismaClient } from '@prisma/client'
 import cron from 'node-cron'
 import { DistributedLockService } from './distributed-lock.service'
+
+// Type for Prisma models that have token-like structure (id, expiresAt)
+type TokenModel = {
+  findMany: (args: {
+    where: { expiresAt: { lt: Date } }
+    select: { id: true }
+    take: number
+  }) => Promise<Array<{ id: string }>>
+  deleteMany: (args: {
+    where: { id: { in: string[] } }
+  }) => Promise<{ count: number }>
+}
 
 /**
  * Token Cleanup Service (Cron Job)
@@ -116,7 +129,7 @@ export class CleanupService {
    */
   private static async cleanupModelWithBatching(
     _modelName: string,
-    model: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    model: TokenModel,
     now: Date,
     batchSize: number
   ): Promise<number> {
@@ -139,7 +152,7 @@ export class CleanupService {
 
       const result = await model.deleteMany({
         where: {
-          id: { in: tokensToDelete.map((t: { id: string }) => t.id) },
+          id: { in: tokensToDelete.map(t => t.id) },
         },
       })
 
