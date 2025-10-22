@@ -1,5 +1,6 @@
 import { useMutation, useQuery, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query'
 import { summariesApi, type CreateSummaryParams, type CreateSummaryResponse, type SummaryStatusResponse } from '@/lib/api/summaries'
+import { POLLING_CONFIG } from '@/lib/constants/api'
 
 /**
  * Hook to create a new summary
@@ -36,10 +37,13 @@ export function useSummaryStatus(jobId: string | null): UseQueryResult<SummarySt
         return false
       }
 
-      // Exponential backoff: 1s → 2s → 4s → 8s → max 10s
-      // dataUpdateCount = number of successful fetches
+      // Exponential backoff with configurable intervals
       const attempt = query.state.dataUpdateCount
-      const interval = Math.min(1000 * Math.pow(2, attempt), 10000)
+      const interval = Math.min(
+        POLLING_CONFIG.INITIAL_INTERVAL_MS *
+          Math.pow(POLLING_CONFIG.BACKOFF_MULTIPLIER, attempt),
+        POLLING_CONFIG.MAX_INTERVAL_MS
+      )
 
       return interval
     },

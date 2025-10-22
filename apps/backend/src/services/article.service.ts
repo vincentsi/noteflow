@@ -2,10 +2,8 @@ import { prisma } from '@/config/prisma'
 import { Prisma, PlanType } from '@prisma/client'
 import { CacheService } from './cache.service'
 import { ARTICLE_LIMITS } from '@/constants/plan-limits'
-
-const DEFAULT_PAGE_SIZE = 20
-const MAX_PAGE_SIZE = 100
-const ARTICLE_COUNT_CACHE_TTL = 3600 // 1 hour
+import { PAGINATION_CONFIG } from '@/constants/pagination'
+import { CACHE_TTL } from '@/constants/performance'
 
 export interface GetArticlesFilters {
   source?: string
@@ -33,7 +31,10 @@ export class ArticleService {
     const { source, skip = 0, take } = filters
 
     // Enforce pagination limits
-    const limit = Math.min(take || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE)
+    const limit = Math.min(
+      take || PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
+      PAGINATION_CONFIG.MAX_PAGE_SIZE
+    )
 
     const where: Prisma.SavedArticleWhereInput = {
       userId,
@@ -92,7 +93,7 @@ export class ArticleService {
         })
 
         // Cache for 1 hour
-        await CacheService.set(cacheKey, currentCount, ARTICLE_COUNT_CACHE_TTL)
+        await CacheService.set(cacheKey, currentCount, CACHE_TTL.ARTICLE_COUNT)
       }
 
       const limit = ARTICLE_LIMITS[user.planType]
@@ -114,7 +115,7 @@ export class ArticleService {
 
     // Increment cache counter
     const cacheKey = `article-count:${userId}`
-    await CacheService.increment(cacheKey, ARTICLE_COUNT_CACHE_TTL)
+    await CacheService.increment(cacheKey, CACHE_TTL.ARTICLE_COUNT)
   }
 
   /**
@@ -132,7 +133,7 @@ export class ArticleService {
     const cacheKey = `article-count:${userId}`
     const currentCount = await CacheService.get<number>(cacheKey)
     if (currentCount !== null && currentCount > 0) {
-      await CacheService.set(cacheKey, currentCount - 1, ARTICLE_COUNT_CACHE_TTL)
+      await CacheService.set(cacheKey, currentCount - 1, CACHE_TTL.ARTICLE_COUNT)
     }
   }
 

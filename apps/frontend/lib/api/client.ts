@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
 import { env } from '@/lib/env'
+import { API_CONFIG } from '@/lib/constants/api'
 
 // API URL from validated env (Zod ensures it's valid)
 const API_URL = env.NEXT_PUBLIC_API_URL
@@ -12,7 +13,7 @@ const API_URL = env.NEXT_PUBLIC_API_URL
  */
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 10000, // 10s timeout
+  timeout: API_CONFIG.TIMEOUT_MS,
   withCredentials: true, // Sends cookies automatically
   headers: {
     'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ const MAX_SUBSCRIBERS = 100 // Prevent memory leak
 // In-memory counter resets on page reload (intended behavior for session rate limit)
 let refreshAttempts = 0
 
-// Periodic cleanup: Clear stale subscribers every 30 seconds
+// Periodic cleanup: Clear stale subscribers
 if (typeof window !== 'undefined') {
   const cleanupInterval = setInterval(() => {
     if (refreshSubscribers.length > 0 && !isRefreshing) {
@@ -68,7 +69,7 @@ if (typeof window !== 'undefined') {
       )
       refreshSubscribers = []
     }
-  }, 30000) // 30 seconds
+  }, API_CONFIG.TOKEN_REFRESH.SUBSCRIBER_CLEANUP_INTERVAL_MS)
 
   // Cleanup on page unload
   window.addEventListener('beforeunload', () => {

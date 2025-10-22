@@ -1,6 +1,7 @@
 import { getRedis, isRedisAvailable } from '@/config/redis'
 import { recordCacheHit, recordCacheMiss } from '@/middlewares/metrics.middleware'
 import { logger } from '@/utils/logger'
+import { CACHE_CONFIG } from '@/constants/performance'
 
 /**
  * Redis Cache Service
@@ -139,8 +140,6 @@ export class CacheService {
 
       let cursor = '0'
       const keysToDelete: string[] = []
-      const BATCH_SIZE = 100 // Process 100 keys at a time
-      const DELETE_BATCH = 1000 // Delete in batches of 1000 to manage memory
 
       // SCAN iterates with cursor until it returns '0' (full cycle complete)
       do {
@@ -150,14 +149,14 @@ export class CacheService {
           'MATCH',
           pattern,
           'COUNT',
-          BATCH_SIZE
+          CACHE_CONFIG.SCAN_BATCH_SIZE
         )
 
         cursor = nextCursor
         keysToDelete.push(...keys)
 
         // Delete in batches to avoid memory issues with large datasets
-        if (keysToDelete.length >= DELETE_BATCH) {
+        if (keysToDelete.length >= CACHE_CONFIG.DELETE_BATCH_SIZE) {
           if (keysToDelete.length > 0) {
             await redis.del(...keysToDelete)
             logger.info(

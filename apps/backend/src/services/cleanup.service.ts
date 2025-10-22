@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify'
 import type { PrismaClient } from '@prisma/client'
 import cron from 'node-cron'
 import { DistributedLockService } from './distributed-lock.service'
+import { CLEANUP_CONFIG } from '@/constants/performance'
 
 // Type for Prisma models that have token-like structure (id, expiresAt)
 type TokenModel = {
@@ -59,14 +60,13 @@ export class CleanupService {
    * Default: 1000 tokens per batch
    */
   private static readonly BATCH_SIZE =
-    Number(process.env.CLEANUP_BATCH_SIZE) || 1000
+    Number(process.env.CLEANUP_BATCH_SIZE) || CLEANUP_CONFIG.TOKEN_BATCH_SIZE
 
   /**
    * Pause between batches configurable via environment (in ms)
    * Default: 100ms
    */
-  private static readonly PAUSE_BETWEEN_BATCHES =
-    Number(process.env.CLEANUP_PAUSE_MS) || 100
+  private static readonly PAUSE_BETWEEN_BATCHES = CLEANUP_CONFIG.PAUSE_MS
 
   /**
    * Deletes all expired tokens from database
