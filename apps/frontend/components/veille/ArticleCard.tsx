@@ -1,9 +1,10 @@
 import { memo, useCallback, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import type { Article } from '@/types'
-import { Bookmark, BookmarkCheck, ExternalLink, Newspaper } from 'lucide-react'
+import { Bookmark, BookmarkCheck, ExternalLink, Newspaper, Sparkles } from 'lucide-react'
 
 export interface ArticleCardProps {
   article: Article
@@ -15,6 +16,7 @@ export interface ArticleCardProps {
 
 export const ArticleCard = memo(function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoading = false }: ArticleCardProps) {
   const { t } = useTranslation()
+  const router = useRouter()
   const [imageError, setImageError] = useState(false)
 
   const handleToggleSave = useCallback(() => {
@@ -24,6 +26,10 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
       onSave?.(article.id)
     }
   }, [isSaved, article.id, onSave, onUnsave])
+
+  const handleSummarize = useCallback(() => {
+    router.push(`/summaries?url=${encodeURIComponent(article.url)}`)
+  }, [router, article.url])
 
   // Format date (e.g., "Jan 15, 2025") - memoized to avoid recalculation
   const formattedDate = useMemo(() => {
@@ -124,8 +130,8 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
           <CardContent>
             <p className="text-sm text-muted-foreground line-clamp-3">{article.excerpt}</p>
           </CardContent>
-          {article.tags && article.tags.length > 0 && (
-            <CardFooter>
+          <CardFooter className="flex flex-col gap-4">
+            {article.tags && article.tags.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 {article.tags.map((tag) => (
                   <span
@@ -136,8 +142,17 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
                   </span>
                 ))}
               </div>
-            </CardFooter>
-          )}
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSummarize}
+              className="w-full"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Résumer avec IA
+            </Button>
+          </CardFooter>
         </div>
       </div>
     </Card>

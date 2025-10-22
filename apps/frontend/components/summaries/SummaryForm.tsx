@@ -20,13 +20,14 @@ export interface SummaryFormData {
 export interface SummaryFormProps {
   onSubmit: (data: SummaryFormData) => void
   isLoading?: boolean
+  initialUrl?: string | null
 }
 
 const MIN_URL_LENGTH = 10
 
-export function SummaryForm({ onSubmit, isLoading = false }: SummaryFormProps) {
+export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: SummaryFormProps) {
   const [source, setSource] = useState<SourceType>('url')
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(initialUrl || '')
   const [file, setFile] = useState<File | null>(null)
   const [style, setStyle] = useState<SummaryStyle>('SHORT')
 

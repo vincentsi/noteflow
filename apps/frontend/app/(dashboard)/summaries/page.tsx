@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { useCreateSummary, useSummaryStatus, useSummaries } from '@/lib/hooks/useSummaries'
 import { SummaryForm } from '@/components/summaries/SummaryForm'
@@ -13,7 +14,17 @@ import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 
 export default function SummariesPage() {
   const { user } = useAuth()
+  const searchParams = useSearchParams()
   const [jobId, setJobId] = useState<string | null>(null)
+  const [initialUrl, setInitialUrl] = useState<string | null>(null)
+
+  // Get URL from query params
+  useEffect(() => {
+    const url = searchParams.get('url')
+    if (url) {
+      setInitialUrl(url)
+    }
+  }, [searchParams])
 
   // Mutations et queries
   const createSummary = useCreateSummary()
@@ -98,7 +109,7 @@ export default function SummariesPage() {
               <CardTitle>Nouveau résumé</CardTitle>
             </CardHeader>
             <CardContent>
-              <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} />
+              <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} initialUrl={initialUrl} />
             </CardContent>
           </Card>
 
