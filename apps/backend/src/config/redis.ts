@@ -125,4 +125,37 @@ export function isRedisAvailable(): boolean {
   return redisClient !== null && redisClient.status === 'ready'
 }
 
+/**
+ * Wait for Redis to be ready (with timeout)
+ * Returns true if Redis is ready, false if timeout or not configured
+ */
+export async function waitForRedis(timeoutMs: number = 5000): Promise<boolean> {
+  if (!redisClient) {
+    return false
+  }
+
+  // Already ready
+  if (redisClient.status === 'ready') {
+    return true
+  }
+
+  // Wait for ready event
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      resolve(false)
+    }, timeoutMs)
+
+    redisClient!.once('ready', () => {
+      clearTimeout(timeout)
+      resolve(true)
+    })
+
+    // If client fails to connect
+    redisClient!.once('close', () => {
+      clearTimeout(timeout)
+      resolve(false)
+    })
+  })
+}
+
 export { redisClient }

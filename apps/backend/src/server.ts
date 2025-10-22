@@ -5,10 +5,12 @@ import {
   disconnectRedis,
   initializeRedis,
   isRedisAvailable,
+  waitForRedis,
 } from '@/config/redis'
 import { captureException, initializeSentry } from '@/config/sentry'
 import { startStripeWebhookWorker } from '@/queues/stripe-webhook.queue'
 import { startRSSWorker, queueRSSFetch } from '@/queues/rss.queue'
+import { startSummaryWorker } from '@/queues/summary.queue'
 import { BackupService } from '@/services/backup.service'
 import { CleanupService } from '@/services/cleanup.service'
 import type { FastifyInstance } from 'fastify'
@@ -47,6 +49,9 @@ async function start() {
 
     // Start automated backup job
     BackupService.startBackupJob(app)
+
+    // Wait for Redis to be ready before starting workers
+    await waitForRedis(5000)
 
     // Start Stripe webhook worker (unless explicitly disabled)
     if (process.env.DISABLE_STRIPE_WORKER === 'true') {
@@ -87,6 +92,16 @@ async function start() {
       }
     } else {
       logger.warn('⚠️  Redis not available, RSS feeds will not be auto-fetched')
+    }
+
+    // Start Summary worker (unless explicitly disabled)
+    if (process.env.DISABLE_SUMMARY_WORKER === 'true') {
+      logger.info('⚠️  Summary worker disabled (DISABLE_SUMMARY_WORKER=true)')
+    } else if (isRedisAvailable()) {
+      startSummaryWorker()
+      logger.info('✅ Summary worker started')
+    } else {
+      logger.warn('⚠️  Redis not available, summaries will not be processed')
     }
 
     logger.info(`🚀 Server ready at http://localhost:${port}`)
