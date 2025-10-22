@@ -125,19 +125,14 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
         </CardHeader>
         <CardContent>
           {source === 'url' ? (
-            <div className="space-y-2">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com/article"
-                className="w-full h-12 px-4 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                disabled={isLoading}
-              />
-              <p className="text-sm text-muted-foreground">
-                Entrez l'URL d'un article web à résumer
-              </p>
-            </div>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com/article"
+              className="w-full h-12 px-4 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              disabled={isLoading}
+            />
           ) : (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
