@@ -1,6 +1,7 @@
 import { logger } from '@/utils/logger'
 import { Queue, Worker } from 'bullmq'
-import { getRedis, isRedisAvailable } from '@/config/redis'
+import { isRedisAvailable } from '@/config/redis'
+import { env } from '@/config/env'
 import { processSummary } from './summary.worker'
 import type { SummaryStyle } from '@prisma/client'
 
@@ -31,16 +32,16 @@ export interface SummaryJob {
  * Returns null if Redis not available
  */
 export function createSummaryQueue(): Queue<SummaryJob> | null {
-  if (!isRedisAvailable()) {
+  if (!isRedisAvailable() || !env.REDIS_URL) {
     logger.warn('⚠️  Redis not available, summaries will not be processed in queue')
     return null
   }
 
-  const redis = getRedis()
-  if (!redis) return null
-
   return new Queue<SummaryJob>(QUEUE_NAME, {
-    connection: redis,
+    connection: {
+      host: 'localhost',
+      port: 6379,
+    },
     defaultJobOptions: {
       attempts: 3, // Retry up to 3 times
       backoff: {
@@ -94,14 +95,8 @@ export async function queueSummary(data: SummaryJob): Promise<{ id: string }> {
  * Processes jobs from the queue
  */
 export function startSummaryWorker(): Worker<SummaryJob> | null {
-  if (!isRedisAvailable()) {
+  if (!isRedisAvailable() || !env.REDIS_URL) {
     logger.warn('⚠️  Redis not available, summary worker not started')
-    return null
-  }
-
-  const redis = getRedis()
-  if (!redis) {
-    logger.warn('⚠️  Redis client not available, summary worker not started')
     return null
   }
 
@@ -119,7 +114,10 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
         }
       },
       {
-        connection: redis,
+        connection: {
+          host: 'localhost',
+          port: 6379,
+        },
         concurrency: 2, // Process 2 summaries at a time
       }
     )
