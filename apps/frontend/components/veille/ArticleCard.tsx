@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -12,26 +13,26 @@ export interface ArticleCardProps {
   isLoading?: boolean
 }
 
-export function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoading = false }: ArticleCardProps) {
+export const ArticleCard = memo(function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoading = false }: ArticleCardProps) {
   const { t } = useTranslation()
 
-  const handleToggleSave = () => {
+  const handleToggleSave = useCallback(() => {
     if (isSaved) {
       onUnsave?.(article.id)
     } else {
       onSave?.(article.id)
     }
-  }
+  }, [isSaved, article.id, onSave, onUnsave])
 
-  // Format date (e.g., "Jan 15, 2025")
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  // Format date (e.g., "Jan 15, 2025") - memoized to avoid recalculation
+  const formattedDate = useMemo(() => {
+    const date = new Date(article.publishedAt)
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     })
-  }
+  }, [article.publishedAt])
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -50,7 +51,7 @@ export function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoad
               </a>
             </CardTitle>
             <CardDescription className="mt-2">
-              <span className="font-medium">{article.source}</span> · {formatDate(article.publishedAt)}
+              <span className="font-medium">{article.source}</span> · {formattedDate}
             </CardDescription>
           </div>
           {(onSave || onUnsave) && (
@@ -97,4 +98,4 @@ export function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoad
       )}
     </Card>
   )
-}
+})

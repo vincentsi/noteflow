@@ -1,5 +1,6 @@
 import { logger } from '@/utils/logger'
 import { AIService } from '@/services/ai.service'
+import { CacheService } from '@/services/cache.service'
 import { prisma as defaultPrisma } from '@/config/prisma'
 import type { PrismaClient } from '@prisma/client'
 import type { SummaryJob } from './summary.queue'
@@ -31,6 +32,11 @@ export async function processSummary(
       language,
     },
   })
+
+  // Increment cache counter for monthly usage
+  const now = new Date()
+  const cacheKey = `summary-usage:${userId}:${now.getFullYear()}-${now.getMonth()}`
+  await CacheService.increment(cacheKey)
 
   logger.info(`✅ Summary generated and saved for user ${userId}`)
 }

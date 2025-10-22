@@ -1,5 +1,6 @@
 import { prisma } from '@/config/prisma'
 import { Prisma, PlanType } from '@prisma/client'
+import { CacheService } from './cache.service'
 
 const PLAN_LIMITS = {
   FREE: 10,
@@ -9,6 +10,7 @@ const PLAN_LIMITS = {
 
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 100
+const ARTICLE_COUNT_CACHE_TTL = 3600 // 1 hour
 
 export interface GetArticlesFilters {
   source?: string
@@ -83,9 +85,20 @@ export class ArticleService {
 
     // Check plan limits (PRO = unlimited)
     if (user.planType !== PlanType.PRO) {
-      const currentCount = await prisma.savedArticle.count({
-        where: { userId },
-      })
+      const cacheKey = `article-count:${userId}`
+
+      // Try to get count from cache
+      let currentCount = await CacheService.get<number>(cacheKey)
+
+      if (currentCount === null) {
+        // Cache miss - count from database
+        currentCount = await prisma.savedArticle.count({
+          where: { userId },
+        })
+
+        // Cache for 1 hour
+        await CacheService.set(cacheKey, currentCount, ARTICLE_COUNT_CACHE_TTL)
+      }
 
       const limit = PLAN_LIMITS[user.planType]
 
@@ -103,6 +116,10 @@ export class ArticleService {
         articleId,
       },
     })
+
+    // Increment cache counter
+    const cacheKey = `article-count:${userId}`
+    await CacheService.increment(cacheKey, ARTICLE_COUNT_CACHE_TTL)
   }
 
   /**
@@ -115,6 +132,13 @@ export class ArticleService {
         articleId,
       },
     })
+
+    // Decrement cache counter
+    const cacheKey = `article-count:${userId}`
+    const currentCount = await CacheService.get<number>(cacheKey)
+    if (currentCount !== null && currentCount > 0) {
+      await CacheService.set(cacheKey, currentCount - 1, ARTICLE_COUNT_CACHE_TTL)
+    }
   }
 
   /**
