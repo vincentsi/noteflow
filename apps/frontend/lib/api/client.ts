@@ -61,7 +61,7 @@ let refreshAttempts = 0
 
 // Periodic cleanup: Clear stale subscribers every 30 seconds
 if (typeof window !== 'undefined') {
-  setInterval(() => {
+  const cleanupInterval = setInterval(() => {
     if (refreshSubscribers.length > 0 && !isRefreshing) {
       console.warn(
         `⚠️ Cleaning up ${refreshSubscribers.length} stale refresh subscribers`
@@ -69,6 +69,11 @@ if (typeof window !== 'undefined') {
       refreshSubscribers = []
     }
   }, 30000) // 30 seconds
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    clearInterval(cleanupInterval)
+  })
 }
 
 // In-memory refresh attempt helpers (not accessible via localStorage)

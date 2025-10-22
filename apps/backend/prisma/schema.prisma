@@ -204,6 +204,7 @@ model SavedArticle {
   @@unique([userId, articleId])
   @@index([userId])
   @@index([articleId])
+  @@index([userId, createdAt(sort: Desc)]) // Optimizes pagination queries
   @@map("saved_articles")
 }
 
@@ -224,6 +225,7 @@ model Summary {
   @@index([userId])
   @@index([createdAt(sort: Desc)])
   @@index([userId, createdAt])
+  @@index([userId, style, createdAt(sort: Desc)]) // Optimizes filtered queries
   @@map("summaries")
 }
 

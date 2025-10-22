@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api/client'
+import { safeRedirect } from '@/lib/utils/url-validator'
 import { PlanType } from './config'
 
 /**
@@ -38,8 +39,8 @@ export function useCheckout() {
       return response.data.data
     },
     onSuccess: (data: { url: string }) => {
-      // Redirect to Stripe checkout page
-      window.location.href = data.url
+      // Securely redirect to Stripe checkout page
+      safeRedirect(data.url)
     },
   })
 }
@@ -54,8 +55,8 @@ export function useBillingPortal() {
       return response.data.data
     },
     onSuccess: (data: { url: string }) => {
-      // Redirect to Stripe portal
-      window.location.href = data.url
+      // Securely redirect to Stripe portal
+      safeRedirect(data.url)
     },
   })
 }

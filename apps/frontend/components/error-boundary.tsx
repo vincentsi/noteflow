@@ -1,6 +1,7 @@
 'use client'
 
 import { Component, type ReactNode } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { Button } from '@/components/ui/button'
 
 interface ErrorBoundaryProps {
@@ -41,15 +42,21 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error to error reporting service (Sentry, etc.)
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
-
-    // TODO: Send to Sentry or other error tracking service
-    // Sentry.captureException(error, { extra: errorInfo })
+    // Send error to Sentry for monitoring
+    Sentry.captureException(error, {
+      extra: {
+        componentStack: errorInfo.componentStack,
+      },
+    })
   }
 
   handleReset = () => {
     this.setState({ hasError: false, error: null })
+  }
+
+  handleGoHome = () => {
+    // Safe internal redirect
+    window.location.href = '/'
   }
 
   render() {
@@ -72,26 +79,13 @@ export class ErrorBoundary extends Component<
               </p>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mt-4 rounded-lg border bg-muted p-4 text-left">
-                <summary className="cursor-pointer font-semibold">
-                  Error Details (Development)
-                </summary>
-                <pre className="mt-2 overflow-auto text-xs">
-                  {this.state.error.message}
-                  {'\n\n'}
-                  {this.state.error.stack}
-                </pre>
-              </details>
-            )}
-
             <div className="flex gap-2">
               <Button onClick={this.handleReset} className="flex-1">
                 Try Again
               </Button>
               <Button
                 variant="outline"
-                onClick={() => (window.location.href = '/')}
+                onClick={this.handleGoHome}
                 className="flex-1"
               >
                 Go Home

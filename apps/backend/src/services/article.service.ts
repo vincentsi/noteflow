@@ -7,6 +7,9 @@ const PLAN_LIMITS = {
   PRO: Infinity,
 } as const
 
+const DEFAULT_PAGE_SIZE = 20
+const MAX_PAGE_SIZE = 100
+
 export interface GetArticlesFilters {
   source?: string
   skip?: number
@@ -30,7 +33,10 @@ export class ArticleService {
     userId: string,
     filters: GetArticlesFilters = {}
   ) {
-    const { source, skip, take } = filters
+    const { source, skip = 0, take } = filters
+
+    // Enforce pagination limits
+    const limit = Math.min(take || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE)
 
     const where: Prisma.SavedArticleWhereInput = {
       userId,
@@ -40,13 +46,24 @@ export class ArticleService {
     return await prisma.savedArticle.findMany({
       where,
       include: {
-        article: true,
+        article: {
+          select: {
+            id: true,
+            title: true,
+            url: true,
+            excerpt: true,
+            source: true,
+            tags: true,
+            publishedAt: true,
+            // Exclude large fields: originalText and summaryText
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
-      ...(skip !== undefined && { skip }),
-      ...(take !== undefined && { take }),
+      skip,
+      take: limit,
     })
   }
 

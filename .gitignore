@@ -37,3 +37,6 @@ coverage/
 
 # Project planning & documentation
 plan/
+
+# Audit reports
+AUDIT-REPORT.md

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { apiClient } from '@/lib/api/client'
+import { safeRedirect } from '@/lib/utils/url-validator'
 import { PlanType } from './config'
 
 /**
@@ -35,8 +36,8 @@ export function useCheckout() {
 
       const { url } = response.data.data
 
-      // Redirect to Stripe checkout page
-      window.location.href = url
+      // Securely redirect to Stripe checkout page
+      safeRedirect(url)
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Error creating checkout session'
@@ -64,8 +65,8 @@ export function useBillingPortal() {
 
       const { url } = response.data.data
 
-      // Redirect to Stripe portal
-      window.location.href = url
+      // Securely redirect to Stripe portal
+      safeRedirect(url)
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Error opening billing portal'

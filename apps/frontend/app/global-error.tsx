@@ -26,6 +26,11 @@ export default function GlobalError({
     Sentry.captureException(error)
   }, [error])
 
+  const handleGoHome = () => {
+    // Safe internal redirect
+    window.location.href = '/'
+  }
+
   return (
     <html lang="fr">
       <body>
@@ -38,16 +43,14 @@ export default function GlobalError({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {process.env.NODE_ENV === 'development' && (
-                <div className="bg-muted p-3 rounded-md overflow-auto">
-                  <p className="text-sm font-mono text-destructive">
-                    {error.message}
+              {error.digest && (
+                <div className="bg-muted p-3 rounded-md">
+                  <p className="text-xs font-mono text-muted-foreground">
+                    Error ID: {error.digest}
                   </p>
-                  {error.digest && (
-                    <p className="text-xs font-mono text-muted-foreground mt-2">
-                      Error ID: {error.digest}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Please provide this ID when contacting support.
+                  </p>
                 </div>
               )}
 
@@ -56,7 +59,7 @@ export default function GlobalError({
                   Try again
                 </Button>
                 <Button
-                  onClick={() => (window.location.href = '/')}
+                  onClick={handleGoHome}
                   variant="outline"
                   className="flex-1"
                 >
