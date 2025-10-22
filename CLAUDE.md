@@ -216,12 +216,20 @@ npx prisma migrate reset  # Drops DB, reruns all migrations, runs seed
 
 ### Git Commit Messages
 
-Follow conventional commits (simple format):
+**CRITICAL: Keep commit messages concise and single-line**
+
+Follow conventional commits with ONE LINE only:
 
 - `feat: add article save functionality`
 - `fix: correct RSS parsing for malformed feeds`
 - `test: add unit tests for SummaryService`
 - `chore: update dependencies`
+
+**Rules:**
+- NEVER add multi-line descriptions, explanations, or "Generated with Claude Code" footers
+- ONE single line maximum per commit message
+- NO bullet points, NO detailed explanations in commit body
+- Keep it short and descriptive (under 72 characters)
 
 ### Environment Variables
 

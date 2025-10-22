@@ -9,71 +9,107 @@ async function seedRSSFeeds() {
   console.log('🌱 Seeding RSS feeds...')
 
   const feeds = [
-    // Tech News - General
-    {
-      name: 'TechCrunch',
-      url: 'https://techcrunch.com/feed/',
-      tags: ['tech', 'startup', 'innovation'],
-      active: true,
-    },
-    {
-      name: 'The Verge',
-      url: 'https://www.theverge.com/rss/index.xml',
-      tags: ['tech', 'gadgets', 'reviews'],
-      active: true,
-    },
+    // Developer Communities
     {
       name: 'Hacker News',
       url: 'https://news.ycombinator.com/rss',
-      tags: ['tech', 'programming', 'startup'],
+      tags: ['dev', 'programming', 'startup', 'tech'],
       active: true,
     },
-
-    // AI Specific
-    {
-      name: 'OpenAI Blog',
-      url: 'https://openai.com/blog/rss.xml',
-      tags: ['ai', 'openai', 'research'],
-      active: true,
-    },
-    {
-      name: 'Google AI Blog',
-      url: 'https://blog.google/technology/ai/rss/',
-      tags: ['ai', 'google', 'research'],
-      active: true,
-    },
-    {
-      name: 'MIT Technology Review - AI',
-      url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed',
-      tags: ['ai', 'research', 'innovation'],
-      active: true,
-    },
-
-    // Developer focused
     {
       name: 'Dev.to',
       url: 'https://dev.to/feed',
-      tags: ['dev', 'programming', 'tutorial'],
+      tags: ['dev', 'programming', 'tutorial', 'webdev'],
       active: true,
     },
     {
       name: 'GitHub Blog',
       url: 'https://github.blog/feed/',
-      tags: ['dev', 'github', 'opensource'],
-      active: true,
-    },
-    {
-      name: 'freeCodeCamp',
-      url: 'https://www.freecodecamp.org/news/rss/',
-      tags: ['dev', 'tutorial', 'learning'],
+      tags: ['dev', 'github', 'opensource', 'tools'],
       active: true,
     },
 
-    // French Tech (bonus)
+    // Programming Languages & Frameworks
     {
-      name: 'Numerama',
-      url: 'https://www.numerama.com/feed/',
-      tags: ['tech', 'french', 'news'],
+      name: 'React Blog',
+      url: 'https://react.dev/rss.xml',
+      tags: ['react', 'javascript', 'frontend', 'framework'],
+      active: true,
+    },
+    {
+      name: 'Node.js Blog',
+      url: 'https://nodejs.org/en/feed/blog.xml',
+      tags: ['nodejs', 'javascript', 'backend', 'runtime'],
+      active: true,
+    },
+    {
+      name: 'TypeScript Blog',
+      url: 'https://devblogs.microsoft.com/typescript/feed/',
+      tags: ['typescript', 'javascript', 'programming', 'microsoft'],
+      active: true,
+    },
+
+    // AI & Machine Learning for Devs
+    {
+      name: 'OpenAI Blog',
+      url: 'https://openai.com/blog/rss.xml',
+      tags: ['ai', 'openai', 'llm', 'research'],
+      active: true,
+    },
+    {
+      name: 'Hugging Face Blog',
+      url: 'https://huggingface.co/blog/feed.xml',
+      tags: ['ai', 'ml', 'nlp', 'opensource'],
+      active: true,
+    },
+
+    // DevOps & Cloud
+    {
+      name: 'AWS News Blog',
+      url: 'https://aws.amazon.com/blogs/aws/feed/',
+      tags: ['aws', 'cloud', 'devops', 'infrastructure'],
+      active: true,
+    },
+    {
+      name: 'Docker Blog',
+      url: 'https://www.docker.com/blog/feed/',
+      tags: ['docker', 'containers', 'devops', 'deployment'],
+      active: true,
+    },
+
+    // Web Development & Standards
+    {
+      name: 'web.dev',
+      url: 'https://web.dev/feed.xml',
+      tags: ['webdev', 'performance', 'best-practices', 'google'],
+      active: true,
+    },
+    {
+      name: 'CSS-Tricks',
+      url: 'https://css-tricks.com/feed/',
+      tags: ['css', 'frontend', 'webdev', 'design'],
+      active: true,
+    },
+
+    // Tech News for Devs
+    {
+      name: 'The Verge - Tech',
+      url: 'https://www.theverge.com/tech/rss/index.xml',
+      tags: ['tech', 'news', 'industry', 'innovation'],
+      active: true,
+    },
+    {
+      name: 'Ars Technica',
+      url: 'https://feeds.arstechnica.com/arstechnica/index',
+      tags: ['tech', 'science', 'news', 'analysis'],
+      active: true,
+    },
+
+    // French Dev Resources
+    {
+      name: 'Journal du Net - Développeurs',
+      url: 'https://www.journaldunet.com/rss/developpeurs/',
+      tags: ['dev', 'french', 'programming', 'tech'],
       active: true,
     },
   ]
