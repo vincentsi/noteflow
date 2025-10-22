@@ -9,6 +9,7 @@ import { errorHandler } from '@/middlewares/error-handler.middleware'
 import { csrfMiddleware } from '@/middlewares/csrf.middleware'
 import { metricsMiddleware, metricsResponseHook } from '@/middlewares/metrics.middleware'
 import { authMiddleware } from '@/middlewares/auth.middleware'
+import { correlationIdMiddleware } from '@/middlewares/correlation-id.middleware'
 import { healthRoutes } from '@/routes/health.route'
 import { authRoutes } from '@/routes/auth.route'
 import { verificationRoutes } from '@/routes/verification.route'
@@ -128,6 +129,9 @@ export async function createApp(): Promise<FastifyInstance> {
 
   // Register security middlewares
   await registerSecurityMiddlewares(app)
+
+  // Register correlation ID middleware (for distributed tracing)
+  app.addHook('onRequest', correlationIdMiddleware)
 
   // Register metrics middleware (tracks HTTP requests)
   app.addHook('onRequest', metricsMiddleware)
