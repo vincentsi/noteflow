@@ -27,8 +27,9 @@ export function ArticleFilters({ filters, onChange }: ArticleFiltersProps) {
   const handleSourceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value
     onChange({
-      ...filters,
       source: value === '' ? undefined : value,
+      // Reset language filter when source changes
+      tags: undefined,
     })
   }
 
