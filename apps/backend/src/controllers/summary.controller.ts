@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { SummaryService } from '@/services/summary.service'
+import { CacheService } from '@/services/cache.service'
 import {
   createSummarySchema,
   type CreateSummaryDTO,
@@ -113,6 +114,21 @@ export class SummaryController {
         : null
 
       if (summaryId) {
+        // Try cache first
+        const cacheKey = `summary:${summaryId}`
+        const cached = await CacheService.get(cacheKey)
+
+        if (cached) {
+          return reply.status(200).send({
+            success: true,
+            data: {
+              status: 'completed',
+              summary: cached,
+            },
+          })
+        }
+
+        // Cache miss - query database
         const summary = await prisma.summary.findFirst({
           where: {
             id: summaryId,
@@ -121,20 +137,25 @@ export class SummaryController {
         })
 
         if (summary) {
+          const summaryData = {
+            id: summary.id,
+            title: summary.title,
+            originalText: summary.originalText,
+            summaryText: summary.summaryText,
+            style: summary.style,
+            source: summary.source,
+            language: summary.language,
+            createdAt: summary.createdAt,
+          }
+
+          // Cache for 60 seconds
+          await CacheService.set(cacheKey, summaryData, 60)
+
           return reply.status(200).send({
             success: true,
             data: {
               status: 'completed',
-              summary: {
-                id: summary.id,
-                title: summary.title,
-                originalText: summary.originalText,
-                summaryText: summary.summaryText,
-                style: summary.style,
-                source: summary.source,
-                language: summary.language,
-                createdAt: summary.createdAt,
-              },
+              summary: summaryData,
             },
           })
         }

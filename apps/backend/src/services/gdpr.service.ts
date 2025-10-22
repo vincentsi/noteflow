@@ -58,24 +58,32 @@ export class GDPRService {
             expiresAt: true,
             revoked: true,
           },
+          take: 1000, // Limit to last 1000 tokens
+          orderBy: { createdAt: 'desc' },
         },
         verificationTokens: {
           select: {
             createdAt: true,
             expiresAt: true,
           },
+          take: 100,
+          orderBy: { createdAt: 'desc' },
         },
         resetTokens: {
           select: {
             createdAt: true,
             expiresAt: true,
           },
+          take: 100,
+          orderBy: { createdAt: 'desc' },
         },
         csrfTokens: {
           select: {
             createdAt: true,
             expiresAt: true,
           },
+          take: 100,
+          orderBy: { createdAt: 'desc' },
         },
         subscriptions: {
           select: {
@@ -86,6 +94,8 @@ export class GDPRService {
             cancelAtPeriodEnd: true,
             createdAt: true,
           },
+          take: 100,
+          orderBy: { createdAt: 'desc' },
         },
       },
     })

@@ -128,7 +128,11 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
           password: url.password || undefined,
           username: url.username || undefined,
         },
-        concurrency: 2, // Process 2 summaries at a time
+        concurrency: 5, // Process 5 summaries at a time (OpenAI rate limit: 450 req/min)
+        limiter: {
+          max: 450, // Max 450 jobs per duration
+          duration: 60000, // Per 60 seconds (OpenAI gpt-4o-mini rate limit)
+        },
       }
     )
 
