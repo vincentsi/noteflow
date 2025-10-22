@@ -1,9 +1,9 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import type { Article } from '@/types'
-import { Bookmark, BookmarkCheck, ExternalLink } from 'lucide-react'
+import { Bookmark, BookmarkCheck, ExternalLink, Newspaper } from 'lucide-react'
 
 export interface ArticleCardProps {
   article: Article
@@ -15,6 +15,7 @@ export interface ArticleCardProps {
 
 export const ArticleCard = memo(function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoading = false }: ArticleCardProps) {
   const { t } = useTranslation()
+  const [imageError, setImageError] = useState(false)
 
   const handleToggleSave = useCallback(() => {
     if (isSaved) {
@@ -34,23 +35,26 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
     })
   }, [article.publishedAt])
 
+  const showPlaceholder = !article.imageUrl || imageError
+
   return (
     <Card className="hover:shadow-md transition-shadow overflow-hidden">
       <div className="flex flex-col md:flex-row">
-        {/* Article Image */}
-        {article.imageUrl && (
-          <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0">
+        {/* Article Image or Placeholder */}
+        <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0 relative">
+          {showPlaceholder ? (
+            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <Newspaper className="h-16 w-16 text-white/80" />
+            </div>
+          ) : (
             <img
               src={article.imageUrl}
               alt={article.title}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                // Hide image if it fails to load
-                e.currentTarget.style.display = 'none'
-              }}
+              onError={() => setImageError(true)}
             />
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Article Content */}
         <div className="flex-1 flex flex-col">
