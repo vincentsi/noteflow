@@ -4,7 +4,8 @@ import { prisma } from '../../config/prisma'
 import { randomUUID } from 'crypto'
 
 // Helper to generate unique emails for tests
-const uniqueEmail = () => `test-${randomUUID()}@test.com`
+// Use a valid domain (not disposable) for tests
+const uniqueEmail = () => `test-${randomUUID()}@gmail.com`
 
 describe('Auth Routes Integration Tests', () => {
   let app: FastifyInstance
@@ -81,6 +82,23 @@ describe('Auth Routes Integration Tests', () => {
       })
 
       expect(response.statusCode).toBe(400)
+    })
+
+    it('should fail with disposable email address', async () => {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          email: 'test@mailinator.com', // Known disposable domain
+          password: 'SecurePass123!',
+          name: 'Test User',
+        },
+      })
+
+      expect(response.statusCode).toBe(400)
+      const body = JSON.parse(response.body)
+      expect(body.success).toBe(false)
+      expect(body.error).toContain('Validation error')
     })
 
     it('should fail if email already exists', async () => {

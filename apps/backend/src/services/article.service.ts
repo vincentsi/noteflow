@@ -1,6 +1,6 @@
 import { prisma } from '@/config/prisma'
 import { Prisma, PlanType } from '@prisma/client'
-import { CacheService } from './cache.service'
+import { CacheService, CacheKeys } from './cache.service'
 import { ARTICLE_LIMITS } from '@/constants/plan-limits'
 import { PAGINATION_CONFIG } from '@/constants/pagination'
 import { CACHE_TTL } from '@/constants/performance'
@@ -170,7 +170,7 @@ export class ArticleService {
 
     // Check plan limits (PRO = unlimited)
     if (user.planType !== PlanType.PRO) {
-      const cacheKey = `article-count:${userId}`
+      const cacheKey = CacheKeys.articleCount(userId)
 
       // Try to get count from cache
       let currentCount = await CacheService.get<number>(cacheKey)
@@ -203,7 +203,7 @@ export class ArticleService {
     })
 
     // Increment cache counter
-    const cacheKey = `article-count:${userId}`
+    const cacheKey = CacheKeys.articleCount(userId)
     await CacheService.increment(cacheKey, CACHE_TTL.ARTICLE_COUNT)
   }
 
@@ -219,7 +219,7 @@ export class ArticleService {
     })
 
     // Decrement cache counter
-    const cacheKey = `article-count:${userId}`
+    const cacheKey = CacheKeys.articleCount(userId)
     const currentCount = await CacheService.get<number>(cacheKey)
     if (currentCount !== null && currentCount > 0) {
       await CacheService.set(cacheKey, currentCount - 1, CACHE_TTL.ARTICLE_COUNT)

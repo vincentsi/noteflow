@@ -1,7 +1,7 @@
 import { prisma } from '@/config/prisma'
 import { PlanType, SummaryStyle } from '@prisma/client'
 import { queueSummary } from '@/queues/summary.queue'
-import { CacheService } from './cache.service'
+import { CacheService, CacheKeys } from './cache.service'
 import { SUMMARY_LIMITS } from '@/constants/plan-limits'
 
 export class SummaryService {
@@ -35,7 +35,7 @@ export class SummaryService {
       const month = now.getMonth()
 
       // Cache key for monthly usage
-      const cacheKey = `summary-usage:${userId}:${year}-${month}`
+      const cacheKey = CacheKeys.summaryUsage(userId, year, month)
 
       // Try to get count from cache first
       let currentCount = await CacheService.get<number>(cacheKey)

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isDisposableEmail } from '@/constants/disposable-email-domains'
 
 /**
  * List of forbidden common passwords
@@ -60,16 +61,29 @@ const passwordSchema = z
   )
 
 /**
+ * Email validation schema with disposable email blocking
+ * Protects against spam and fake accounts
+ */
+const emailSchema = z
+  .string()
+  .email('Invalid email format')
+  .min(1, 'Email is required')
+  .toLowerCase()
+  .trim()
+  .refine(
+    (email) => !isDisposableEmail(email),
+    {
+      message:
+        'Disposable email addresses are not allowed. Please use a permanent email address.',
+    }
+  )
+
+/**
  * Validation schema for registration
  * Validates email, password and optional name
  */
 export const registerSchema = z.object({
-  email: z
-    .string()
-    .email('Invalid email format')
-    .min(1, 'Email is required')
-    .toLowerCase()
-    .trim(),
+  email: emailSchema,
   password: passwordSchema,
   name: z
     .string()

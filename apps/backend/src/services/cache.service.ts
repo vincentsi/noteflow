@@ -313,21 +313,47 @@ export class CacheService {
 }
 
 /**
+ * Cache version - Increment when data structure changes to invalidate old cache
+ * This prevents stale data issues when cache schemas evolve
+ *
+ * @example
+ * v1 -> v2: Added 'planType' field to user cache
+ * v2 -> v3: Changed subscription structure
+ */
+const CACHE_VERSION = 'v1'
+
+/**
  * Cache key builders
- * Centralize cache key naming for consistency
+ * Centralize cache key naming for consistency and versioning
+ *
+ * All keys include version prefix to prevent collisions after schema changes
  */
 export const CacheKeys = {
   // User cache
-  user: (userId: string) => `user:${userId}`,
-  userByEmail: (email: string) => `user:email:${email}`,
+  user: (userId: string) => `${CACHE_VERSION}:user:${userId}`,
+  userByEmail: (email: string) => `${CACHE_VERSION}:user:email:${email}`,
 
   // Subscription cache
-  subscription: (userId: string) => `subscription:${userId}`,
+  subscription: (userId: string) => `${CACHE_VERSION}:subscription:${userId}`,
 
-  // Rate limit cache
+  // Feature access cache
+  featureAccess: (userId: string, plan: string) =>
+    `${CACHE_VERSION}:feature-access:${userId}:${plan}`,
+
+  // Article count cache
+  articleCount: (userId: string) => `${CACHE_VERSION}:article-count:${userId}`,
+
+  // Summary usage cache (monthly)
+  summaryUsage: (userId: string, year: number, month: number) =>
+    `${CACHE_VERSION}:summary-usage:${userId}:${year}-${month}`,
+
+  // Rate limit cache (no version needed - short-lived data)
   rateLimit: (identifier: string, endpoint: string) =>
     `ratelimit:${endpoint}:${identifier}`,
 
   // Session cache (optional)
-  session: (sessionId: string) => `session:${sessionId}`,
+  session: (sessionId: string) => `${CACHE_VERSION}:session:${sessionId}`,
+
+  // CSRF tokens (no version needed - ephemeral data)
+  csrf: (userId: string, tokenHash: string) => `csrf:${userId}:${tokenHash}`,
 } as const

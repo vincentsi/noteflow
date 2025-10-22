@@ -693,7 +693,7 @@ export class StripeService {
     userId: string,
     requiredPlan: PlanType
   ): Promise<boolean> {
-    const cacheKey = `feature-access:${userId}:${requiredPlan}`
+    const cacheKey = CacheKeys.featureAccess(userId, requiredPlan)
     const cached = await CacheService.get<boolean>(cacheKey)
 
     if (cached !== null) {
@@ -743,7 +743,8 @@ export class StripeService {
    */
   private async invalidateSubscriptionCache(userId: string): Promise<void> {
     await CacheService.delete(CacheKeys.subscription(userId))
-    await CacheService.deletePattern(`feature-access:${userId}:*`)
+    // Delete all feature-access cache for this user (all plans)
+    await CacheService.deletePattern(`*:feature-access:${userId}:*`)
   }
 }
 

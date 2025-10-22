@@ -34,7 +34,8 @@ jest.mock('../../../services/cache.service', () => ({
     deletePattern: jest.fn().mockResolvedValue(undefined),
   },
   CacheKeys: {
-    subscription: (userId: string) => `subscription:${userId}`,
+    subscription: (userId: string) => `v1:subscription:${userId}`,
+    featureAccess: (userId: string, plan: string) => `v1:feature-access:${userId}:${plan}`,
   },
 }))
 
