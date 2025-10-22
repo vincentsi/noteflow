@@ -37,6 +37,18 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
 
   const showPlaceholder = !article.imageUrl || imageError
 
+  // Get favicon URL from article URL
+  const getFaviconUrl = useCallback((url: string) => {
+    try {
+      const domain = new URL(url).hostname
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+    } catch {
+      return null
+    }
+  }, [])
+
+  const faviconUrl = useMemo(() => getFaviconUrl(article.url), [article.url, getFaviconUrl])
+
   return (
     <Card className="hover:shadow-md transition-shadow overflow-hidden">
       <div className="flex flex-col md:flex-row">
@@ -44,7 +56,15 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
         <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0 relative">
           {showPlaceholder ? (
             <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <Newspaper className="h-16 w-16 text-white/80" />
+              {faviconUrl ? (
+                <img
+                  src={faviconUrl}
+                  alt={article.source}
+                  className="h-24 w-24 object-contain opacity-80"
+                />
+              ) : (
+                <Newspaper className="h-16 w-16 text-white/80" />
+              )}
             </div>
           ) : (
             <img
