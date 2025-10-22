@@ -1,12 +1,7 @@
 import { prisma } from '@/config/prisma'
 import { Prisma, PlanType } from '@prisma/client'
 import { CacheService } from './cache.service'
-
-const PLAN_LIMITS = {
-  FREE: 10,
-  STARTER: 50,
-  PRO: Infinity,
-} as const
+import { ARTICLE_LIMITS } from '@/constants/plan-limits'
 
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 100
@@ -100,7 +95,7 @@ export class ArticleService {
         await CacheService.set(cacheKey, currentCount, ARTICLE_COUNT_CACHE_TTL)
       }
 
-      const limit = PLAN_LIMITS[user.planType]
+      const limit = ARTICLE_LIMITS[user.planType]
 
       if (currentCount >= limit) {
         throw new Error(

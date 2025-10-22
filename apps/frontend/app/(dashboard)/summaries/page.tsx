@@ -9,13 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
-
-// Plan limits pour les résumés
-const PLAN_LIMITS = {
-  FREE: 5,
-  STARTER: 20,
-  PRO: Infinity,
-} as const
+import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 
 export default function SummariesPage() {
   const { user } = useAuth()
@@ -30,9 +24,9 @@ export default function SummariesPage() {
   const completedSummary = summaryStatus.data?.data.status === 'completed' ? summaryStatus.data.data.summary : null
 
   // Calculer l'utilisation du plan
-  const planType = (user?.planType || 'FREE') as keyof typeof PLAN_LIMITS
+  const planType = (user?.planType || 'FREE') as PlanType
   const summariesThisMonth = summariesData?.data.summaries.length || 0
-  const limit = PLAN_LIMITS[planType]
+  const limit = SUMMARY_LIMITS[planType]
   const percentage = limit === Infinity ? 0 : Math.round((summariesThisMonth / limit) * 100)
 
   const handleSubmit = async (params: CreateSummaryParams) => {

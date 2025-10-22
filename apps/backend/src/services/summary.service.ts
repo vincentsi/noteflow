@@ -2,12 +2,7 @@ import { prisma } from '@/config/prisma'
 import { PlanType, SummaryStyle } from '@prisma/client'
 import { queueSummary } from '@/queues/summary.queue'
 import { CacheService } from './cache.service'
-
-const PLAN_LIMITS = {
-  FREE: 5,
-  STARTER: 20,
-  PRO: Infinity,
-} as const
+import { SUMMARY_LIMITS } from '@/constants/plan-limits'
 
 export class SummaryService {
   /**
@@ -32,7 +27,7 @@ export class SummaryService {
 
     // Check monthly plan limits (PRO = unlimited)
     if (user.planType !== PlanType.PRO) {
-      const limit = PLAN_LIMITS[user.planType]
+      const limit = SUMMARY_LIMITS[user.planType]
 
       // Get start of current month
       const now = new Date()

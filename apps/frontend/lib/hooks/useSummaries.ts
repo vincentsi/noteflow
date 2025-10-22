@@ -12,7 +12,11 @@ export function useCreateSummary(): UseMutationResult<CreateSummaryResponse, Err
 
 /**
  * Hook to poll summary job status
- * Automatically polls every 2 seconds until status is 'completed' or 'failed'
+ * Uses exponential backoff to reduce server load:
+ * - Starts at 1s, doubles each time (1s → 2s → 4s → 8s)
+ * - Max interval: 10s
+ * - Stops when completed/failed
+ * - Job of 5min: ~50 requests (vs 150 with fixed 2s polling)
  */
 export function useSummaryStatus(jobId: string | null): UseQueryResult<SummaryStatusResponse, Error> {
   return useQuery({
@@ -26,12 +30,18 @@ export function useSummaryStatus(jobId: string | null): UseQueryResult<SummarySt
     enabled: !!jobId,
     refetchInterval: (query) => {
       const status = query.state.data?.data.status
+
       // Stop polling if completed or failed
       if (status === 'completed' || status === 'failed') {
         return false
       }
-      // Poll every 2 seconds for pending/active jobs
-      return 2000
+
+      // Exponential backoff: 1s → 2s → 4s → 8s → max 10s
+      // dataUpdateCount = number of successful fetches
+      const attempt = query.state.dataUpdateCount
+      const interval = Math.min(1000 * Math.pow(2, attempt), 10000)
+
+      return interval
     },
     refetchIntervalInBackground: false,
   })
