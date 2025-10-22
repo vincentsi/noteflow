@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { articlesApi, type GetArticlesParams, type GetSavedArticlesParams } from '@/lib/api/articles'
+import { articlesApi, type GetArticlesParams, type GetSavedArticlesParams, type ArticlesWithTotal } from '@/lib/api/articles'
 import type { Article, SavedArticle } from '@/types'
 
 /**
@@ -17,7 +17,7 @@ export const articlesKeys = {
  * Uses TanStack Query for caching and automatic refetching
  */
 export function useAllArticles(params?: GetArticlesParams) {
-  return useQuery<Article[], Error>({
+  return useQuery<ArticlesWithTotal, Error>({
     queryKey: articlesKeys.list(params),
     queryFn: () => articlesApi.getArticles(params),
   })

@@ -53,6 +53,7 @@ export async function articleRoutes(fastify: FastifyInstance): Promise<void> {
                   },
                 },
               },
+              total: { type: 'number' },
             },
           },
         },

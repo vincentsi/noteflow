@@ -18,6 +18,7 @@ export type GetSavedArticlesParams = {
 export type ArticlesResponse = {
   success: boolean
   data: Article[]
+  total: number
 }
 
 export type SavedArticlesResponse = {
@@ -30,6 +31,11 @@ export type SaveArticleResponse = {
   message: string
 }
 
+export type ArticlesWithTotal = {
+  articles: Article[]
+  total: number
+}
+
 /**
  * Articles API client
  * Manages RSS feed articles and saved articles
@@ -38,11 +44,14 @@ export const articlesApi = {
   /**
    * Get all articles (for Veille page)
    */
-  getArticles: async (params?: GetArticlesParams): Promise<Article[]> => {
+  getArticles: async (params?: GetArticlesParams): Promise<ArticlesWithTotal> => {
     const response = await apiClient.get<ArticlesResponse>('/api/articles', {
       params,
     })
-    return response.data.data
+    return {
+      articles: response.data.data,
+      total: response.data.total,
+    }
   },
 
   /**

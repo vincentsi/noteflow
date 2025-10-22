@@ -6,8 +6,12 @@ import { useAllArticles, useArticles, useSaveArticle, useUnsaveArticle } from '@
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { ArticleFilters } from '@/components/veille/ArticleFilters'
 import { ArticleList } from '@/components/veille/ArticleList'
+import { Pagination } from '@/components/ui/pagination'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { GetArticlesParams } from '@/lib/api/articles'
+
+// Pagination constants
+const ARTICLES_PER_PAGE = 20
 
 // Plan limits for saved articles
 const PLAN_LIMITS = {
@@ -20,9 +24,18 @@ export default function VeillePage() {
   const { user } = useAuth()
   const { t } = useTranslation()
   const [filters, setFilters] = useState<GetArticlesParams>({})
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // Fetch all articles from RSS feeds
-  const { data: allArticles = [], isLoading, error } = useAllArticles(filters)
+  // Fetch all articles from RSS feeds with pagination
+  const { data, isLoading, error } = useAllArticles({
+    ...filters,
+    skip: (currentPage - 1) * ARTICLES_PER_PAGE,
+    take: ARTICLES_PER_PAGE,
+  })
+
+  const allArticles = data?.articles || []
+  const totalArticles = data?.total || 0
+  const totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE)
 
   // Fetch saved articles to know which ones are saved
   const { data: savedArticles = [] } = useArticles()
@@ -91,11 +104,17 @@ export default function VeillePage() {
       </Card>
 
       {/* Filters */}
-      <ArticleFilters filters={filters} onChange={setFilters} />
+      <ArticleFilters
+        filters={filters}
+        onChange={(newFilters) => {
+          setFilters(newFilters)
+          setCurrentPage(1) // Reset to first page when filters change
+        }}
+      />
 
       {/* Article List */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">{t('veille.articleList.title')}</h2>
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold">{t('veille.articleList.title')}</h2>
         {error && (
           <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
             {t('veille.articleList.errorLoading')}
@@ -108,6 +127,18 @@ export default function VeillePage() {
           onUnsave={handleUnsave}
           isLoading={isLoading || saveArticle.isPending || unsaveArticle.isPending}
         />
+
+        {/* Pagination */}
+        {!isLoading && allArticles.length > 0 && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+          />
+        )}
       </div>
     </div>
   )

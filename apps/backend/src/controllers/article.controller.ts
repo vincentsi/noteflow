@@ -26,12 +26,13 @@ export class ArticleController {
       // Validate query parameters
       const filters = getArticlesSchema.parse(request.query)
 
-      // Get articles
-      const articles = await articleService.getArticles(filters)
+      // Get articles with total count
+      const { articles, total } = await articleService.getArticles(filters)
 
       return reply.status(200).send({
         success: true,
         data: articles,
+        total,
       })
     } catch (error) {
       return handleControllerError(error, request, reply)

@@ -59,25 +59,30 @@ export class ArticleService {
       ]
     }
 
-    return await prisma.article.findMany({
-      where,
-      select: {
-        id: true,
-        title: true,
-        url: true,
-        excerpt: true,
-        imageUrl: true,
-        source: true,
-        tags: true,
-        publishedAt: true,
-        createdAt: true,
-      },
-      orderBy: {
-        publishedAt: 'desc',
-      },
-      skip,
-      take: limit,
-    })
+    const [articles, total] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          excerpt: true,
+          imageUrl: true,
+          source: true,
+          tags: true,
+          publishedAt: true,
+          createdAt: true,
+        },
+        orderBy: {
+          publishedAt: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.article.count({ where }),
+    ])
+
+    return { articles, total }
   }
 
   /**
