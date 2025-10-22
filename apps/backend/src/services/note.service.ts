@@ -86,10 +86,21 @@ export class NoteService {
    * Only the note owner can update it
    */
   async updateNote(noteId: string, userId: string, data: UpdateNoteData) {
+    // Check if note exists and belongs to user
+    const existingNote = await prisma.note.findFirst({
+      where: {
+        id: noteId,
+        userId,
+      },
+    })
+
+    if (!existingNote) {
+      throw new Error('Note not found')
+    }
+
     const note = await prisma.note.update({
       where: {
         id: noteId,
-        userId, // Ensures only owner can update
       },
       data,
     })

@@ -24,6 +24,7 @@ import { testSetupRoutes } from '@/routes/test-setup.route'
 import { userRoutes } from '@/routes/user.routes'
 import { articleRoutes } from '@/routes/article.route'
 import { summaryRoutes } from '@/routes/summary.route'
+import { noteRoutes } from '@/routes/note.route'
 
 /**
  * Create and configure Fastify application
@@ -87,6 +88,7 @@ export async function createApp(): Promise<FastifyInstance> {
         { name: 'premium', description: 'Premium feature endpoints (requires subscription)' },
         { name: 'Articles', description: 'Article management endpoints (RSS feed articles)' },
         { name: 'Summaries', description: 'AI summary generation endpoints' },
+        { name: 'Notes', description: 'Note management endpoints (markdown notes with tags)' },
       ],
       components: {
         securitySchemes: {
@@ -163,6 +165,7 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(userRoutes, { prefix: '/api/users' })
   await app.register(articleRoutes, { prefix: '/api/articles' })
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
+  await app.register(noteRoutes, { prefix: '/api/notes' })
   await app.register(testSetupRoutes, { prefix: '/api/test-setup' }) // Dev only
 
   return app
