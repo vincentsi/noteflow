@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useNotes, useCreateNote, useDeleteNote } from '@/lib/hooks/useNotes'
+import { NoteEditor } from '@/components/notes/NoteEditor'
+import { NoteList } from '@/components/notes/NoteList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Trash2, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function NotesPage() {
@@ -34,7 +35,7 @@ export default function NotesPage() {
       setTitle('')
       setContent('')
       setTags('')
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la création de la note')
     }
   }
@@ -43,7 +44,7 @@ export default function NotesPage() {
     try {
       await deleteNote.mutateAsync(id)
       toast.success('Note supprimée')
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la suppression')
     }
   }
@@ -77,11 +78,10 @@ export default function NotesPage() {
 
           <div>
             <label className="text-sm font-medium mb-2 block">Contenu (Markdown)</label>
-            <Textarea
+            <NoteEditor
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={setContent}
               placeholder="# Titre&#10;&#10;Votre contenu en Markdown..."
-              rows={8}
             />
           </div>
 
@@ -115,60 +115,12 @@ export default function NotesPage() {
           <div className="text-center py-8 text-muted-foreground">
             Chargement des notes...
           </div>
-        ) : notes.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Aucune note pour le moment. Créez votre première note ci-dessus.
-            </CardContent>
-          </Card>
         ) : (
-          <div className="grid gap-4">
-            {notes.map((note) => (
-              <Card key={note.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle>{note.title}</CardTitle>
-                      <CardDescription className="mt-1">
-                        {new Date(note.updatedAt).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(note.id)}
-                      disabled={deleteNote.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-sm dark:prose-invert max-w-none mb-3">
-                    <pre className="whitespace-pre-wrap text-sm bg-muted p-3 rounded">
-                      {note.content}
-                    </pre>
-                  </div>
-                  {note.tags.length > 0 && (
-                    <div className="flex gap-2 flex-wrap">
-                      {note.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <NoteList
+            notes={notes}
+            onDelete={handleDelete}
+            isDeleting={deleteNote.isPending}
+          />
         )}
       </div>
     </div>

@@ -84,7 +84,7 @@ async function validateHSTSPreload(domain: string): Promise<HSTSValidationResult
   }
 
   const url = new URL(domain)
-  const baseUrl = `${url.protocol}//${url.hostname}`
+  const _baseUrl = `${url.protocol}//${url.hostname}`
 
   // Check 1: HTTPS availability
   try {

@@ -187,7 +187,7 @@ export class FeatureFlags {
  * ```
  */
 export function requireFeatureFlag(flag: FeatureFlag) {
-  return async (_request: unknown, reply: any) => {
+  return async (_request: unknown, reply: { status: (code: number) => { send: (data: unknown) => unknown } }) => {
     if (FeatureFlags.isDisabled(flag)) {
       return reply.status(503).send({
         success: false,
