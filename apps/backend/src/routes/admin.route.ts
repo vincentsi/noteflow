@@ -4,6 +4,7 @@ import { requireRole } from '../middlewares/rbac.middleware'
 import { prisma } from '../config/prisma'
 import { CleanupService } from '../services/cleanup.service'
 import { BackupService } from '../services/backup.service'
+import { FeatureFlags, FeatureFlag } from '../config/feature-flags'
 import type { Role } from '@/types/auth.types'
 import {
   listUsersSchema,
@@ -307,6 +308,56 @@ export async function adminRoutes(fastify: FastifyInstance) {
             role: stat.role,
             _count: stat._count._all,
           })),
+        },
+      })
+    })
+
+    /**
+     * Get all feature flags
+     * GET /api/admin/feature-flags
+     */
+    fastify.get('/feature-flags', async (_request, reply) => {
+      reply.send({
+        success: true,
+        data: {
+          flags: FeatureFlags.getAll(),
+        },
+      })
+    })
+
+    /**
+     * Toggle feature flag
+     * POST /api/admin/feature-flags/:flag/toggle
+     * Body: { enabled: boolean }
+     */
+    fastify.post<{
+      Params: { flag: string }
+      Body: { enabled: boolean }
+    }>('/feature-flags/:flag/toggle', async (request, reply) => {
+      const { flag } = request.params
+      const { enabled } = request.body
+
+      // Validate flag exists
+      if (!Object.values(FeatureFlag).includes(flag as FeatureFlag)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Invalid feature flag',
+        })
+      }
+
+      // Toggle flag
+      if (enabled) {
+        FeatureFlags.enable(flag as FeatureFlag)
+      } else {
+        FeatureFlags.disable(flag as FeatureFlag)
+      }
+
+      reply.send({
+        success: true,
+        message: `Feature flag '${flag}' ${enabled ? 'enabled' : 'disabled'}`,
+        data: {
+          flag,
+          enabled,
         },
       })
     })

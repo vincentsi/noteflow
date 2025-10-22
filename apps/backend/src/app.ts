@@ -10,6 +10,7 @@ import { csrfMiddleware } from '@/middlewares/csrf.middleware'
 import { metricsMiddleware, metricsResponseHook } from '@/middlewares/metrics.middleware'
 import { authMiddleware } from '@/middlewares/auth.middleware'
 import { correlationIdMiddleware } from '@/middlewares/correlation-id.middleware'
+import { apiVersionMiddleware } from '@/middlewares/api-version.middleware'
 import { healthRoutes } from '@/routes/health.route'
 import { authRoutes } from '@/routes/auth.route'
 import { verificationRoutes } from '@/routes/verification.route'
@@ -132,6 +133,9 @@ export async function createApp(): Promise<FastifyInstance> {
 
   // Register correlation ID middleware (for distributed tracing)
   app.addHook('onRequest', correlationIdMiddleware)
+
+  // Register API versioning middleware (adds version headers)
+  app.addHook('onRequest', apiVersionMiddleware)
 
   // Register metrics middleware (tracks HTTP requests)
   app.addHook('onRequest', metricsMiddleware)
