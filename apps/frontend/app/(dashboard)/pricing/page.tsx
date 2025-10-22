@@ -6,6 +6,10 @@ import { useAuth } from '@/providers/auth.provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Check } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  STRIPE_PRO_PRICE_ID,
+  STRIPE_BUSINESS_PRICE_ID,
+} from '@/lib/constants/stripe'
 
 // Lazy load heavy components (reduces initial bundle)
 const StripeCheckout = dynamic(
@@ -42,7 +46,7 @@ const PLANS = [
       'Unlimited storage',
       'API access',
     ],
-    priceId: 'price_pro_monthly', // TODO: Replace with actual Stripe price ID
+    priceId: STRIPE_PRO_PRICE_ID, // Loaded from env: NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
     highlighted: true,
   },
   {
@@ -58,7 +62,7 @@ const PLANS = [
       'Custom integrations',
       'SLA guarantee',
     ],
-    priceId: 'price_business_monthly', // TODO: Replace with actual Stripe price ID
+    priceId: STRIPE_BUSINESS_PRICE_ID, // Loaded from env: NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID
   },
 ]
 
