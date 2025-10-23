@@ -19,12 +19,12 @@ test.describe('Subscription Flow', () => {
     // Wait for page to be stable (domcontentloaded is more reliable than networkidle)
     await authenticatedPage.waitForLoadState('domcontentloaded')
 
-    // Should show FREE, PRO, STARTER plans (use data-testid for reliability)
+    // Should show FREE, STARTER, PRO plans (use data-testid for reliability)
     // Use browser-specific timeout (Firefox/WebKit are slower)
     const timeout = browserName === 'chromium' ? 10000 : 20000
     await expect(authenticatedPage.getByTestId('plan-free')).toBeVisible({ timeout })
+    await expect(authenticatedPage.getByTestId('plan-starter')).toBeVisible({ timeout })
     await expect(authenticatedPage.getByTestId('plan-pro')).toBeVisible({ timeout })
-    await expect(authenticatedPage.getByTestId('plan-business')).toBeVisible({ timeout })
 
     // Verify pricing information is displayed
     await expect(authenticatedPage.locator('text=/\\$|price|month/i').first()).toBeVisible({ timeout })
@@ -39,7 +39,7 @@ test.describe('Subscription Flow', () => {
     const timeout = browserName === 'chromium' ? 10000 : 20000
     await expect(upgradeButtons.first()).toBeVisible({ timeout })
 
-    // Should have at least 2 upgrade buttons (for PRO and STARTER)
+    // Should have at least 2 upgrade buttons (for STARTER and PRO)
     const buttonCount = await upgradeButtons.count()
     expect(buttonCount).toBeGreaterThanOrEqual(2)
   })
