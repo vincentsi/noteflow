@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Check } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  STRIPE_STARTER_PRICE_ID,
   STRIPE_PRO_PRICE_ID,
-  STRIPE_BUSINESS_PRICE_ID,
 } from '@/lib/constants/stripe'
 
 // Lazy load heavy components (reduces initial bundle)
@@ -23,46 +23,46 @@ const StripeCheckout = dynamic(
 const PLANS = [
   {
     name: 'FREE',
-    price: '$0',
-    description: 'Perfect for getting started',
+    price: '0€',
+    description: 'Parfait pour commencer',
     features: [
-      'Basic features',
-      'Community support',
-      '1 user',
-      'Limited storage',
+      '10 articles sauvegardés',
+      '5 résumés IA par mois',
+      '20 notes',
+      'Accès aux flux RSS',
+      '6 styles de résumé',
     ],
     priceId: null, // No Stripe price ID for free plan
   },
   {
-    name: 'PRO',
-    price: '$15',
-    period: '/month',
-    description: 'For professionals and small teams',
+    name: 'STARTER',
+    price: '6€',
+    period: '/mois',
+    description: 'Pour les utilisateurs réguliers',
     features: [
-      'All FREE features',
-      'Advanced analytics',
-      'Priority support',
-      '5 users',
-      'Unlimited storage',
-      'API access',
+      'Toutes les fonctionnalités FREE',
+      '50 articles sauvegardés',
+      '20 résumés IA par mois',
+      '100 notes',
+      'Support prioritaire',
     ],
-    priceId: STRIPE_PRO_PRICE_ID, // Loaded from env: NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
+    priceId: STRIPE_STARTER_PRICE_ID,
     highlighted: true,
   },
   {
-    name: 'BUSINESS',
-    price: '$50',
-    period: '/month',
-    description: 'For large teams and enterprises',
+    name: 'PRO',
+    price: '15€',
+    period: '/mois',
+    description: 'Pour les professionnels',
     features: [
-      'All PRO features',
-      'Dedicated support',
-      'Unlimited users',
-      'Advanced security',
-      'Custom integrations',
-      'SLA guarantee',
+      'Toutes les fonctionnalités STARTER',
+      'Articles illimités',
+      'Résumés illimités',
+      'Notes illimitées',
+      'Support prioritaire',
+      'Export PDF',
     ],
-    priceId: STRIPE_BUSINESS_PRICE_ID, // Loaded from env: NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID
+    priceId: STRIPE_PRO_PRICE_ID,
   },
 ]
 
@@ -73,13 +73,13 @@ export default function PricingPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold">Choose Your Plan</h1>
+        <h1 className="text-4xl font-bold">Choisissez votre plan</h1>
         <p className="text-muted-foreground mt-2">
-          Select the plan that best fits your needs
+          Sélectionnez le plan qui correspond le mieux à vos besoins
         </p>
         {currentPlan && (
           <p className="text-sm text-muted-foreground mt-2">
-            Current plan: <span className="font-semibold">{currentPlan}</span>
+            Plan actuel : <span className="font-semibold">{currentPlan}</span>
           </p>
         )}
       </div>
@@ -96,7 +96,7 @@ export default function PricingPage() {
               {plan.highlighted && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                    Most Popular
+                    Le plus populaire
                   </span>
                 </div>
               )}
@@ -141,8 +141,8 @@ export default function PricingPage() {
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
-        <p>All plans include 14-day money-back guarantee</p>
-        <p className="mt-1">Questions? Contact support@example.com</p>
+        <p>Tous les plans incluent une garantie satisfait ou remboursé de 14 jours</p>
+        <p className="mt-1">Des questions ? Contactez support@noteflow.app</p>
       </div>
     </div>
   )

@@ -7,8 +7,8 @@ import { env } from '@/lib/env'
  * Fallback values are provided for development/testing.
  *
  * IMPORTANT: Set these in production via environment variables:
+ * - NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID
  * - NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
- * - NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID
  */
 
 /**
@@ -16,23 +16,23 @@ import { env } from '@/lib/env'
  * Replace these with your actual Stripe test/production price IDs
  */
 const DEFAULT_PRICE_IDS = {
-  PRO: 'price_pro_monthly', // Default placeholder
-  BUSINESS: 'price_business_monthly', // Default placeholder
+  STARTER: 'price_starter_monthly', // Default placeholder (6€/month)
+  PRO: 'price_pro_monthly', // Default placeholder (15€/month)
 } as const
 
 /**
- * Get Stripe Price ID for PRO plan
+ * Get Stripe Price ID for STARTER plan (6€/month)
+ * Prioritizes environment variable, falls back to default
+ */
+export const STRIPE_STARTER_PRICE_ID =
+  env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || DEFAULT_PRICE_IDS.STARTER
+
+/**
+ * Get Stripe Price ID for PRO plan (15€/month)
  * Prioritizes environment variable, falls back to default
  */
 export const STRIPE_PRO_PRICE_ID =
   env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || DEFAULT_PRICE_IDS.PRO
-
-/**
- * Get Stripe Price ID for BUSINESS plan
- * Prioritizes environment variable, falls back to default
- */
-export const STRIPE_BUSINESS_PRICE_ID =
-  env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID || DEFAULT_PRICE_IDS.BUSINESS
 
 /**
  * Check if Stripe is properly configured
@@ -41,8 +41,8 @@ export const STRIPE_BUSINESS_PRICE_ID =
 export function isStripeConfigured(): boolean {
   return Boolean(
     env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY &&
-      env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID &&
-      env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID
+      env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID &&
+      env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
   )
 }
 
@@ -57,10 +57,10 @@ export function getStripeConfigWarning(): string | null {
   const missing: string[] = []
   if (!env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
     missing.push('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY')
+  if (!env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID)
+    missing.push('NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID')
   if (!env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID)
     missing.push('NEXT_PUBLIC_STRIPE_PRO_PRICE_ID')
-  if (!env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID)
-    missing.push('NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID')
 
   return `Stripe not fully configured. Missing: ${missing.join(', ')}`
 }

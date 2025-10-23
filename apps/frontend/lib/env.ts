@@ -29,8 +29,8 @@ const envSchema = z.object({
     ),
 
   // Stripe Price IDs (OPTIONAL - used for subscription checkout)
+  NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID: z.string().optional(),
   NEXT_PUBLIC_STRIPE_PRO_PRICE_ID: z.string().optional(),
-  NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID: z.string().optional(),
 })
 
 /**
@@ -41,9 +41,8 @@ const parsed = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID,
   NEXT_PUBLIC_STRIPE_PRO_PRICE_ID: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
-  NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID:
-    process.env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID,
 })
 
 if (!parsed.success) {

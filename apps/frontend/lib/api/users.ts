@@ -24,7 +24,7 @@ export type UserStatsResponse = {
 
 export const usersApi = {
   async getStats(): Promise<UserStats> {
-    const response = await apiClient.get<UserStatsResponse>('/users/stats')
+    const response = await apiClient.get<UserStatsResponse>('/api/users/stats')
     return response.data.data.stats
   },
 }

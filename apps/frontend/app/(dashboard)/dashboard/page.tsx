@@ -36,22 +36,16 @@ export default function DashboardPage() {
         <PlanUsageCard stats={stats} plan={user?.planType} />
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>User</CardTitle>
+            <CardTitle>Informations utilisateur</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="space-y-2 text-sm">
               <div>
                 <dt className="font-medium dark:text-gray-200">Email</dt>
                 <dd className="text-muted-foreground dark:text-gray-400">{user?.email}</dd>
-              </div>
-              <div>
-                <dt className="font-medium dark:text-gray-200">ID</dt>
-                <dd className="text-muted-foreground dark:text-gray-400 font-mono text-xs">
-                  {user?.id}
-                </dd>
               </div>
               <div>
                 <dt className="font-medium dark:text-gray-200">Plan</dt>
@@ -65,35 +59,19 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Subscription</CardTitle>
+            <CardTitle>Abonnement</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground dark:text-gray-400 mb-4">
-              Current plan: <span className="font-semibold dark:text-gray-200">{user?.planType || 'FREE'}</span>
+              Plan actuel : <span className="font-semibold dark:text-gray-200">{user?.planType || 'FREE'}</span>
             </p>
             <Button
               onClick={() => router.push('/pricing')}
               variant="outline"
               className="w-full"
             >
-              {user?.planType === 'FREE' ? 'Upgrade Plan' : 'Manage Billing'}
+              {user?.planType === 'FREE' ? 'Passer à un plan supérieur' : 'Gérer mon abonnement'}
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Stack</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <ul className="space-y-1 text-muted-foreground dark:text-gray-400">
-              <li>✅ Next.js 15 + App Router</li>
-              <li>✅ Fastify Backend</li>
-              <li>✅ PostgreSQL + Prisma</li>
-              <li>✅ JWT Authentication</li>
-              <li>✅ shadcn/ui + Tailwind</li>
-              <li>✅ React Query</li>
-            </ul>
           </CardContent>
         </Card>
       </div>
