@@ -26,16 +26,16 @@ test.describe('Subscription Flow', () => {
     await expect(authenticatedPage.getByTestId('plan-starter')).toBeVisible({ timeout })
     await expect(authenticatedPage.getByTestId('plan-pro')).toBeVisible({ timeout })
 
-    // Verify pricing information is displayed
-    await expect(authenticatedPage.locator('text=/\\$|price|month/i').first()).toBeVisible({ timeout })
+    // Verify pricing information is displayed (supports both English $ and French €)
+    await expect(authenticatedPage.locator('text=/\\$|€|price|month|mois/i').first()).toBeVisible({ timeout })
   })
 
   test('should show upgrade button for free users', async ({ freeUserPage, browserName }) => {
     await freeUserPage.goto(TEST_ROUTES.pricing)
     await freeUserPage.waitForLoadState('domcontentloaded')
 
-    // Free users should see "Upgrade" buttons
-    const upgradeButtons = freeUserPage.locator('button:has-text("Upgrade"), button:has-text("Subscribe")')
+    // Free users should see "Passer au plan" buttons (French) or "Upgrade" (English)
+    const upgradeButtons = freeUserPage.locator('button:has-text("Passer au plan"), button:has-text("Upgrade"), button:has-text("Subscribe")')
     const timeout = browserName === 'chromium' ? 10000 : 20000
     await expect(upgradeButtons.first()).toBeVisible({ timeout })
 

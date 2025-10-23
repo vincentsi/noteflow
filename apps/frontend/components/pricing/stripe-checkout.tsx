@@ -38,7 +38,7 @@ export function StripeCheckout({
   if (isError) {
     return (
       <Button className="w-full" variant="destructive" disabled>
-        Error - Try Again
+        Erreur - Réessayer
       </Button>
     )
   }
@@ -46,7 +46,7 @@ export function StripeCheckout({
   if (isCurrentPlan) {
     return (
       <Button className="w-full" disabled variant="outline">
-        Current Plan
+        Plan actuel
       </Button>
     )
   }
@@ -54,7 +54,7 @@ export function StripeCheckout({
   if (!priceId) {
     return (
       <Button className="w-full" variant="outline" disabled>
-        Free Forever
+        Gratuit
       </Button>
     )
   }
@@ -66,7 +66,7 @@ export function StripeCheckout({
       disabled={isPending}
       variant={variant}
     >
-      {isPending ? 'Loading...' : 'Upgrade'}
+      {isPending ? 'Chargement...' : 'Passer au plan'}
     </Button>
   )
 }
