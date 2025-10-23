@@ -21,6 +21,10 @@ describe('User API Integration Tests', () => {
   beforeEach(async () => {
     // Clean up test database
     await prisma.$transaction([
+      prisma.savedArticle.deleteMany(),
+      prisma.article.deleteMany(),
+      prisma.summary.deleteMany(),
+      prisma.note.deleteMany(),
       prisma.subscription.deleteMany(),
       prisma.csrfToken.deleteMany(),
       prisma.passwordResetToken.deleteMany(),
@@ -172,6 +176,82 @@ describe('User API Integration Tests', () => {
         where: { id: userId },
       })
       expect(user?.email).not.toBe('newemail@test.com')
+    })
+  })
+
+  describe('GET /api/users/stats', () => {
+    it('should return user usage stats', async () => {
+      // Create test data - summaries (this month)
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+
+      await prisma.summary.create({
+        data: {
+          userId,
+          originalText: 'Text 1',
+          summaryText: 'Summary 1',
+          style: 'SHORT',
+          language: 'fr',
+          createdAt: startOfMonth,
+        },
+      })
+
+      // Create test data - notes
+      await prisma.note.createMany({
+        data: [
+          { userId, title: 'Note 1', content: 'Content 1' },
+          { userId, title: 'Note 2', content: 'Content 2' },
+          { userId, title: 'Note 3', content: 'Content 3' },
+        ],
+      })
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/users/stats',
+        headers: { cookie: authToken },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      const stats = body.data.stats
+
+      expect(stats.articles.current).toBe(0) // No articles created
+      expect(stats.articles.limit).toBe(10) // FREE plan
+      expect(stats.summaries.current).toBe(1) // This month
+      expect(stats.summaries.limit).toBe(5)
+      expect(stats.notes.current).toBe(3)
+      expect(stats.notes.limit).toBe(20)
+    })
+
+    it('should show unlimited for PRO plan', async () => {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { planType: 'PRO' },
+      })
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/users/stats',
+        headers: { cookie: authToken },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = JSON.parse(response.body)
+      const stats = body.data.stats
+
+      expect(stats.articles.limit).toBe(null) // Infinity becomes null in JSON
+      expect(stats.summaries.limit).toBe(null)
+      expect(stats.notes.limit).toBe(null)
+    })
+
+    it('should return 401 if not authenticated', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/users/stats',
+      })
+
+      expect(response.statusCode).toBe(401)
     })
   })
 })

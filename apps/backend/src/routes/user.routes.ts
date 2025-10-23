@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { authMiddleware } from '@/middlewares/auth.middleware'
 import { prisma } from '@/config/prisma'
 import { SuccessResponse, ErrorResponse } from '@/utils/response-builders'
+import { ARTICLE_LIMITS, SUMMARY_LIMITS, NOTE_LIMITS } from '@/constants/plan-limits'
 
 /**
  * Update Profile Request Schema
@@ -125,6 +126,127 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
       } catch (error) {
         request.log.error(error, 'Failed to update user profile')
         return reply.status(500).send(ErrorResponse.internalError('Failed to update profile'))
+      }
+    }
+  )
+
+  /**
+   * Get current user stats (usage and limits)
+   * @route GET /api/users/stats
+   * @access Private
+   */
+  fastify.get(
+    '/stats',
+    {
+      schema: {
+        tags: ['Users'],
+        description: 'Get user usage statistics and plan limits',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              data: {
+                type: 'object',
+                properties: {
+                  stats: {
+                    type: 'object',
+                    properties: {
+                      articles: {
+                        type: 'object',
+                        properties: {
+                          current: { type: 'number' },
+                          limit: { type: ['number', 'null'] },
+                        },
+                      },
+                      summaries: {
+                        type: 'object',
+                        properties: {
+                          current: { type: 'number' },
+                          limit: { type: ['number', 'null'] },
+                        },
+                      },
+                      notes: {
+                        type: 'object',
+                        properties: {
+                          current: { type: 'number' },
+                          limit: { type: ['number', 'null'] },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              error: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = request.user?.userId
+
+        if (!userId) {
+          return reply.status(401).send(ErrorResponse.unauthorized())
+        }
+
+        // Get user's plan type
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { planType: true },
+        })
+
+        if (!user) {
+          return reply.status(404).send(ErrorResponse.notFound('User not found'))
+        }
+
+        // Get start of current month for summaries count
+        const now = new Date()
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+        // Count usage
+        const [articlesCount, summariesCount, notesCount] = await Promise.all([
+          prisma.savedArticle.count({ where: { userId } }),
+          prisma.summary.count({
+            where: {
+              userId,
+              createdAt: { gte: startOfMonth },
+            },
+          }),
+          prisma.note.count({ where: { userId } }),
+        ])
+
+        // Get limits based on plan (convert Infinity to null for JSON)
+        const articleLimit = ARTICLE_LIMITS[user.planType]
+        const summaryLimit = SUMMARY_LIMITS[user.planType]
+        const noteLimit = NOTE_LIMITS[user.planType]
+
+        const stats = {
+          articles: {
+            current: articlesCount,
+            limit: articleLimit === Infinity ? null : articleLimit,
+          },
+          summaries: {
+            current: summariesCount,
+            limit: summaryLimit === Infinity ? null : summaryLimit,
+          },
+          notes: {
+            current: notesCount,
+            limit: noteLimit === Infinity ? null : noteLimit,
+          },
+        }
+
+        return reply.status(200).send(SuccessResponse.ok({ stats }))
+      } catch (error) {
+        request.log.error(error, 'Failed to get user stats')
+        return reply.status(500).send(ErrorResponse.internalError('Failed to get stats'))
       }
     }
   )
