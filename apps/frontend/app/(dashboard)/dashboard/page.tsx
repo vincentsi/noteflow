@@ -4,10 +4,13 @@ import { useAuth } from '@/providers/auth.provider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { PlanUsageCard } from '@/components/dashboard/PlanUsageCard'
+import { useUserStats } from '@/lib/hooks/useUserStats'
 
 export default function DashboardPage() {
   const { user, logout } = useAuth()
   const router = useRouter()
+  const { data: stats, isLoading } = useUserStats()
 
   const handleLogout = async () => {
     await logout()
@@ -18,15 +21,20 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">Welcome, {user?.name || user?.email}</h1>
+          <h1 className="text-3xl font-bold dark:text-white">Tableau de bord</h1>
           <p className="text-muted-foreground dark:text-gray-400">
-            Here&apos;s your dashboard
+            Bienvenue {user?.name || user?.email}
           </p>
         </div>
         <Button onClick={handleLogout} variant="outline">
-          Logout
+          Déconnexion
         </Button>
       </div>
+
+      {/* Plan Usage Card */}
+      {stats && !isLoading && (
+        <PlanUsageCard stats={stats} plan={user?.planType} />
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
