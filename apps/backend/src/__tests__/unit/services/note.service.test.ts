@@ -177,6 +177,16 @@ describe('NoteService', () => {
 
   describe('updateNote', () => {
     it('should update note', async () => {
+      const existingNote = {
+        id: 'note-1',
+        userId: 'user-123',
+        title: 'Original Title',
+        content: 'Original content',
+        tags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
       const updatedNote = {
         id: 'note-1',
         userId: 'user-123',
@@ -187,6 +197,7 @@ describe('NoteService', () => {
         updatedAt: new Date(),
       }
 
+      prismaMock.note.findFirst.mockResolvedValue(existingNote)
       prismaMock.note.update.mockResolvedValue(updatedNote)
 
       const result = await noteService.updateNote('note-1', 'user-123', {
@@ -194,10 +205,15 @@ describe('NoteService', () => {
       })
 
       expect(result.title).toBe('Updated Title')
-      expect(prismaMock.note.update).toHaveBeenCalledWith({
+      expect(prismaMock.note.findFirst).toHaveBeenCalledWith({
         where: {
           id: 'note-1',
           userId: 'user-123',
+        },
+      })
+      expect(prismaMock.note.update).toHaveBeenCalledWith({
+        where: {
+          id: 'note-1',
         },
         data: {
           title: 'Updated Title',
@@ -206,11 +222,11 @@ describe('NoteService', () => {
     })
 
     it('should throw error if note not found', async () => {
-      prismaMock.note.update.mockRejectedValue(new Error('Not found'))
+      prismaMock.note.findFirst.mockResolvedValue(null)
 
       await expect(
         noteService.updateNote('note-1', 'user-123', { title: 'Test' })
-      ).rejects.toThrow('Not found')
+      ).rejects.toThrow('Note not found')
     })
   })
 
