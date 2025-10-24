@@ -29,11 +29,52 @@ export class SummaryController {
         })
       }
 
-      // Validate request body
-      const body = createSummarySchema.parse(request.body)
+      // Check if request is multipart (file upload)
+      const contentType = request.headers['content-type']
+      const isMultipart = contentType?.includes('multipart/form-data')
+
+      let text: string
+      let style: string
+      let language: 'fr' | 'en' | undefined
+
+      if (isMultipart) {
+        // Handle multipart file upload
+        const data = await request.file()
+
+        if (!data) {
+          return reply.status(400).send({
+            success: false,
+            error: 'Bad Request',
+            message: 'No file provided',
+          })
+        }
+
+        // Get form fields
+        const fields = data.fields
+        style = (fields.style as any)?.value || 'SHORT'
+        language = (fields.language as any)?.value as 'fr' | 'en' | undefined
+
+        // Extract text from PDF
+        const buffer = await data.toBuffer()
+        const aiService = (summaryService as any).aiService
+        text = await aiService.extractTextFromPDF(buffer)
+
+        if (!text || text.trim().length < 10) {
+          return reply.status(400).send({
+            success: false,
+            error: 'Bad Request',
+            message: 'Could not extract text from PDF or text is too short',
+          })
+        }
+      } else {
+        // Handle JSON request
+        const body = createSummarySchema.parse(request.body)
+        text = body.text
+        style = body.style
+        language = body.language
+      }
 
       // Get user language if not provided
-      let language = body.language
       if (!language) {
         const user = await prisma.user.findUnique({
           where: { id: userId },
@@ -45,8 +86,8 @@ export class SummaryController {
       // Create summary job
       const result = await summaryService.createSummary(
         userId,
-        body.text,
-        body.style,
+        text,
+        style,
         language
       )
 

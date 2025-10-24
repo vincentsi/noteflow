@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import type { FastifyInstance } from 'fastify'
 import cookie from '@fastify/cookie'
+import multipart from '@fastify/multipart'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import { env } from '@/config/env'
@@ -52,12 +53,20 @@ export async function createApp(): Promise<FastifyInstance> {
           : undefined,
     },
     // Security: Limit request body size to prevent DoS attacks
-    // 100KB limit for JSON bodies (sufficient for most API requests)
-    bodyLimit: 1024 * 100, // 100KB
+    // 10MB limit to support PDF uploads (increased from 100KB)
+    bodyLimit: 1024 * 1024 * 10, // 10MB
   })
 
   // Register cookie plugin
   await app.register(cookie)
+
+  // Register multipart plugin for file uploads (PDFs)
+  await app.register(multipart, {
+    limits: {
+      fileSize: 1024 * 1024 * 10, // 10MB max file size
+      files: 1, // Only 1 file at a time
+    },
+  })
 
   // Register Swagger/OpenAPI documentation
   await app.register(swagger, {
