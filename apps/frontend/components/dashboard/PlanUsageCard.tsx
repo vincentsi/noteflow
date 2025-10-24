@@ -104,6 +104,13 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
             max={stats.summaries.limit}
             isNearLimit={stats.summaries.limit !== null && stats.summaries.current / stats.summaries.limit >= 0.8}
           />
+          {stats.summaries.current > 0 && (
+            <Button asChild variant="outline" size="sm" className="w-full mt-2">
+              <Link href="/summaries?my=true">
+                Voir mes résumés
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Notes */}
@@ -119,6 +126,13 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
             max={stats.notes.limit}
             isNearLimit={stats.notes.limit !== null && stats.notes.current / stats.notes.limit >= 0.8}
           />
+          {stats.notes.current > 0 && (
+            <Button asChild variant="outline" size="sm" className="w-full mt-2">
+              <Link href="/notes?my=true">
+                Voir mes notes
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Upgrade CTA if near limit */}

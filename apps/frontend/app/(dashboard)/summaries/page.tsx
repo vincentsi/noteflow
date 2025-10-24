@@ -2,19 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/providers/auth.provider'
 import { useCreateSummary, useSummaryStatus, useSummaries } from '@/lib/hooks/useSummaries'
 import { SummaryForm } from '@/components/summaries/SummaryForm'
 import { SummaryDisplay } from '@/components/summaries/SummaryDisplay'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ArrowLeft } from 'lucide-react'
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 
 export default function SummariesPage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
+  const showMyOnly = searchParams.get('my') === 'true'
   const [jobId, setJobId] = useState<string | null>(null)
   const [initialUrl, setInitialUrl] = useState<string | null>(null)
 
@@ -63,55 +66,73 @@ export default function SummariesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">PowerPost</h1>
+        <div className="flex items-center gap-2 mb-2">
+          {showMyOnly && (
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/summaries">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Link>
+            </Button>
+          )}
+        </div>
+        <h1 className="text-3xl font-bold">
+          {showMyOnly ? 'Mes résumés' : 'PowerPost'}
+        </h1>
         <p className="text-muted-foreground">
-          Générez des résumés IA de vos textes et documents
+          {showMyOnly
+            ? `${summariesThisMonth} résumé${summariesThisMonth > 1 ? 's' : ''} ce mois`
+            : 'Générez des résumés IA de vos textes et documents'
+          }
         </p>
       </div>
 
-      {/* Plan Usage Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Utilisation du plan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="font-medium">Résumés ce mois</span>
-              <span className="text-muted-foreground">
-                {summariesThisMonth} / {limit === Infinity ? '∞' : limit}
-              </span>
-            </div>
-            {limit !== Infinity && (
-              <div className="w-full bg-secondary rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min(percentage, 100)}%` }}
-                />
+      {/* Plan Usage Card - Hide when in my-only mode */}
+      {!showMyOnly && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Utilisation du plan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">Résumés ce mois</span>
+                <span className="text-muted-foreground">
+                  {summariesThisMonth} / {limit === Infinity ? '∞' : limit}
+                </span>
               </div>
-            )}
-            {percentage >= 80 && limit !== Infinity && (
-              <p className="text-xs text-amber-600">
-                Vous approchez de votre limite mensuelle
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              {limit !== Infinity && (
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all"
+                    style={{ width: `${Math.min(percentage, 100)}%` }}
+                  />
+                </div>
+              )}
+              {percentage >= 80 && limit !== Infinity && (
+                <p className="text-xs text-amber-600">
+                  Vous approchez de votre limite mensuelle
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content - Form and Result */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Summary Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Nouveau résumé</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} initialUrl={initialUrl} />
-            </CardContent>
-          </Card>
+      <div className={showMyOnly ? 'grid grid-cols-1' : 'grid grid-cols-1 lg:grid-cols-3 gap-6'}>
+        {/* Main content - Form and Result (hide in my-only mode) */}
+        {!showMyOnly && (
+          <div className="lg:col-span-2 space-y-6">
+            {/* Summary Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Nouveau résumé</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} initialUrl={initialUrl} />
+              </CardContent>
+            </Card>
 
           {/* Loading State */}
           {createSummary.isPending && (
@@ -144,10 +165,11 @@ export default function SummariesPage() {
               <SummaryDisplay summary={completedSummary} />
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* Sidebar - History */}
-        <div className="lg:col-span-1">
+        <div className={showMyOnly ? '' : 'lg:col-span-1'}>
           <Card>
             <CardHeader>
               <CardTitle>Historique</CardTitle>
