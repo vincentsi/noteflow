@@ -1,12 +1,14 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { SummaryService } from '@/services/summary.service'
+import { AIService } from '@/services/ai.service'
 import { CacheService } from '@/services/cache.service'
-import { createSummarySchema } from '@/schemas/summary.schema'
+import { createSummarySchema, type SummaryStyle } from '@/schemas/summary.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
 
 const summaryService = new SummaryService()
+const aiService = new AIService()
 
 /**
  * Summary controller
@@ -34,7 +36,7 @@ export class SummaryController {
       const isMultipart = contentType?.includes('multipart/form-data')
 
       let text: string
-      let style: string
+      let style: SummaryStyle
       let language: 'fr' | 'en' | undefined
 
       if (isMultipart) {
@@ -50,13 +52,12 @@ export class SummaryController {
         }
 
         // Get form fields
-        const fields = data.fields
-        style = (fields.style as any)?.value || 'SHORT'
-        language = (fields.language as any)?.value as 'fr' | 'en' | undefined
+        const fields = data.fields as Record<string, { value: string }>
+        style = (fields.style?.value || 'SHORT') as SummaryStyle
+        language = fields.language?.value as 'fr' | 'en' | undefined
 
         // Extract text from PDF
         const buffer = await data.toBuffer()
-        const aiService = (summaryService as any).aiService
         text = await aiService.extractTextFromPDF(buffer)
 
         if (!text || text.trim().length < 10) {

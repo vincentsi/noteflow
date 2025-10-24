@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { SummaryStyle } from '@prisma/client'
 
+// Re-export SummaryStyle for convenience
+export { SummaryStyle }
+
 /**
  * Schema for creating a summary
  */
