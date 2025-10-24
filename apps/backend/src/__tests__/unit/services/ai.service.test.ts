@@ -1,6 +1,5 @@
 import { AIService } from '../../../services/ai.service'
 import { SummaryStyle } from '@prisma/client'
-import pdfParse from 'pdf-parse'
 
 // Mock OpenAI
 jest.mock('openai', () => {
@@ -18,12 +17,14 @@ jest.mock('openai', () => {
   }
 })
 
-// Mock pdf-parse
-jest.mock('pdf-parse', () => {
-  return jest.fn()
+// Mock unpdf
+jest.mock('unpdf', () => {
+  return {
+    extractText: jest.fn(),
+  }
 })
 
-const mockPdfParse = jest.mocked(pdfParse)
+const { extractText: mockExtractText } = jest.requireMock('unpdf') as { extractText: jest.Mock }
 
 describe('AIService', () => {
   let aiService: AIService
@@ -243,12 +244,10 @@ describe('AIService', () => {
   describe('extractTextFromPDF', () => {
     it('should extract text from PDF buffer', async () => {
       const mockPDFData = {
-        text: 'This is extracted text from PDF.\nSecond line of text.',
-        numpages: 2,
-        info: { Title: 'Test PDF' },
+        text: ['This is extracted text from PDF.', 'Second line of text.'],
       }
 
-      mockPdfParse.mockResolvedValue(mockPDFData)
+      mockExtractText.mockResolvedValue(mockPDFData)
 
       const pdfBuffer = Buffer.from('mock-pdf-content')
       const text = await aiService.extractTextFromPDF(pdfBuffer)
@@ -256,11 +255,11 @@ describe('AIService', () => {
       expect(text).toBeDefined()
       expect(typeof text).toBe('string')
       expect(text).toBe('This is extracted text from PDF.\nSecond line of text.')
-      expect(mockPdfParse).toHaveBeenCalledWith(pdfBuffer)
+      expect(mockExtractText).toHaveBeenCalledWith(expect.any(Uint8Array))
     })
 
     it('should throw error for invalid PDF', async () => {
-      mockPdfParse.mockRejectedValue(new Error('Invalid PDF format'))
+      mockExtractText.mockRejectedValue(new Error('Invalid PDF format'))
 
       const invalidBuffer = Buffer.from('not-a-pdf')
 
@@ -271,12 +270,10 @@ describe('AIService', () => {
 
     it('should handle empty PDF', async () => {
       const mockPDFData = {
-        text: '',
-        numpages: 1,
-        info: {},
+        text: [],
       }
 
-      mockPdfParse.mockResolvedValue(mockPDFData)
+      mockExtractText.mockResolvedValue(mockPDFData)
 
       const pdfBuffer = Buffer.from('empty-pdf')
       const text = await aiService.extractTextFromPDF(pdfBuffer)
