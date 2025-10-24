@@ -41,26 +41,8 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
           : {},
       schema: {
         tags: ['Summaries'],
-        description: 'Create a new summary generation job',
-        body: {
-          type: 'object',
-          properties: {
-            text: { type: 'string', minLength: 10 },
-            style: {
-              type: 'string',
-              enum: [
-                'SHORT',
-                'TWEET',
-                'THREAD',
-                'BULLET_POINT',
-                'TOP3',
-                'MAIN_POINTS',
-              ],
-            },
-            language: { type: 'string', enum: ['fr', 'en'] },
-          },
-          required: ['text', 'style'],
-        },
+        description: 'Create a new summary generation job (supports JSON or multipart/form-data for PDF uploads)',
+        // No body schema validation - handle both JSON and multipart in controller
         response: {
           202: {
             type: 'object',
