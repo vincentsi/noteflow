@@ -82,6 +82,13 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
             max={stats.articles.limit}
             isNearLimit={stats.articles.limit !== null && stats.articles.current / stats.articles.limit >= 0.8}
           />
+          {stats.articles.current > 0 && (
+            <Button asChild variant="outline" size="sm" className="w-full mt-2">
+              <Link href="/veille?saved=true">
+                Voir mes articles sauvegardés
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Summaries */}
