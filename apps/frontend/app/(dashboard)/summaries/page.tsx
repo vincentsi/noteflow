@@ -1,24 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth.provider'
-import { useCreateSummary, useSummaryStatus, useSummaries } from '@/lib/hooks/useSummaries'
+import { useCreateSummary, useSummaries } from '@/lib/hooks/useSummaries'
 import { SummaryForm } from '@/components/summaries/SummaryForm'
-import { SummaryDisplay } from '@/components/summaries/SummaryDisplay'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 
 export default function SummariesPage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const showMyOnly = searchParams.get('my') === 'true'
-  const [jobId, setJobId] = useState<string | null>(null)
   const [initialUrl, setInitialUrl] = useState<string | null>(null)
 
   // Get URL from query params
@@ -31,11 +30,7 @@ export default function SummariesPage() {
 
   // Mutations et queries
   const createSummary = useCreateSummary()
-  const summaryStatus = useSummaryStatus(jobId)
   const { data: summariesData, isLoading: isLoadingHistory } = useSummaries({ page: 1, limit: 10 })
-
-  // Récupérer le résumé complété
-  const completedSummary = summaryStatus.data?.data.status === 'completed' ? summaryStatus.data.data.summary : null
 
   // Calculer l'utilisation du plan
   const planType = (user?.planType || 'FREE') as PlanType
@@ -47,8 +42,8 @@ export default function SummariesPage() {
     createSummary.mutate(params, {
       onSuccess: (response) => {
         if (response.success && response.data.jobId) {
-          setJobId(response.data.jobId)
-          toast.success('Génération du résumé en cours...')
+          // Redirect to the creation page with progress bar
+          router.push(`/summaries/create?jobId=${response.data.jobId}`)
         }
       },
       onError: (error: Error) => {
@@ -121,9 +116,9 @@ export default function SummariesPage() {
 
       {/* Two-column layout */}
       <div className={showMyOnly ? 'grid grid-cols-1' : 'grid grid-cols-1 lg:grid-cols-3 gap-6'}>
-        {/* Main content - Form and Result (hide in my-only mode) */}
+        {/* Main content - Form (hide in my-only mode) */}
         {!showMyOnly && (
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2">
             {/* Summary Form */}
             <Card>
               <CardHeader>
@@ -133,38 +128,6 @@ export default function SummariesPage() {
                 <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} initialUrl={initialUrl} />
               </CardContent>
             </Card>
-
-          {/* Loading State */}
-          {createSummary.isPending && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-center gap-3 text-muted-foreground">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Génération en cours...</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Polling Status */}
-          {jobId && summaryStatus.data?.data.status !== 'completed' && !createSummary.isPending && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-center gap-3 text-muted-foreground">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Traitement du résumé ({summaryStatus.data?.data.status || 'en attente'})...</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Completed Summary */}
-          {completedSummary && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Résumé généré</h2>
-              <SummaryDisplay summary={completedSummary} />
-            </div>
-          )}
           </div>
         )}
 
@@ -177,7 +140,10 @@ export default function SummariesPage() {
             <CardContent>
               {isLoadingHistory ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    <span className="text-sm">Chargement...</span>
+                  </div>
                 </div>
               ) : summariesData?.data.summaries.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
@@ -186,10 +152,10 @@ export default function SummariesPage() {
               ) : (
                 <div className="space-y-3">
                   {summariesData?.data.summaries.map((summary) => (
-                    <button
+                    <Link
                       key={summary.id}
-                      onClick={() => setJobId(`completed-${summary.id}`)}
-                      className="w-full text-left p-3 rounded-lg border hover:bg-accent transition-colors"
+                      href={`/summaries/${summary.id}`}
+                      className="block w-full text-left p-3 rounded-lg border hover:bg-accent transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -204,7 +170,7 @@ export default function SummariesPage() {
                           {summary.style}
                         </span>
                       </div>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               )}

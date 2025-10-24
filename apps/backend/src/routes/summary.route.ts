@@ -122,6 +122,54 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
   )
 
   /**
+   * Get a single summary by ID
+   * @route GET /api/summaries/:id
+   * @access Private
+   */
+  fastify.get(
+    '/:id',
+    {
+      schema: {
+        tags: ['Summaries'],
+        description: 'Get a single summary by ID',
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              data: {
+                type: 'object',
+                properties: {
+                  summary: {
+                    type: 'object',
+                    additionalProperties: true,
+                  },
+                },
+              },
+            },
+          },
+          404: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    summaryController.getSummaryById.bind(summaryController)
+  )
+
+  /**
    * Get user summaries
    * @route GET /api/summaries
    * @access Private

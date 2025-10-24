@@ -57,6 +57,22 @@ export type GetSummariesResponse = {
   }
 }
 
+export type GetSummaryByIdResponse = {
+  success: boolean
+  data: {
+    summary: {
+      id: string
+      title: string | null
+      originalText: string
+      summaryText: string
+      style: SummaryStyle
+      source: string | null
+      language: string
+      createdAt: string
+    }
+  }
+}
+
 /**
  * Summaries API client
  * Manages AI-powered summary generation
@@ -97,6 +113,14 @@ export const summariesApi = {
    */
   getSummaryStatus: async (jobId: string): Promise<SummaryStatusResponse> => {
     const response = await apiClient.get<SummaryStatusResponse>(`/api/summaries/${jobId}/status`)
+    return response.data
+  },
+
+  /**
+   * Get a single summary by ID
+   */
+  getSummaryById: async (id: string): Promise<GetSummaryByIdResponse> => {
+    const response = await apiClient.get<GetSummaryByIdResponse>(`/api/summaries/${id}`)
     return response.data
   },
 

@@ -57,7 +57,7 @@ async function fetchURLContent(url: string): Promise<string> {
 export async function processSummary(
   data: SummaryJob,
   prisma: PrismaClient = defaultPrisma
-): Promise<void> {
+): Promise<{ summaryId: string }> {
   const { userId, text, style, language } = data
 
   const aiService = new AIService()
@@ -75,7 +75,7 @@ export async function processSummary(
   const summaryText = await aiService.generateSummary(contentToSummarize, style, language)
 
   // Save to database
-  await prisma.summary.create({
+  const summary = await prisma.summary.create({
     data: {
       userId,
       originalText: text,
@@ -90,5 +90,8 @@ export async function processSummary(
   const cacheKey = `summary-usage:${userId}:${now.getFullYear()}-${now.getMonth()}`
   await CacheService.increment(cacheKey)
 
-  logger.info(`✅ Summary generated and saved for user ${userId}`)
+  logger.info(`✅ Summary generated and saved for user ${userId} with ID ${summary.id}`)
+
+  // Return the summary ID so it can be used by the status endpoint
+  return { summaryId: summary.id }
 }

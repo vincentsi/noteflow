@@ -136,11 +136,97 @@ export class SummaryController {
         const job = await queue.getJob(jobId)
         if (job) {
           const state = await job.getState()
+
+          // If job is completed, fetch the summary from the database
+          if (state === 'completed') {
+            // Get the return value (summaryId)
+            const returnValue = await job.returnvalue
+            const summaryId = returnValue?.summaryId
+
+            if (summaryId) {
+              // Try cache first
+              const cacheKey = `summary:${summaryId}`
+              const cached = await CacheService.get(cacheKey)
+
+              if (cached) {
+                return reply.status(200).send({
+                  success: true,
+                  data: {
+                    status: 'completed',
+                    jobId: job.id as string,
+                    summary: cached,
+                  },
+                })
+              }
+
+              // Cache miss - query database
+              const summary = await prisma.summary.findFirst({
+                where: {
+                  id: summaryId,
+                  userId,
+                },
+              })
+
+              if (summary) {
+                const summaryData = {
+                  id: summary.id,
+                  title: summary.title,
+                  originalText: summary.originalText,
+                  summaryText: summary.summaryText,
+                  style: summary.style,
+                  source: summary.source,
+                  language: summary.language,
+                  createdAt: summary.createdAt,
+                }
+
+                // Cache for 60 seconds
+                await CacheService.set(cacheKey, summaryData, 60)
+
+                return reply.status(200).send({
+                  success: true,
+                  data: {
+                    status: 'completed',
+                    jobId: job.id as string,
+                    summary: summaryData,
+                  },
+                })
+              }
+            }
+
+            // Fallback: if no summaryId, fetch the most recent summary for this user
+            const latestSummary = await prisma.summary.findFirst({
+              where: { userId },
+              orderBy: { createdAt: 'desc' },
+            })
+
+            if (latestSummary) {
+              const summaryData = {
+                id: latestSummary.id,
+                title: latestSummary.title,
+                originalText: latestSummary.originalText,
+                summaryText: latestSummary.summaryText,
+                style: latestSummary.style,
+                source: latestSummary.source,
+                language: latestSummary.language,
+                createdAt: latestSummary.createdAt,
+              }
+
+              return reply.status(200).send({
+                success: true,
+                data: {
+                  status: 'completed',
+                  jobId: job.id as string,
+                  summary: summaryData,
+                },
+              })
+            }
+          }
+
           return reply.status(200).send({
             success: true,
             data: {
               status: state,
-              jobId: job.id,
+              jobId: job.id as string,
             },
           })
         }
@@ -205,6 +291,74 @@ export class SummaryController {
         success: false,
         error: 'Job not found',
         message: 'Summary job not found',
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
+
+  /**
+   * GET /api/summaries/:id
+   * Get a single summary by ID
+   */
+  async getSummaryById(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = request.user?.userId
+
+      if (!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized',
+          message: 'User not authenticated',
+        })
+      }
+
+      const { id } = request.params as { id: string }
+
+      // Try cache first
+      const cacheKey = `summary:${id}`
+      const cached = await CacheService.get(cacheKey)
+
+      if (cached) {
+        return reply.status(200).send({
+          success: true,
+          data: { summary: cached },
+        })
+      }
+
+      // Cache miss - query database
+      const summary = await prisma.summary.findFirst({
+        where: {
+          id,
+          userId,
+        },
+      })
+
+      if (!summary) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Not found',
+          message: 'Summary not found',
+        })
+      }
+
+      const summaryData = {
+        id: summary.id,
+        title: summary.title,
+        originalText: summary.originalText,
+        summaryText: summary.summaryText,
+        style: summary.style,
+        source: summary.source,
+        language: summary.language,
+        createdAt: summary.createdAt,
+      }
+
+      // Cache for 60 seconds
+      await CacheService.set(cacheKey, summaryData, 60)
+
+      return reply.status(200).send({
+        success: true,
+        data: { summary: summaryData },
       })
     } catch (error) {
       return handleControllerError(error, request, reply)
