@@ -1,6 +1,7 @@
-import { useMutation, useQuery, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query'
 import { summariesApi, type CreateSummaryParams, type CreateSummaryResponse, type SummaryStatusResponse } from '@/lib/api/summaries'
 import { POLLING_CONFIG } from '@/lib/constants/api'
+import { useEffect, useRef } from 'react'
 
 /**
  * Hook to create a new summary
@@ -20,7 +21,10 @@ export function useCreateSummary(): UseMutationResult<CreateSummaryResponse, Err
  * - Job of 5min: ~50 requests (vs 150 with fixed 2s polling)
  */
 export function useSummaryStatus(jobId: string | null): UseQueryResult<SummaryStatusResponse, Error> {
-  return useQuery({
+  const queryClient = useQueryClient()
+  const hasInvalidatedRef = useRef(false)
+
+  const query = useQuery({
     queryKey: ['summary-status', jobId],
     queryFn: () => {
       if (!jobId) {
@@ -49,6 +53,21 @@ export function useSummaryStatus(jobId: string | null): UseQueryResult<SummarySt
     },
     refetchIntervalInBackground: false,
   })
+
+  // Invalidate summaries query when status becomes completed
+  useEffect(() => {
+    if (query.data?.data.status === 'completed' && !hasInvalidatedRef.current) {
+      hasInvalidatedRef.current = true
+      void queryClient.invalidateQueries({ queryKey: ['summaries'] })
+    }
+  }, [query.data?.data.status, queryClient])
+
+  // Reset invalidation flag when jobId changes
+  useEffect(() => {
+    hasInvalidatedRef.current = false
+  }, [jobId])
+
+  return query
 }
 
 /**

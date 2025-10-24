@@ -1,19 +1,6 @@
 import OpenAI from 'openai'
 import { SummaryStyle } from '@prisma/client'
-
-type PDFData = {
-  text: string
-  numpages: number
-  info: Record<string, unknown>
-}
-
-type PDFParseFunction = (buffer: Buffer) => Promise<PDFData>
-
-// Dynamic import workaround for CommonJS pdf-parse
-const loadPdfParse = async (): Promise<PDFParseFunction> => {
-  const module = await import('pdf-parse')
-  return module.default as unknown as PDFParseFunction
-}
+import { extractText } from 'unpdf'
 
 const PROMPTS = {
   [SummaryStyle.SHORT]: {
@@ -79,9 +66,9 @@ export class AIService {
 
   async extractTextFromPDF(buffer: Buffer): Promise<string> {
     try {
-      const parse = await loadPdfParse()
-      const data = await parse(buffer)
-      return data.text
+      const uint8Array = new Uint8Array(buffer)
+      const { text } = await extractText(uint8Array)
+      return text.join('\n')
     } catch (error) {
       throw new Error(
         `Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
