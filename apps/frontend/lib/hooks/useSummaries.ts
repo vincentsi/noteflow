@@ -79,3 +79,19 @@ export function useSummaries(params?: { page?: number; limit?: number }) {
     queryFn: () => summariesApi.getSummaries(params),
   })
 }
+
+/**
+ * Hook to delete a summary
+ */
+export function useDeleteSummary() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (summaryId: string) => summariesApi.deleteSummary(summaryId),
+    onSuccess: () => {
+      // Invalidate summaries list and user stats
+      void queryClient.invalidateQueries({ queryKey: ['summaries'] })
+      void queryClient.invalidateQueries({ queryKey: ['user-stats'] })
+    },
+  })
+}

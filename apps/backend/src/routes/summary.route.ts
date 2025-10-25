@@ -221,4 +221,52 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
     },
     summaryController.getUserSummaries.bind(summaryController)
   )
+
+  /**
+   * Delete a summary
+   * @route DELETE /api/summaries/:id
+   * @access Private
+   */
+  fastify.delete(
+    '/:id',
+    {
+      schema: {
+        tags: ['Summaries'],
+        description: 'Delete a summary by ID',
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              message: { type: 'string' },
+            },
+          },
+          401: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    summaryController.deleteSummary.bind(summaryController)
+  )
 }

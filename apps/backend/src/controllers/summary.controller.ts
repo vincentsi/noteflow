@@ -405,6 +405,36 @@ export class SummaryController {
       return handleControllerError(error, request, reply)
     }
   }
+
+  /**
+   * DELETE /api/summaries/:id
+   * Delete a summary
+   */
+  async deleteSummary(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = request.user?.userId
+
+      if (!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized',
+          message: 'User not authenticated',
+        })
+      }
+
+      const { id } = request.params as { id: string }
+
+      const service = new SummaryService()
+      await service.deleteSummary(id, userId)
+
+      return reply.status(200).send({
+        success: true,
+        message: 'Summary deleted successfully',
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
 }
 
 export const summaryController = new SummaryController()

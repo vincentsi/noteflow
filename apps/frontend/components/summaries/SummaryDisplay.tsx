@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Copy, ChevronDown, ChevronUp } from 'lucide-react'
+import { Copy, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useDeleteSummary } from '@/lib/hooks/useSummaries'
 
 export interface SummaryDisplayProps {
   summary: {
@@ -23,6 +25,8 @@ export interface SummaryDisplayProps {
 
 export function SummaryDisplay({ summary }: SummaryDisplayProps) {
   const [showOriginal, setShowOriginal] = useState(false)
+  const router = useRouter()
+  const deleteSummary = useDeleteSummary()
 
   const handleCopy = async () => {
     try {
@@ -31,6 +35,22 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
     } catch {
       toast.error('Erreur lors de la copie')
     }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce résumé ?\n\nNote: Votre quota mensuel ne changera pas, car il est basé sur le nombre de résumés créés, pas sur ceux existants.')) {
+      return
+    }
+
+    deleteSummary.mutate(summary.id, {
+      onSuccess: () => {
+        toast.success('Résumé supprimé avec succès')
+        router.push('/summaries')
+      },
+      onError: () => {
+        toast.error('Erreur lors de la suppression du résumé')
+      },
+    })
   }
 
   const toggleOriginal = () => {
@@ -89,23 +109,35 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={handleCopy} aria-label="Copier le résumé">
-          <Copy className="h-4 w-4 mr-2" />
-          Copier
-        </Button>
-        <Button variant="ghost" size="sm" onClick={toggleOriginal} aria-label="Afficher le texte original">
-          {showOriginal ? (
-            <>
-              <ChevronUp className="h-4 w-4 mr-2" />
-              Masquer l&apos;original
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-4 w-4 mr-2" />
-              Voir l&apos;original
-            </>
-          )}
+      <CardFooter className="flex gap-2 justify-between">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleCopy} aria-label="Copier le résumé">
+            <Copy className="h-4 w-4 mr-2" />
+            Copier
+          </Button>
+          <Button variant="ghost" size="sm" onClick={toggleOriginal} aria-label="Afficher le texte original">
+            {showOriginal ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-2" />
+                Masquer l&apos;original
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-2" />
+                Voir l&apos;original
+              </>
+            )}
+          </Button>
+        </div>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={handleDelete}
+          disabled={deleteSummary.isPending}
+          aria-label="Supprimer le résumé"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          {deleteSummary.isPending ? 'Suppression...' : 'Supprimer'}
         </Button>
       </CardFooter>
     </Card>

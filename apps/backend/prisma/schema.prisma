@@ -222,11 +222,13 @@ model Summary {
   source       String? // URL ou nom fichier
   language     String       @default("fr") // fr | en
 
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  deletedAt DateTime? // Soft delete - null = actif, not null = supprimé
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])
   @@index([userId, createdAt])
+  @@index([userId, deletedAt]) // Optimizes soft delete queries
   @@index([userId, style, createdAt(sort: Desc)]) // Optimizes filtered queries
   @@map("summaries")
 }

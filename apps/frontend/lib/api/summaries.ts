@@ -137,4 +137,12 @@ export const summariesApi = {
     })
     return response.data
   },
+
+  /**
+   * Delete a summary by ID
+   */
+  deleteSummary: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.delete<{ success: boolean; message: string }>(`/api/summaries/${id}`)
+    return response.data
+  },
 }
