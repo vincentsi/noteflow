@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { useAllArticles, useArticles, useSaveArticle, useUnsaveArticle } from '@/lib/hooks/useArticles'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -27,6 +27,7 @@ const PLAN_LIMITS = {
 export default function VeillePage() {
   const { user } = useAuth()
   const { t } = useTranslation()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const showSavedOnly = searchParams.get('saved') === 'true'
 
@@ -84,11 +85,9 @@ export default function VeillePage() {
       <div>
         <div className="flex items-center gap-2 mb-2">
           {showSavedOnly && (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/veille">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour
-              </Link>
+            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour
             </Button>
           )}
         </div>

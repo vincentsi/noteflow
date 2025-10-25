@@ -65,11 +65,9 @@ export default function SummariesPage() {
       <div>
         <div className="flex items-center gap-2 mb-2">
           {showMyOnly && (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/summaries">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour
-              </Link>
+            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour
             </Button>
           )}
         </div>

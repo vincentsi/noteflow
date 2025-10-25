@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useNotes, useCreateNote, useDeleteNote } from '@/lib/hooks/useNotes'
 import { NoteEditor } from '@/components/notes/NoteEditor'
@@ -13,6 +13,7 @@ import { Plus, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function NotesPage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const showMyOnly = searchParams.get('my') === 'true'
 
@@ -59,11 +60,9 @@ export default function NotesPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           {showMyOnly && (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/notes">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour
-              </Link>
+            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour
             </Button>
           )}
         </div>
