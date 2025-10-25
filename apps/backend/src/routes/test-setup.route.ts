@@ -24,10 +24,35 @@ interface SetupTestUsersBody {
 }
 
 export async function testSetupRoutes(app: FastifyInstance): Promise<void> {
-  // Skip registration if not in development
+  // Multi-layer protection against accidental production exposure
+
+  // Layer 1: Check NODE_ENV
   if (env.NODE_ENV !== 'development') {
+    app.log.warn('Test routes blocked: NODE_ENV is not development')
     return
   }
+
+  // Layer 2: Check for production environment variable
+  if (process.env.IS_PRODUCTION === 'true') {
+    app.log.error('SECURITY: Test routes blocked in production environment')
+    return
+  }
+
+  // Layer 3: Check hostname doesn't contain production keywords
+  const hostname = process.env.HOSTNAME || process.env.HOST || 'unknown'
+  const productionKeywords = ['prod', 'production', 'live', 'prd']
+  if (productionKeywords.some(keyword => hostname.toLowerCase().includes(keyword))) {
+    app.log.error(`SECURITY: Test routes blocked - hostname contains production keyword: ${hostname}`)
+    return
+  }
+
+  // Layer 4: Require explicit test routes flag
+  if (!env.ENABLE_TEST_ROUTES) {
+    app.log.warn('Test routes blocked: ENABLE_TEST_ROUTES not set')
+    return
+  }
+
+  app.log.info('✅ Test setup routes enabled (development mode)')
 
   /**
    * POST /api/test-setup/users

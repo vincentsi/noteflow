@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Eye, Edit } from 'lucide-react'
 
 export interface NoteEditorProps {
+  id?: string
   value: string
   onChange: (value: string) => void
   placeholder?: string
 }
 
-export function NoteEditor({ value, onChange, placeholder }: NoteEditorProps) {
+export function NoteEditor({ id, value, onChange, placeholder }: NoteEditorProps) {
   const [isPreview, setIsPreview] = useState(false)
 
   return (
@@ -46,6 +47,8 @@ export function NoteEditor({ value, onChange, placeholder }: NoteEditorProps) {
       {/* Editor or Preview */}
       {!isPreview ? (
         <textarea
+          id={id}
+          name="content"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || '# Titre\n\nVotre contenu en Markdown...'}

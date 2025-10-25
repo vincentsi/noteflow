@@ -88,8 +88,10 @@ export default function NotesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Titre</label>
+              <label htmlFor="note-title" className="text-sm font-medium mb-2 block">Titre</label>
               <Input
+                id="note-title"
+                name="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Titre de la note"
@@ -97,8 +99,9 @@ export default function NotesPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Contenu (Markdown)</label>
+              <label htmlFor="note-content" className="text-sm font-medium mb-2 block">Contenu (Markdown)</label>
               <NoteEditor
+                id="note-content"
                 value={content}
                 onChange={setContent}
                 placeholder="# Titre&#10;&#10;Votre contenu en Markdown..."
@@ -106,10 +109,12 @@ export default function NotesPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">
+              <label htmlFor="note-tags" className="text-sm font-medium mb-2 block">
                 Tags (séparés par des virgules)
               </label>
               <Input
+                id="note-tags"
+                name="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="travail, personnel, important"

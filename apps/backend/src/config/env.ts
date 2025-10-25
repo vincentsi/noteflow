@@ -104,6 +104,13 @@ const envSchema = z.object({
       if (!val || val.trim() === '') return []
       return val.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0)
     }),
+
+  // Test Routes Security (development only)
+  ENABLE_TEST_ROUTES: z
+    .string()
+    .optional()
+    .default('false')
+    .transform(val => val === 'true'),
 })
 
 /**

@@ -41,55 +41,54 @@ export async function passwordResetRoutes(fastify: FastifyInstance) {
     '/forgot-password',
     {
       schema: requestPasswordResetSchema,
-      config:
-        env.NODE_ENV === 'production'
-          ? {
-              rateLimit: {
-                max: 3,
-                timeWindow: '1 hour',
-                keyGenerator: (request) => {
-                  // Rate limit by IP to prevent spam
-                  return `password-reset:${request.ip}`
-                },
-                errorResponseBuilder: () => ({
-                  statusCode: 429,
-                  error: 'Too Many Requests',
-                  message: 'Too many reset requests. Try again in 1 hour.',
-                }),
-              },
-            }
-          : {},
+      config: {
+        rateLimit: {
+          // Stricter in production, more permissive in dev
+          max: env.NODE_ENV === 'production' ? 3 : 10,
+          timeWindow: env.NODE_ENV === 'production' ? '1 hour' : '15 minutes',
+          keyGenerator: (request) => {
+            // Rate limit by IP to prevent spam
+            return `password-reset:${request.ip}`
+          },
+          errorResponseBuilder: () => ({
+            statusCode: 429,
+            error: 'Too Many Requests',
+            message: `Too many reset requests. Try again in ${env.NODE_ENV === 'production' ? '1 hour' : '15 minutes'}.`,
+          }),
+        },
+      },
     },
     controller.requestReset.bind(controller)
   )
 
-  // POST /api/auth/reset-password
-  // Rate limit: 5 requests per 15 minutes (prevent brute force on token) (disabled in dev/test)
-  // Key generator: IP + token (prevent token brute force)
+  /**
+   * POST /api/auth/reset-password
+   * Confirm password reset with token
+   *
+   * Security: Rate limited by IP + token to prevent brute force attacks
+   */
   fastify.post(
     '/reset-password',
     {
       schema: resetPasswordSchema,
-      config:
-        env.NODE_ENV === 'production'
-          ? {
-              rateLimit: {
-                max: 5,
-                timeWindow: '15 minutes',
-                keyGenerator: (request) => {
-                  // Rate limit by IP + token to prevent brute force
-                  const body = request.body as { token?: string }
-                  const token = body?.token ? body.token.slice(0, 10) : 'unknown' // First 10 chars for identification
-                  return `password-reset-confirm:${request.ip}:${token}`
-                },
-                errorResponseBuilder: () => ({
-                  statusCode: 429,
-                  error: 'Too Many Requests',
-                  message: 'Too many reset attempts. Try again in 15 minutes.',
-                }),
-              },
-            }
-          : {},
+      config: {
+        rateLimit: {
+          // Stricter in production, more permissive in dev
+          max: env.NODE_ENV === 'production' ? 5 : 20,
+          timeWindow: '15 minutes',
+          keyGenerator: (request) => {
+            // Rate limit by IP + token to prevent brute force
+            const body = request.body as { token?: string }
+            const token = body?.token ? body.token.slice(0, 10) : 'unknown' // First 10 chars for identification
+            return `password-reset-confirm:${request.ip}:${token}`
+          },
+          errorResponseBuilder: () => ({
+            statusCode: 429,
+            error: 'Too Many Requests',
+            message: 'Too many reset attempts. Try again in 15 minutes.',
+          }),
+        },
+      },
     },
     controller.resetPassword.bind(controller)
   )

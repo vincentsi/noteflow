@@ -102,7 +102,7 @@ export class AuthService {
     email: string
   ): string {
     return jwt.sign({ userId, role, email }, env.JWT_SECRET, {
-      expiresIn: '15m',
+      expiresIn: '30m',
     })
   }
 

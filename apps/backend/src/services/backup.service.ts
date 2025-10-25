@@ -196,13 +196,33 @@ export class BackupService {
         throw new Error('DATABASE_URL not configured')
       }
 
-      // Use connection string instead of PGPASSWORD
-      // Connection string hides password from process list
-      // Stream: pg_dump | gzip
-      const dumpCommand = `pg_dump "${databaseUrl}" --format=plain --no-owner --no-acl --clean --if-exists | gzip`
+      // Parse DATABASE_URL to extract connection parameters
+      const url = new URL(databaseUrl)
+      const dbParams = {
+        host: url.hostname,
+        port: url.port || '5432',
+        database: url.pathname.slice(1),
+        user: url.username,
+        password: url.password,
+      }
 
-      // Execute and capture output as buffer
-      const { stdout } = await execAsync(dumpCommand, {
+      // Use pg_dump with environment variables instead of connection string
+      // This prevents shell injection and keeps credentials secure
+      const dumpCommand = 'pg_dump --format=plain --no-owner --no-acl --clean --if-exists'
+
+      // Set environment variables for PostgreSQL connection
+      const env = {
+        ...process.env,
+        PGHOST: dbParams.host,
+        PGPORT: dbParams.port,
+        PGDATABASE: dbParams.database,
+        PGUSER: dbParams.user,
+        PGPASSWORD: dbParams.password,
+      }
+
+      // Execute and capture output as buffer, then pipe to gzip
+      const { stdout } = await execAsync(`${dumpCommand} | gzip`, {
+        env,
         encoding: 'buffer',
         maxBuffer: 100 * 1024 * 1024, // 100MB max
       })
@@ -256,14 +276,34 @@ export class BackupService {
         throw new Error('DATABASE_URL not configured')
       }
 
-      // Use connection string instead of PGPASSWORD
-      // Connection string hides password from process list
-      const dumpCommand = `pg_dump "${databaseUrl}" --format=plain --no-owner --no-acl --clean --if-exists > "${filepath}"`
+      // Parse DATABASE_URL to extract connection parameters
+      const url = new URL(databaseUrl)
+      const dbParams = {
+        host: url.hostname,
+        port: url.port || '5432',
+        database: url.pathname.slice(1),
+        user: url.username,
+        password: url.password,
+      }
 
-      await execAsync(dumpCommand)
+      // Use pg_dump with environment variables instead of connection string
+      // This prevents shell injection and keeps credentials secure
+      const dumpCommand = `pg_dump --format=plain --no-owner --no-acl --clean --if-exists --file="${filepath}"`
 
-      // Compress backup
-      await execAsync(`gzip "${filepath}"`)
+      // Set environment variables for PostgreSQL connection
+      const env = {
+        ...process.env,
+        PGHOST: dbParams.host,
+        PGPORT: dbParams.port,
+        PGDATABASE: dbParams.database,
+        PGUSER: dbParams.user,
+        PGPASSWORD: dbParams.password,
+      }
+
+      await execAsync(dumpCommand, { env })
+
+      // Compress backup using --force to overwrite if exists
+      await execAsync(`gzip --force "${filepath}"`)
 
       // Get file size
       const stats = await fs.stat(compressedPath)

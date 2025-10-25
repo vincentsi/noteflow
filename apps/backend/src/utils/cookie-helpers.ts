@@ -3,10 +3,11 @@ import { env } from '@/config/env'
 
 /**
  * Token expiry durations (in seconds)
+ * IMPORTANT: ACCESS_TOKEN and CSRF_TOKEN must match JWT expiry in auth.service.ts
  */
 const TOKEN_EXPIRY = {
-  ACCESS_TOKEN: 30 * 60, // 30 minutes
-  REFRESH_TOKEN: 14 * 24 * 60 * 60, // 14 days
+  ACCESS_TOKEN: 30 * 60, // 30 minutes (matches JWT expiry)
+  REFRESH_TOKEN: 7 * 24 * 60 * 60, // 7 days
   CSRF_TOKEN: 30 * 60, // 30 minutes (synchronized with access token)
 } as const
 
