@@ -55,6 +55,9 @@ export async function createApp(): Promise<FastifyInstance> {
     // Security: Limit request body size to prevent DoS attacks
     // 10MB limit to support PDF uploads (increased from 100KB)
     bodyLimit: 1024 * 1024 * 10, // 10MB
+    // Trust proxy headers in production (X-Forwarded-For, X-Real-IP)
+    // Required for correct IP tracking in audit trail and rate limiting
+    trustProxy: env.NODE_ENV === 'production',
   })
 
   // Register cookie plugin

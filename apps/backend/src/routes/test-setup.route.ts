@@ -26,9 +26,9 @@ interface SetupTestUsersBody {
 export async function testSetupRoutes(app: FastifyInstance): Promise<void> {
   // Multi-layer protection against accidental production exposure
 
-  // Layer 1: Check NODE_ENV
-  if (env.NODE_ENV !== 'development') {
-    app.log.warn('Test routes blocked: NODE_ENV is not development')
+  // Layer 1: Check NODE_ENV (allow development and test)
+  if (env.NODE_ENV !== 'development' && env.NODE_ENV !== 'test') {
+    app.log.warn(`Test routes blocked: NODE_ENV is ${env.NODE_ENV} (expected development or test)`)
     return
   }
 
@@ -46,13 +46,13 @@ export async function testSetupRoutes(app: FastifyInstance): Promise<void> {
     return
   }
 
-  // Layer 4: Require explicit test routes flag
-  if (!env.ENABLE_TEST_ROUTES) {
-    app.log.warn('Test routes blocked: ENABLE_TEST_ROUTES not set')
+  // Layer 4: Require explicit test routes flag (optional in test environment)
+  if (env.NODE_ENV === 'development' && !env.ENABLE_TEST_ROUTES) {
+    app.log.warn('Test routes blocked: ENABLE_TEST_ROUTES not set in development')
     return
   }
 
-  app.log.info('✅ Test setup routes enabled (development mode)')
+  app.log.info(`✅ Test setup routes enabled (${env.NODE_ENV} mode)`)
 
   /**
    * POST /api/test-setup/users

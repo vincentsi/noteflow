@@ -37,6 +37,15 @@ export class ArticleService {
       PAGINATION_CONFIG.MAX_PAGE_SIZE
     )
 
+    // Generate cache key based on filters
+    const cacheKey = `articles:list:${JSON.stringify({ source, tags, search, dateRange, skip, limit })}`
+
+    // Try cache first
+    const cached = await CacheService.get<{ articles: unknown[]; total: number }>(cacheKey)
+    if (cached) {
+      return cached
+    }
+
     const where: Prisma.ArticleWhereInput = {}
 
     // Filter by source
@@ -107,7 +116,12 @@ export class ArticleService {
       prisma.article.count({ where }),
     ])
 
-    return { articles, total }
+    const result = { articles, total }
+
+    // Cache for 5 minutes (articles change slowly - RSS fetched hourly)
+    await CacheService.set(cacheKey, result, CACHE_TTL.ARTICLES_LIST)
+
+    return result
   }
 
   /**

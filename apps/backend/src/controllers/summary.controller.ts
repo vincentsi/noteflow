@@ -7,6 +7,7 @@ import { handleControllerError } from '@/utils/error-response'
 import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
 import { logger } from '@/utils/logger'
+import { CACHE_TTL } from '@/constants/performance'
 
 const summaryService = new SummaryService()
 const aiService = new AIService()
@@ -136,6 +137,15 @@ export class SummaryController {
       if (queue) {
         const job = await queue.getJob(jobId)
         if (job) {
+          // SECURITY: Validate job ownership
+          if (job.data.userId !== userId) {
+            return reply.status(403).send({
+              success: false,
+              error: 'Forbidden',
+              message: 'You do not have access to this job',
+            })
+          }
+
           const state = await job.getState()
 
           // If job is completed, fetch the summary from the database
@@ -181,8 +191,8 @@ export class SummaryController {
                   createdAt: summary.createdAt,
                 }
 
-                // Cache for 60 seconds
-                await CacheService.set(cacheKey, summaryData, 60)
+                // Cache for 1 hour (summaries are immutable)
+                await CacheService.set(cacheKey, summaryData, CACHE_TTL.SUMMARY)
 
                 return reply.status(200).send({
                   success: true,
@@ -261,8 +271,8 @@ export class SummaryController {
             createdAt: summary.createdAt,
           }
 
-          // Cache for 60 seconds
-          await CacheService.set(cacheKey, summaryData, 60)
+          // Cache for 1 hour (summaries are immutable)
+          await CacheService.set(cacheKey, summaryData, CACHE_TTL.SUMMARY)
 
           return reply.status(200).send({
             success: true,
@@ -342,8 +352,8 @@ export class SummaryController {
         createdAt: summary.createdAt,
       }
 
-      // Cache for 60 seconds
-      await CacheService.set(cacheKey, summaryData, 60)
+      // Cache for 1 hour (summaries are immutable)
+      await CacheService.set(cacheKey, summaryData, CACHE_TTL.SUMMARY)
 
       return reply.status(200).send({
         success: true,

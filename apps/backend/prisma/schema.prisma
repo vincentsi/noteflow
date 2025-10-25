@@ -230,6 +230,7 @@ model Summary {
   @@index([userId, createdAt])
   @@index([userId, deletedAt]) // Optimizes soft delete queries
   @@index([userId, style, createdAt(sort: Desc)]) // Optimizes filtered queries
+  @@index([userId, deletedAt, style, createdAt(sort: Desc)]) // Optimizes queries with deletedAt + style filter
   @@map("summaries")
 }
 

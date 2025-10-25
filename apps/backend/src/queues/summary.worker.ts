@@ -138,10 +138,11 @@ export async function processSummary(
     },
   })
 
-  // Increment cache counter for monthly usage
+  // SECURITY: Invalidate cache after summary creation
+  // This ensures plan limit enforcement stays accurate
   const now = new Date()
   const cacheKey = `summary-usage:${userId}:${now.getFullYear()}-${now.getMonth()}`
-  await CacheService.increment(cacheKey)
+  await CacheService.delete(cacheKey)
 
   logger.info(`✅ Summary generated and saved for user ${userId} with ID ${summary.id}`)
 

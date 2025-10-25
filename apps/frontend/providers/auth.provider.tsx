@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsInitialized(true)
   }, [])
 
-  // Proactive token refresh every 25 minutes (before 30 min expiration)
+  // Proactive token refresh every 10 minutes (before 15 min expiration)
   useEffect(() => {
     if (!data) return
 
@@ -54,8 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('Failed to refresh token:', error)
         }
       },
-      25 * 60 * 1000
-    ) // 25 minutes
+      10 * 60 * 1000
+    ) // 10 minutes
 
     return () => clearInterval(refreshInterval)
   }, [data, queryClient])

@@ -56,6 +56,9 @@ export const CACHE_TTL = {
   /** Article count cache: 1 hour - articles don't change frequently */
   ARTICLE_COUNT: 3600,
 
+  /** Summary data cache: 1 hour - summaries are immutable after creation */
+  SUMMARY: 3600,
+
   /** Summary status cache: 1 minute - jobs complete quickly */
   SUMMARY_STATUS: 60,
 
@@ -70,4 +73,7 @@ export const CACHE_TTL = {
 
   /** RSS feed cache: 30 minutes - feeds update periodically */
   RSS_FEED: 1800,
+
+  /** Articles list cache: 5 minutes - articles change slowly (RSS fetched hourly) */
+  ARTICLES_LIST: 300,
 } as const
