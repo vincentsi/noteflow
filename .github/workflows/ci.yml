@@ -186,6 +186,8 @@ jobs:
       NEXT_PUBLIC_API_URL: http://localhost:3001
       # Disable Stripe worker for E2E tests (not needed and can cause startup issues)
       DISABLE_STRIPE_WORKER: 'true'
+      # Enable test routes for E2E test setup
+      ENABLE_TEST_ROUTES: 'true'
       # Optional config (defaults provided)
       CLEANUP_BATCH_SIZE: '1000'
       CLEANUP_PAUSE_MS: '100'
