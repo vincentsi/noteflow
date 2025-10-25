@@ -60,10 +60,10 @@ export default function SummariesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 mb-3">
           {showMyOnly && (
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -71,10 +71,10 @@ export default function SummariesPage() {
             </Button>
           )}
         </div>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           {showMyOnly ? 'Mes résumés' : 'PowerPost'}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-lg text-muted-foreground">
           {showMyOnly
             ? `${summariesThisMonth} résumé${summariesThisMonth > 1 ? 's' : ''} ce mois`
             : 'Générez des résumés IA de vos textes et documents'
@@ -84,30 +84,32 @@ export default function SummariesPage() {
 
       {/* Plan Usage Card - Hide when in my-only mode */}
       {!showMyOnly && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Utilisation du plan</CardTitle>
+        <Card className="shadow-lg border-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Utilisation du plan</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">Résumés ce mois</span>
-                <span className="text-muted-foreground">
-                  {summariesThisMonth} / {limit === Infinity ? '∞' : limit}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-foreground">Résumés ce mois</span>
+                <span className="text-2xl font-bold text-primary">
+                  {summariesThisMonth} <span className="text-lg text-muted-foreground">/ {limit === Infinity ? '∞' : limit}</span>
                 </span>
               </div>
               {limit !== Infinity && (
-                <div className="w-full bg-secondary rounded-full h-2">
+                <div className="w-full bg-secondary rounded-full h-3 shadow-inner">
                   <div
-                    className="bg-primary h-2 rounded-full transition-all"
+                    className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500 shadow-sm"
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
               )}
               {percentage >= 80 && limit !== Infinity && (
-                <p className="text-xs text-amber-600">
-                  Vous approchez de votre limite mensuelle
-                </p>
+                <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-500">
+                    ⚠️ Vous approchez de votre limite mensuelle
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
@@ -120,11 +122,11 @@ export default function SummariesPage() {
         {!showMyOnly && (
           <div className="lg:col-span-2">
             {/* Summary Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Nouveau résumé</CardTitle>
+            <Card className="shadow-xl border-2">
+              <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="text-xl font-bold">✨ Nouveau résumé</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} initialUrl={initialUrl} />
               </CardContent>
             </Card>
@@ -133,11 +135,11 @@ export default function SummariesPage() {
 
         {/* Sidebar - History */}
         <div className={showMyOnly ? '' : 'lg:col-span-1'}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Historique</CardTitle>
+          <Card className="shadow-lg border-2">
+            <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent">
+              <CardTitle className="text-lg font-bold">📚 Historique</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               {isLoadingHistory ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -156,30 +158,31 @@ export default function SummariesPage() {
                       <Link
                         key={summary.id}
                         href={`/summaries/${summary.id}`}
-                        className="block w-full text-left p-3 rounded-lg border hover:bg-accent transition-colors"
+                        className="group block w-full text-left p-4 rounded-xl border-2 hover:border-primary/50 bg-card hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                       >
                         <div className="flex items-start gap-3">
                           {summary.coverImage && (
-                            <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                            <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 shadow-md ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all">
                               <Image
                                 src={summary.coverImage}
                                 alt={summary.title || 'Summary cover'}
                                 fill
-                                className="object-cover"
+                                className="object-cover group-hover:scale-110 transition-transform duration-300"
                                 unoptimized
                               />
                             </div>
                           )}
                           <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
                                 {summary.title || summary.summaryText.substring(0, 50) + '...'}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
                                 {new Date(summary.createdAt).toLocaleDateString('fr-FR')}
                               </p>
                             </div>
-                            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary shrink-0">
+                            <span className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 px-3 py-1.5 text-xs font-bold text-primary shrink-0 shadow-sm border border-primary/20">
                               {summary.style}
                             </span>
                           </div>
