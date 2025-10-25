@@ -39,7 +39,7 @@ export function setAuthCookies(
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true, // Not accessible via JavaScript (XSS protection)
     secure: isProduction, // HTTPS only in production
-    sameSite: isProduction ? 'strict' : 'lax', // lax in dev for localhost cross-port, strict in prod
+    sameSite: 'strict',
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -48,7 +48,7 @@ export function setAuthCookies(
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax', // lax in dev for localhost cross-port, strict in prod
+    sameSite: 'strict',
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -58,7 +58,7 @@ export function setAuthCookies(
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: false, // Accessible via JS to be sent in X-CSRF-Token header
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax', // lax in dev for localhost cross-port, strict in prod
+    sameSite: 'strict',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN, // Synchronized with access token
     path: '/',
   })
@@ -111,7 +111,7 @@ export function refreshSessionCookies(
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax', // lax in dev for localhost cross-port, strict in prod
+    sameSite: 'strict',
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -120,7 +120,7 @@ export function refreshSessionCookies(
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: false,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax', // lax in dev for localhost cross-port, strict in prod
+    sameSite: 'strict',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
@@ -150,7 +150,7 @@ export function setRefreshTokenCookie(
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax', // lax in dev for localhost cross-port, strict in prod
+    sameSite: 'strict',
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })

@@ -2,13 +2,12 @@
 
 import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { summariesApi } from '@/lib/api/summaries'
 import { SummaryDisplay } from '@/components/summaries/SummaryDisplay'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ArrowLeft } from 'lucide-react'
 
 export default function SummaryPage() {
   const params = useParams()
@@ -34,27 +33,46 @@ export default function SummaryPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/summaries">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
-            </Link>
+        <div className="flex items-center gap-2 mb-4">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/summaries')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
           </Button>
         </div>
-        <h1 className="text-3xl font-bold">Résumé</h1>
-        <p className="text-muted-foreground">
-          {summary ? 'Votre résumé généré' : 'Chargement...'}
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          Résumé
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          {summary ? summary.title || 'Votre résumé généré' : 'Chargement de votre résumé...'}
         </p>
       </div>
 
-      {/* Loading State */}
+      {/* Loading State - Skeleton */}
       {isLoading && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-3 text-muted-foreground py-8">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Chargement...</span>
+        <Card className="shadow-xl border-2 overflow-hidden animate-pulse">
+          {/* Cover image skeleton */}
+          <div className="w-full h-72 bg-muted" />
+
+          {/* Header skeleton */}
+          <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent space-y-4">
+            <div className="h-8 bg-muted rounded w-3/4" />
+            <div className="flex gap-3">
+              <div className="h-6 w-24 bg-muted rounded-full" />
+              <div className="h-6 w-32 bg-muted rounded-full" />
+              <div className="h-6 w-28 bg-muted rounded-full" />
+            </div>
+          </CardHeader>
+
+          {/* Content skeleton */}
+          <CardContent className="pt-6 space-y-6">
+            <div className="space-y-3">
+              <div className="h-4 bg-muted rounded w-full" />
+              <div className="h-4 bg-muted rounded w-full" />
+              <div className="h-4 bg-muted rounded w-3/4" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/30 border">
+              <div className="h-16 bg-muted rounded" />
+              <div className="h-16 bg-muted rounded" />
             </div>
           </CardContent>
         </Card>

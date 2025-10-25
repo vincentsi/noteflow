@@ -6,6 +6,7 @@ import { createSummarySchema, type SummaryStyle } from '@/schemas/summary.schema
 import { handleControllerError } from '@/utils/error-response'
 import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
+import { logger } from '@/utils/logger'
 
 const summaryService = new SummaryService()
 const aiService = new AIService()
@@ -194,34 +195,18 @@ export class SummaryController {
               }
             }
 
-            // Fallback: if no summaryId, fetch the most recent summary for this user
-            const latestSummary = await prisma.summary.findFirst({
-              where: { userId },
-              orderBy: { createdAt: 'desc' },
+            // SECURITY: No fallback to latest summary - this could return wrong data
+            // If the job is completed but we can't find the summary, something went wrong
+            // Log the error and return a proper error response
+            logger.error(
+              `Job ${jobId} completed but summary not found. SummaryId: ${summaryId}, UserId: ${userId}`
+            )
+
+            return reply.status(500).send({
+              success: false,
+              error:
+                'Summary generation completed but result not found. Please try creating a new summary.',
             })
-
-            if (latestSummary) {
-              const summaryData = {
-                id: latestSummary.id,
-                title: latestSummary.title,
-                coverImage: latestSummary.coverImage,
-                originalText: latestSummary.originalText,
-                summaryText: latestSummary.summaryText,
-                style: latestSummary.style,
-                source: latestSummary.source,
-                language: latestSummary.language,
-                createdAt: latestSummary.createdAt,
-              }
-
-              return reply.status(200).send({
-                success: true,
-                data: {
-                  status: 'completed',
-                  jobId: job.id as string,
-                  summary: summaryData,
-                },
-              })
-            }
           }
 
           return reply.status(200).send({

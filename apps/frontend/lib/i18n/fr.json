@@ -12,7 +12,7 @@
       "limitWarning": "Vous approchez de la limite de votre plan. Pensez à passer à un plan supérieur pour sauvegarder plus d'articles."
     },
     "articleList": {
-      "title": "Articles sauvegardés",
+      "title": "Articles",
       "empty": "Aucun article trouvé",
       "emptySubtitle": "Les articles que vous sauvegarderez apparaîtront ici",
       "errorLoading": "Impossible de charger les articles. Veuillez réessayer plus tard."

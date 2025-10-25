@@ -83,7 +83,7 @@ export default function VeillePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-4">
           {showSavedOnly && (
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -91,10 +91,10 @@ export default function VeillePage() {
             </Button>
           )}
         </div>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           {showSavedOnly ? 'Mes articles sauvegardés' : t('veille.title')}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mt-2">
           {showSavedOnly
             ? `${savedCount} article${savedCount > 1 ? 's' : ''} sauvegardé${savedCount > 1 ? 's' : ''}`
             : t('veille.subtitle')
@@ -104,30 +104,32 @@ export default function VeillePage() {
 
       {/* Plan Usage Card - Only show when not in saved-only mode */}
       {!showSavedOnly && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('veille.planUsage.title')}</CardTitle>
+        <Card className="shadow-lg border-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">{t('veille.planUsage.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">{t('veille.planUsage.savedArticles')}</span>
-                <span className="text-muted-foreground">
-                  {savedCount} / {limit === Infinity ? '∞' : limit}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-foreground">{t('veille.planUsage.savedArticles')}</span>
+                <span className="text-2xl font-bold text-primary">
+                  {savedCount} <span className="text-lg text-muted-foreground">/ {limit === Infinity ? '∞' : limit}</span>
                 </span>
               </div>
               {limit !== Infinity && (
-                <div className="w-full bg-secondary rounded-full h-2">
+                <div className="w-full bg-secondary rounded-full h-3 shadow-inner">
                   <div
-                    className="bg-primary h-2 rounded-full transition-all"
+                    className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500 shadow-sm"
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
               )}
               {percentage >= 80 && limit !== Infinity && (
-                <p className="text-xs text-amber-600">
-                  {t('veille.planUsage.limitWarning')}
-                </p>
+                <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-500">
+                    ⚠️ {t('veille.planUsage.limitWarning')}
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>

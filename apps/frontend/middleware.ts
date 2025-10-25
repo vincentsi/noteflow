@@ -31,21 +31,22 @@ export function middleware(request: NextRequest) {
     },
   })
 
-  // Build CSP header with strict hash-based security for production
+  // Build CSP header with environment-specific security
   // Next.js 15 doesn't support nonce injection in its own scripts yet
-  // Best practice: Use strict-dynamic with nonce for maximum security
+  // Production: Use strict-dynamic with nonce for maximum security
+  // Development: Use 'self' to allow Next.js HMR and dev scripts
   const isDev = process.env.NODE_ENV === 'development'
 
   const cspHeader = [
     "default-src 'self'",
-    // Production: strict-dynamic allows scripts loaded by trusted scripts with nonce
-    // This is the recommended approach for Next.js apps per OWASP guidelines
-    // Development: Allow unsafe-eval for HMR
+    // Development: Allow 'self', 'unsafe-inline', and 'unsafe-eval' for Next.js HMR and dev tools
+    // Production: Use nonce + strict-dynamic for maximum security (OWASP recommended)
+    // Note: Next.js 15 and some dependencies require 'unsafe-eval' for dev mode
     isDev
-      ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://browser.sentry-cdn.com`
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://browser.sentry-cdn.com"
       : `script-src 'nonce-${nonce}' 'strict-dynamic' https: http: 'unsafe-inline'`,
     "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline
-    "img-src 'self' data: https: blob:",
+    "img-src 'self' data: https://* blob:", // Allow all HTTPS images for Next.js Image optimization
     "font-src 'self' data:",
     "connect-src 'self' https://api.stripe.com https://sentry.io https://*.sentry.io http://localhost:3001 ws://localhost:3001 http://localhost:3003 ws://localhost:3003",
     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",

@@ -11,8 +11,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, FileText, MessageSquare, List, Trophy, Lightbulb, Hash } from 'lucide-react'
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
+import type { SummaryStyle } from '@/lib/api/summaries'
+import { cn } from '@/lib/utils'
+
+// Style badges configuration with icons and colors
+const STYLE_CONFIG: Record<SummaryStyle, { icon: typeof FileText; label: string; color: string }> = {
+  SHORT: { icon: FileText, label: 'Court', color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
+  TWEET: { icon: Hash, label: 'Tweet', color: 'bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400' },
+  THREAD: { icon: MessageSquare, label: 'Thread', color: 'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400' },
+  BULLET_POINT: { icon: List, label: 'Points clés', color: 'bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400' },
+  TOP3: { icon: Trophy, label: 'Top 3', color: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400' },
+  MAIN_POINTS: { icon: Lightbulb, label: 'Points principaux', color: 'bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400' },
+}
 
 export default function SummariesPage() {
   const { user } = useAuth()
@@ -65,7 +77,7 @@ export default function SummariesPage() {
       <div className="space-y-2">
         <div className="flex items-center gap-2 mb-3">
           {showMyOnly && (
-            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour
             </Button>
@@ -141,16 +153,57 @@ export default function SummariesPage() {
             </CardHeader>
             <CardContent className="pt-4">
               {isLoadingHistory ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    <span className="text-sm">Chargement...</span>
-                  </div>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="p-4 rounded-xl border-2 bg-card animate-pulse">
+                      <div className="flex items-start gap-3">
+                        {/* Image skeleton */}
+                        <div className="w-20 h-20 rounded-lg bg-muted flex-shrink-0" />
+                        <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0 space-y-2">
+                            {/* Title skeleton */}
+                            <div className="h-4 bg-muted rounded w-3/4" />
+                            {/* Date skeleton */}
+                            <div className="h-3 bg-muted rounded w-24" />
+                          </div>
+                          {/* Badge skeleton */}
+                          <div className="h-6 w-20 bg-muted rounded-full shrink-0" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : summariesData?.data.summaries.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Aucun résumé pour le moment
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 px-4">
+                  <div className="relative mb-4">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <FileText className="h-12 w-12 text-primary/60" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center animate-pulse">
+                      <span className="text-white text-xl">✨</span>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Aucun résumé pour le moment
+                  </h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-xs mb-4">
+                    Créez votre premier résumé IA pour commencer à organiser vos contenus
+                  </p>
+                  {!showMyOnly && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const form = document.querySelector('form')
+                        form?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }}
+                      className="group"
+                    >
+                      <span className="mr-2 group-hover:scale-110 transition-transform inline-block">📝</span>
+                      Créer un résumé
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <>
                   <div className="space-y-3">
@@ -182,9 +235,19 @@ export default function SummariesPage() {
                                 {new Date(summary.createdAt).toLocaleDateString('fr-FR')}
                               </p>
                             </div>
-                            <span className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 px-3 py-1.5 text-xs font-bold text-primary shrink-0 shadow-sm border border-primary/20">
-                              {summary.style}
-                            </span>
+                            {(() => {
+                              const styleConfig = STYLE_CONFIG[summary.style as SummaryStyle]
+                              const StyleIcon = styleConfig.icon
+                              return (
+                                <span className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold shrink-0 shadow-sm border",
+                                  styleConfig.color
+                                )}>
+                                  <StyleIcon className="h-3 w-3" />
+                                  {styleConfig.label}
+                                </span>
+                              )
+                            })()}
                           </div>
                         </div>
                       </Link>

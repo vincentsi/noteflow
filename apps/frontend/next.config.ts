@@ -36,6 +36,40 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'], // Modern formats (better compression)
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'files.smashing.media',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sg.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'news.ycombinator.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.dev.to',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.pixabay.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+    ],
   },
 
   /**
