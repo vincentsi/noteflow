@@ -171,6 +171,7 @@ export class SummaryController {
                 const summaryData = {
                   id: summary.id,
                   title: summary.title,
+                  coverImage: summary.coverImage,
                   originalText: summary.originalText,
                   summaryText: summary.summaryText,
                   style: summary.style,
@@ -203,6 +204,7 @@ export class SummaryController {
               const summaryData = {
                 id: latestSummary.id,
                 title: latestSummary.title,
+                coverImage: latestSummary.coverImage,
                 originalText: latestSummary.originalText,
                 summaryText: latestSummary.summaryText,
                 style: latestSummary.style,
@@ -265,6 +267,7 @@ export class SummaryController {
           const summaryData = {
             id: summary.id,
             title: summary.title,
+            coverImage: summary.coverImage,
             originalText: summary.originalText,
             summaryText: summary.summaryText,
             style: summary.style,
@@ -345,6 +348,7 @@ export class SummaryController {
       const summaryData = {
         id: summary.id,
         title: summary.title,
+        coverImage: summary.coverImage,
         originalText: summary.originalText,
         summaryText: summary.summaryText,
         style: summary.style,
@@ -390,7 +394,8 @@ export class SummaryController {
       const limit = query.limit ? parseInt(query.limit, 10) : 20
 
       // Get summaries
-      const result = await summaryService.getUserSummaries(userId, page, limit)
+      const service = new SummaryService()
+      const result = await service.getUserSummaries(userId, page, limit)
 
       return reply.status(200).send({
         success: true,

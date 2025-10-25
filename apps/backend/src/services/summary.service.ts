@@ -102,6 +102,7 @@ export class SummaryService {
       limit: number
       total: number
       totalPages: number
+      totalThisMonth: number
     }
   }> {
     // Calculate pagination
@@ -110,6 +111,18 @@ export class SummaryService {
     // Get total count for pagination
     const total = await prisma.summary.count({
       where: { userId },
+    })
+
+    // Get count for current month
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const totalThisMonth = await prisma.summary.count({
+      where: {
+        userId,
+        createdAt: {
+          gte: startOfMonth,
+        },
+      },
     })
 
     // Get summaries
@@ -139,6 +152,7 @@ export class SummaryService {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
+        totalThisMonth,
       },
     }
   }

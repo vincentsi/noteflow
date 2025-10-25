@@ -20,6 +20,40 @@ function isURL(text: string): boolean {
 }
 
 /**
+ * Extract Open Graph image from URL
+ */
+async function extractOGImage(url: string): Promise<string | null> {
+  try {
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'NoteFlow/1.0',
+      },
+    })
+
+    const $ = cheerio.load(response.data)
+
+    // Try multiple meta tags for image
+    const ogImage = $('meta[property="og:image"]').attr('content')
+    const twitterImage = $('meta[name="twitter:image"]').attr('content')
+    const firstImage = $('article img').first().attr('src')
+
+    const imageUrl = ogImage || twitterImage || firstImage
+
+    // Convert relative URLs to absolute
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      const baseUrl = new URL(url)
+      return new URL(imageUrl, baseUrl.origin).toString()
+    }
+
+    return imageUrl || null
+  } catch (error) {
+    logger.warn(`Failed to extract OG image from URL: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    return null
+  }
+}
+
+/**
  * Fetch and extract text content from URL
  */
 async function fetchURLContent(url: string): Promise<string> {
@@ -66,18 +100,37 @@ export async function processSummary(
 
   // Check if text is a URL and fetch content if needed
   let contentToSummarize = text
-  if (isURL(text)) {
+  let coverImage: string | null = null
+  const isUrl = isURL(text)
+
+  if (isUrl) {
     logger.info(`Fetching content from URL: ${text}`)
     contentToSummarize = await fetchURLContent(text)
+
+    // Extract image from the article
+    logger.info(`Extracting cover image from URL`)
+    coverImage = await extractOGImage(text)
   }
 
   // Generate summary with AI
   const summaryText = await aiService.generateSummary(contentToSummarize, style, language)
 
+  // Generate title from the original content
+  logger.info(`Generating title for summary`)
+  const title = await aiService.generateTitle(contentToSummarize, language)
+
+  // If no cover image from URL, generate one based on the title
+  if (!coverImage) {
+    logger.info(`Generating cover image for summary`)
+    coverImage = await aiService.generateCoverImage(title)
+  }
+
   // Save to database
   const summary = await prisma.summary.create({
     data: {
       userId,
+      title,
+      coverImage,
       originalText: text,
       summaryText,
       style,

@@ -215,6 +215,7 @@ model Summary {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title        String?
+  coverImage   String? // URL de l'image de couverture
   originalText String       @db.Text // Contenu original (texte, URL ou PDF)
   summaryText  String       @db.Text // Résumé généré
   style        SummaryStyle // SHORT, TWEET, THREAD, etc.

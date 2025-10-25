@@ -56,6 +56,7 @@ describe('useSummaryStatus - Polling', () => {
           summary: {
             id: 'summary-1',
             title: null,
+            coverImage: null,
             originalText: 'Original text',
             summaryText: 'This is a summary.',
             style: 'SHORT' as const,
@@ -91,6 +92,7 @@ describe('useSummaryStatus - Polling', () => {
         summary: {
           id: 'summary-1',
           title: null,
+          coverImage: null,
           originalText: 'Original text',
           summaryText: 'Summary text',
           style: 'SHORT',

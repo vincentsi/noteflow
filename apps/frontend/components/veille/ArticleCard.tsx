@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -63,6 +64,7 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
           {showPlaceholder ? (
             <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               {faviconUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={faviconUrl}
                   alt={article.source}
@@ -73,11 +75,13 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
               )}
             </div>
           ) : (
-            <img
-              src={article.imageUrl}
+            <Image
+              src={article.imageUrl || ''}
               alt={article.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
               onError={() => setImageError(true)}
+              unoptimized
             />
           )}
         </div>

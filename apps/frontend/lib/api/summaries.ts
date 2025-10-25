@@ -25,6 +25,7 @@ export type SummaryStatusResponse = {
     summary?: {
       id: string
       title: string | null
+      coverImage: string | null
       originalText: string
       summaryText: string
       style: SummaryStyle
@@ -41,6 +42,7 @@ export type GetSummariesResponse = {
     summaries: Array<{
       id: string
       title: string | null
+      coverImage: string | null
       originalText: string
       summaryText: string
       style: SummaryStyle
@@ -53,6 +55,7 @@ export type GetSummariesResponse = {
       limit: number
       total: number
       totalPages: number
+      totalThisMonth: number
     }
   }
 }
@@ -63,6 +66,7 @@ export type GetSummaryByIdResponse = {
     summary: {
       id: string
       title: string | null
+      coverImage: string | null
       originalText: string
       summaryText: string
       style: SummaryStyle

@@ -209,6 +209,7 @@ export async function summaryRoutes(fastify: FastifyInstance): Promise<void> {
                       limit: { type: 'number' },
                       total: { type: 'number' },
                       totalPages: { type: 'number' },
+                      totalThisMonth: { type: 'number' },
                     },
                   },
                 },

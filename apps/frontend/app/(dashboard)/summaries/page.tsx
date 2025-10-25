@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/providers/auth.provider'
 import { useCreateSummary, useSummaries } from '@/lib/hooks/useSummaries'
 import { SummaryForm } from '@/components/summaries/SummaryForm'
@@ -10,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 
 export default function SummariesPage() {
@@ -19,6 +20,7 @@ export default function SummariesPage() {
   const router = useRouter()
   const showMyOnly = searchParams.get('my') === 'true'
   const [initialUrl, setInitialUrl] = useState<string | null>(null)
+  const [historyPage, setHistoryPage] = useState(1)
 
   // Get URL from query params
   useEffect(() => {
@@ -30,11 +32,11 @@ export default function SummariesPage() {
 
   // Mutations et queries
   const createSummary = useCreateSummary()
-  const { data: summariesData, isLoading: isLoadingHistory } = useSummaries({ page: 1, limit: 10 })
+  const { data: summariesData, isLoading: isLoadingHistory } = useSummaries({ page: historyPage, limit: 10 })
 
   // Calculer l'utilisation du plan
   const planType = (user?.planType || 'FREE') as PlanType
-  const summariesThisMonth = summariesData?.data.summaries.length || 0
+  const summariesThisMonth = summariesData?.data.pagination.totalThisMonth || 0
   const limit = SUMMARY_LIMITS[planType]
   const percentage = limit === Infinity ? 0 : Math.round((summariesThisMonth / limit) * 100)
 
@@ -150,29 +152,71 @@ export default function SummariesPage() {
                   Aucun résumé pour le moment
                 </p>
               ) : (
-                <div className="space-y-3">
-                  {summariesData?.data.summaries.map((summary) => (
-                    <Link
-                      key={summary.id}
-                      href={`/summaries/${summary.id}`}
-                      className="block w-full text-left p-3 rounded-lg border hover:bg-accent transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {summary.title || summary.summaryText.substring(0, 50) + '...'}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(summary.createdAt).toLocaleDateString('fr-FR')}
-                          </p>
+                <>
+                  <div className="space-y-3">
+                    {summariesData?.data.summaries.map((summary) => (
+                      <Link
+                        key={summary.id}
+                        href={`/summaries/${summary.id}`}
+                        className="block w-full text-left p-3 rounded-lg border hover:bg-accent transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          {summary.coverImage && (
+                            <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                              <Image
+                                src={summary.coverImage}
+                                alt={summary.title || 'Summary cover'}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {summary.title || summary.summaryText.substring(0, 50) + '...'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(summary.createdAt).toLocaleDateString('fr-FR')}
+                              </p>
+                            </div>
+                            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary shrink-0">
+                              {summary.style}
+                            </span>
+                          </div>
                         </div>
-                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary shrink-0">
-                          {summary.style}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {summariesData && summariesData.data.pagination.totalPages > 1 && (
+                    <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                        disabled={historyPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Précédent
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        Page {summariesData.data.pagination.page} / {summariesData.data.pagination.totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHistoryPage((p) => Math.min(summariesData.data.pagination.totalPages, p + 1))}
+                        disabled={historyPage === summariesData.data.pagination.totalPages}
+                      >
+                        Suivant
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

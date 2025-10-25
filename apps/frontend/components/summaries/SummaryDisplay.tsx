@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Copy, ChevronDown, ChevronUp } from 'lucide-react'
@@ -13,6 +14,7 @@ export interface SummaryDisplayProps {
     originalText: string
     style: string
     title: string | null
+    coverImage: string | null
     source: string | null
     language: string
     createdAt: string
@@ -47,10 +49,21 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
 
   return (
     <Card>
+      {summary.coverImage && (
+        <div className="relative w-full h-64 overflow-hidden rounded-t-lg">
+          <Image
+            src={summary.coverImage}
+            alt={summary.title || 'Summary cover'}
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
+      )}
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            {summary.title && <CardTitle className="text-xl mb-2">{summary.title}</CardTitle>}
+            {summary.title && <CardTitle className="text-2xl mb-2">{summary.title}</CardTitle>}
             <CardDescription>
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                 {summary.style}

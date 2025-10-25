@@ -1,18 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSummaryStatus } from '@/lib/hooks/useSummaries'
 import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react'
 
 const CREATION_STEPS = [
-  { id: 'fetching', label: 'Fetching post', icon: Circle },
-  { id: 'analyzing', label: 'Analyzing post', icon: Circle },
-  { id: 'creating', label: 'Creating Power Post', icon: Circle },
-  { id: 'finding', label: 'Finding title', icon: Circle },
-  { id: 'generating', label: 'Generating cover', icon: Circle },
-  { id: 'publishing', label: 'Publishing post', icon: Circle },
+  { id: 'fetching', label: 'Fetching post', duration: 1000 },
+  { id: 'analyzing', label: 'Analyzing post', duration: 1500 },
+  { id: 'creating', label: 'Creating Power Post', duration: 4000 },
+  { id: 'finding', label: 'Finding title', duration: 2000 },
+  { id: 'generating', label: 'Generating cover', duration: 2000 },
+  { id: 'publishing', label: 'Publishing post', duration: 10000 },
 ]
 
 export default function SummaryCreatePage() {
@@ -20,24 +20,38 @@ export default function SummaryCreatePage() {
   const router = useRouter()
   const jobId = searchParams.get('jobId')
 
+  const [currentStep, setCurrentStep] = useState(0)
+
   const summaryStatus = useSummaryStatus(jobId)
   const status = summaryStatus.data?.data.status
   const summary = summaryStatus.data?.data.summary
 
-  // Determine current step based on status and elapsed time
-  const getCurrentStep = () => {
-    if (!status) return 0
-    if (status === 'waiting') return 1
-    if (status === 'active') {
-      // Simulate progression through steps
-      const dataUpdateCount = summaryStatus.dataUpdatedAt ? Math.floor((Date.now() - summaryStatus.dataUpdatedAt) / 2000) : 0
-      return Math.min(2 + dataUpdateCount, 5)
+  // Auto-progress through steps with smooth animation
+  useEffect(() => {
+    if (status === 'completed') {
+      setCurrentStep(CREATION_STEPS.length)
+      return
     }
-    if (status === 'completed') return 6
-    return 0
-  }
 
-  const currentStep = getCurrentStep()
+    if (status !== 'waiting' && status !== 'active') {
+      return
+    }
+
+    let totalDuration = 0
+    const intervals: NodeJS.Timeout[] = []
+
+    CREATION_STEPS.forEach((step, index) => {
+      totalDuration += step.duration
+      const timer = setTimeout(() => {
+        setCurrentStep(index + 1)
+      }, totalDuration)
+      intervals.push(timer)
+    })
+
+    return () => {
+      intervals.forEach(clearTimeout)
+    }
+  }, [status])
 
   // Redirect to summary page when completed
   useEffect(() => {
@@ -83,15 +97,24 @@ export default function SummaryCreatePage() {
             {CREATION_STEPS.map((step, index) => {
               const isCompleted = index < currentStep
               const isCurrent = index === currentStep
-              const Icon = isCompleted ? CheckCircle2 : (isCurrent ? Loader2 : Circle)
+              const Icon = isCompleted
+                ? CheckCircle2
+                : isCurrent
+                  ? Loader2
+                  : Circle
 
               return (
                 <div
                   key={step.id}
                   className="flex items-center gap-4 p-4 rounded-lg border transition-all"
                   style={{
-                    backgroundColor: isCompleted ? 'hsl(var(--primary) / 0.05)' : 'transparent',
-                    borderColor: isCompleted || isCurrent ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                    backgroundColor: isCompleted
+                      ? 'hsl(var(--primary) / 0.05)'
+                      : 'transparent',
+                    borderColor:
+                      isCompleted || isCurrent
+                        ? 'hsl(var(--primary))'
+                        : 'hsl(var(--border))',
                   }}
                 >
                   <div className="flex-shrink-0">
@@ -100,14 +123,16 @@ export default function SummaryCreatePage() {
                         isCompleted
                           ? 'text-primary'
                           : isCurrent
-                          ? 'text-primary animate-spin'
-                          : 'text-muted-foreground'
+                            ? 'text-primary animate-spin'
+                            : 'text-muted-foreground'
                       }`}
                     />
                   </div>
                   <span
                     className={`text-sm font-medium ${
-                      isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground'
+                      isCompleted || isCurrent
+                        ? 'text-foreground'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {step.label}
@@ -121,7 +146,9 @@ export default function SummaryCreatePage() {
             <div className="w-full bg-secondary rounded-full h-2">
               <div
                 className="bg-primary h-2 rounded-full transition-all duration-500"
-                style={{ width: `${(currentStep / CREATION_STEPS.length) * 100}%` }}
+                style={{
+                  width: `${(currentStep / CREATION_STEPS.length) * 100}%`,
+                }}
               />
             </div>
             <p className="text-center text-sm text-muted-foreground mt-2">
