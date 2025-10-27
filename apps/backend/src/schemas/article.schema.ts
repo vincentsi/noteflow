@@ -6,7 +6,11 @@ import { z } from 'zod'
 export const getArticlesSchema = z.object({
   source: z.string().optional(),
   tags: z.string().optional(), // comma-separated tags
-  search: z.string().optional(),
+  search: z
+    .string()
+    .max(200, 'Search query must not exceed 200 characters')
+    .regex(/^[a-zA-Z0-9\s\-_.,!?'"]*$/, 'Search query contains invalid characters')
+    .optional(),
   dateRange: z.enum(['24h', '7d', '30d', 'all']).optional(), // Date filter
   skip: z.coerce.number().int().min(0).optional(),
   take: z.coerce.number().int().min(1).max(100).optional(),
