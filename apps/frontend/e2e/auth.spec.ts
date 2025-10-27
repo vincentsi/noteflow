@@ -77,8 +77,8 @@ baseTest.describe('Authentication Flow', () => {
     // Should redirect to dashboard
     await expect(page).toHaveURL(TEST_ROUTES.dashboard, { timeout: TEST_CONFIG.timeouts.long })
 
-    // Verify user is logged in by checking for logout button (use .first() to avoid ambiguity)
-    await expect(page.locator('button:has-text("Logout")').first()).toBeVisible({
+    // Verify user is logged in by checking for logout button
+    await expect(page.getByTestId('logout-button')).toBeVisible({
       timeout: TEST_CONFIG.timeouts.medium,
     })
   })
@@ -161,8 +161,8 @@ baseTest.describe('Authentication Flow', () => {
     // Should redirect to dashboard after successful registration
     await expect(page).toHaveURL(TEST_ROUTES.dashboard, { timeout: TEST_CONFIG.timeouts.long })
 
-    // Verify user is logged in (use .first() to avoid ambiguity)
-    await expect(page.locator('button:has-text("Logout")').first()).toBeVisible({
+    // Verify user is logged in
+    await expect(page.getByTestId('logout-button')).toBeVisible({
       timeout: TEST_CONFIG.timeouts.medium,
     })
 
@@ -262,8 +262,8 @@ baseTest.describe('Authentication Flow', () => {
     // Wait for redirect to dashboard
     await expect(page).toHaveURL(TEST_ROUTES.dashboard, { timeout: TEST_CONFIG.timeouts.long })
 
-    // Wait for logout button to appear (use .first() to avoid ambiguity with multiple logout buttons)
-    const logoutButton = page.locator('button:has-text("Logout")').first()
+    // Wait for logout button to appear
+    const logoutButton = page.getByTestId('logout-button')
     await expect(logoutButton).toBeVisible({ timeout: TEST_CONFIG.timeouts.medium })
 
     // Click logout
@@ -272,9 +272,8 @@ baseTest.describe('Authentication Flow', () => {
     // Should redirect to home or login page
     await expect(page).toHaveURL(/\/(|login)/, { timeout: TEST_CONFIG.timeouts.medium })
 
-    // Verify logout buttons are gone (user is logged out)
-    // Use toHaveCount(0) instead of not.toBeVisible() to handle multiple buttons gracefully
-    await expect(page.locator('button:has-text("Logout")')).toHaveCount(0)
+    // Verify logout button is gone (user is logged out)
+    await expect(page.getByTestId('logout-button')).toHaveCount(0)
   })
 })
 
@@ -297,7 +296,7 @@ baseTest.describe('Protected Routes', () => {
     // Should be on dashboard (not redirected)
     await expect(authenticatedPage).toHaveURL(TEST_ROUTES.dashboard)
 
-    // Should see dashboard content
-    await expect(authenticatedPage.locator('text=/dashboard/i').first()).toBeVisible()
+    // Should see logout button (confirms user is authenticated and on dashboard)
+    await expect(authenticatedPage.getByTestId('logout-button')).toBeVisible()
   })
 })

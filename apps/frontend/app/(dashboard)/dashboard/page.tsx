@@ -51,7 +51,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <dt className="font-medium dark:text-gray-200">{t('dashboard.userInfo.plan')}</dt>
-                <dd className="text-muted-foreground dark:text-gray-400 font-semibold">
+                <dd className="text-muted-foreground dark:text-gray-400 font-semibold" data-testid="user-plan-type">
                   {user?.planType || 'FREE'}
                 </dd>
               </div>

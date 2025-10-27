@@ -97,8 +97,8 @@ baseTest.describe('Password Reset Flow', () => {
     await page.fill('input[name="password"], input[type="password"]', 'weak')
     await page.click('button[type="submit"]')
 
-    // Should show validation error about password complexity
-    const errorMessage = page.locator('text=/at least 12|12 characters|too short|complexity/i')
+    // Should show validation error about password complexity (French or English)
+    const errorMessage = page.locator('text=/at least 12|12 characters|12 caractères|too short|complexity/i')
     await expect(errorMessage).toBeVisible({ timeout: TEST_CONFIG.timeouts.short })
   })
 

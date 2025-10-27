@@ -57,7 +57,7 @@ export function DashboardNav() {
           <LanguageSwitcher />
           <ThemeToggle />
 
-          <Button variant="outline" size="sm" onClick={logout}>
+          <Button variant="outline" size="sm" onClick={logout} data-testid="logout-button">
             <LogOut className="h-4 w-4 mr-2" />
             {t('common.navigation.logout')}
           </Button>

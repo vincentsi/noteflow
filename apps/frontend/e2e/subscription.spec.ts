@@ -115,14 +115,10 @@ test.describe('Subscription Flow', () => {
 
     const timeout = browserName === 'chromium' ? 10000 : 20000
 
-    // Should display current plan (check for Plan label or Subscription card)
-    await expect(
-      authenticatedPage.locator('text=/Plan|Subscription/i').first()
-    ).toBeVisible({ timeout })
-
-    // Should show plan type (FREE, PRO, or STARTER)
-    const planText = authenticatedPage.locator('text=/FREE|PRO|STARTER|Basic|Premium/i').first()
+    // Should show plan type (FREE, PRO, or STARTER) using data-testid
+    const planText = authenticatedPage.getByTestId('user-plan-type')
     await expect(planText).toBeVisible({ timeout })
+    await expect(planText).toHaveText(/FREE|PRO|STARTER/)
   })
 })
 
@@ -161,10 +157,10 @@ test.describe('Subscription Permissions', () => {
 
     const timeout = browserName === 'chromium' ? 10000 : 20000
 
-    // Verify user is on PRO plan
-    await expect(
-      proUserPage.locator('text=/PRO|pro plan|premium/i').first()
-    ).toBeVisible({ timeout })
+    // Verify user is on PRO plan using data-testid
+    const planText = proUserPage.getByTestId('user-plan-type')
+    await expect(planText).toBeVisible({ timeout })
+    await expect(planText).toHaveText('PRO')
 
     // Should NOT see upgrade prompts for PRO features
     const upgradePrompt = proUserPage.locator('text=/upgrade to pro|unlock pro/i')
@@ -173,10 +169,6 @@ test.describe('Subscription Permissions', () => {
     // PRO users should not see PRO upgrade prompts (might see STARTER upgrades though)
     // This assertion might be loose, adjust based on actual UI
     expect(upgradePromptCount).toBeLessThanOrEqual(1) // Allow STARTER upgrade prompt
-
-    // Alternatively, verify PRO features are accessible
-    // This test might need adjustment based on actual features
-    await expect(proUserPage.locator('text=/dashboard/i').first()).toBeVisible()
   })
 
   test('should allow all features for STARTER users', async ({ starterUserPage, browserName }) => {
@@ -186,10 +178,10 @@ test.describe('Subscription Permissions', () => {
 
     const timeout = browserName === 'chromium' ? 10000 : 20000
 
-    // Verify user is on STARTER plan
-    await expect(
-      starterUserPage.locator('text=/STARTER|starter plan|starter/i').first()
-    ).toBeVisible({ timeout })
+    // Verify user is on STARTER plan using data-testid
+    const planText = starterUserPage.getByTestId('user-plan-type')
+    await expect(planText).toBeVisible({ timeout })
+    await expect(planText).toHaveText('STARTER')
 
     // Should NOT see any upgrade prompts
     const upgradePrompt = starterUserPage.locator('text=/upgrade to|unlock/i')
@@ -197,8 +189,5 @@ test.describe('Subscription Permissions', () => {
 
     // STARTER users should see no upgrade prompts
     expect(upgradePromptCount).toBe(0)
-
-    // Verify access to all features
-    await expect(starterUserPage.locator('text=/dashboard/i').first()).toBeVisible()
   })
 })

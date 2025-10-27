@@ -151,8 +151,8 @@ test.describe('GDPR Rights', () => {
 
     const timeout = browserName === 'chromium' ? 10000 : 20000
 
-    // Click "Edit Profile" button to enable editing
-    const editButton = authenticatedPage.locator('button:has-text("Edit Profile")')
+    // Click "Edit Profile" button to enable editing using data-testid
+    const editButton = authenticatedPage.getByTestId('edit-profile-button')
     await editButton.click()
 
     // Wait for form to appear
@@ -168,9 +168,9 @@ test.describe('GDPR Rights', () => {
 
     expect(nameVisible || emailVisible).toBeTruthy()
 
-    // Should have save/update button
-    const saveButton = authenticatedPage.locator('button:has-text("Save")')
-    await expect(saveButton.first()).toBeVisible({ timeout })
+    // Should have save/update button using data-testid
+    const saveButton = authenticatedPage.getByTestId('save-profile-button')
+    await expect(saveButton).toBeVisible({ timeout })
   })
 
   test('should respect data deletion requests', async ({ authenticatedPage, browserName }) => {

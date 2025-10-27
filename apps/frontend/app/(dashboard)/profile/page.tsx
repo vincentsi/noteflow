@@ -98,7 +98,7 @@ export default function ProfilePage() {
               </CardDescription>
             </div>
             {!isEditing && (
-              <Button onClick={() => setIsEditing(true)} variant="outline">
+              <Button onClick={() => setIsEditing(true)} variant="outline" data-testid="edit-profile-button">
                 {t('profile.actions.editProfile')}
               </Button>
             )}
@@ -149,7 +149,7 @@ export default function ProfilePage() {
                 />
 
                 <div className="flex gap-2">
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                  <Button type="submit" disabled={form.formState.isSubmitting} data-testid="save-profile-button">
                     {form.formState.isSubmitting ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
                   </Button>
                   <Button
