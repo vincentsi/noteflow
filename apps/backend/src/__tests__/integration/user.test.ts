@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify'
 import { prisma } from '../../config/prisma'
 import { randomUUID } from 'crypto'
 import bcrypt from 'bcryptjs'
+import { SummaryStyle } from '@prisma/client'
 
 describe('User API Integration Tests', () => {
   let app: FastifyInstance
@@ -191,7 +192,7 @@ describe('User API Integration Tests', () => {
           userId,
           originalText: 'Text 1',
           summaryText: 'Summary 1',
-          style: 'SHORT',
+          style: SummaryStyle.SHORT,
           language: 'fr',
           createdAt: startOfMonth,
         },

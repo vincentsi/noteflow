@@ -159,18 +159,18 @@ enum Role {
 }
 
 enum SubscriptionStatus {
-  NONE // Pas d'abonnement
-  ACTIVE // Abonnement actif
-  PAST_DUE // Paiement échoué
-  CANCELED // Annulé
-  INCOMPLETE // Paiement initial en cours
-  TRIALING // Période d'essai
+  NONE // No subscription
+  ACTIVE // Active subscription
+  PAST_DUE // Payment failed
+  CANCELED // Canceled
+  INCOMPLETE // Initial payment in progress
+  TRIALING // Trial period
 }
 
 enum PlanType {
-  FREE // Plan gratuit
-  STARTER // Plan Starter (6€/mois)
-  PRO // Plan Pro (15€/mois)
+  FREE // Free plan
+  STARTER // Starter plan (6€/month)
+  PRO // Pro plan (15€/month)
 }
 
 model Article {
@@ -215,15 +215,15 @@ model Summary {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title        String?
-  coverImage   String? // URL de l'image de couverture
-  originalText String       @db.Text // Contenu original (texte, URL ou PDF)
-  summaryText  String       @db.Text // Résumé généré
+  coverImage   String? // Cover image URL
+  originalText String       @db.Text // Original content (text, URL or PDF)
+  summaryText  String       @db.Text // Generated summary
   style        SummaryStyle // SHORT, TWEET, THREAD, etc.
-  source       String? // URL ou nom fichier
+  source       String? // URL or filename
   language     String       @default("fr") // fr | en
 
   createdAt DateTime  @default(now())
-  deletedAt DateTime? // Soft delete - null = actif, not null = supprimé
+  deletedAt DateTime? // Soft delete - null = active, not null = deleted
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])
