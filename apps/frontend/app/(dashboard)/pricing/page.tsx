@@ -10,6 +10,7 @@ import {
   STRIPE_STARTER_PRICE_ID,
   STRIPE_PRO_PRICE_ID,
 } from '@/lib/constants/stripe'
+import { useI18n } from '@/lib/i18n/provider'
 
 // Lazy load heavy components (reduces initial bundle)
 const StripeCheckout = dynamic(
@@ -20,66 +21,67 @@ const StripeCheckout = dynamic(
   }
 )
 
-const PLANS = [
-  {
-    name: 'FREE',
-    price: '0€',
-    description: 'Parfait pour commencer',
-    features: [
-      '10 articles sauvegardés',
-      '5 résumés IA par mois',
-      '20 notes',
-      'Accès aux flux RSS',
-      '6 styles de résumé',
-    ],
-    priceId: null, // No Stripe price ID for free plan
-  },
-  {
-    name: 'STARTER',
-    price: '6€',
-    period: '/mois',
-    description: 'Pour les utilisateurs réguliers',
-    features: [
-      'Toutes les fonctionnalités FREE',
-      '50 articles sauvegardés',
-      '20 résumés IA par mois',
-      '100 notes',
-      'Support prioritaire',
-    ],
-    priceId: STRIPE_STARTER_PRICE_ID,
-    highlighted: true,
-  },
-  {
-    name: 'PRO',
-    price: '15€',
-    period: '/mois',
-    description: 'Pour les professionnels',
-    features: [
-      'Toutes les fonctionnalités STARTER',
-      'Articles illimités',
-      'Résumés illimités',
-      'Notes illimitées',
-      'Support prioritaire',
-      'Export PDF',
-    ],
-    priceId: STRIPE_PRO_PRICE_ID,
-  },
-]
-
 export default function PricingPage() {
+  const { t } = useI18n()
   const { user } = useAuth()
   const currentPlan = user?.planType || 'FREE'
+
+  const PLANS = [
+    {
+      name: 'FREE',
+      price: '0€',
+      description: t('pricing.plans.FREE.description'),
+      features: [
+        t('pricing.plans.FREE.features.0'),
+        t('pricing.plans.FREE.features.1'),
+        t('pricing.plans.FREE.features.2'),
+        t('pricing.plans.FREE.features.3'),
+        t('pricing.plans.FREE.features.4'),
+      ],
+      priceId: null,
+    },
+    {
+      name: 'STARTER',
+      price: '6€',
+      period: t('pricing.perMonth'),
+      description: t('pricing.plans.STARTER.description'),
+      features: [
+        t('pricing.plans.STARTER.features.0'),
+        t('pricing.plans.STARTER.features.1'),
+        t('pricing.plans.STARTER.features.2'),
+        t('pricing.plans.STARTER.features.3'),
+        t('pricing.plans.STARTER.features.4'),
+      ],
+      priceId: STRIPE_STARTER_PRICE_ID,
+      highlighted: true,
+    },
+    {
+      name: 'PRO',
+      price: '15€',
+      period: t('pricing.perMonth'),
+      description: t('pricing.plans.PRO.description'),
+      features: [
+        t('pricing.plans.PRO.features.0'),
+        t('pricing.plans.PRO.features.1'),
+        t('pricing.plans.PRO.features.2'),
+        t('pricing.plans.PRO.features.3'),
+        t('pricing.plans.PRO.features.4'),
+        t('pricing.plans.PRO.features.5'),
+      ],
+      priceId: STRIPE_PRO_PRICE_ID,
+    },
+  ]
 
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold">Choisissez votre plan</h1>
+        <h1 className="text-4xl font-bold">{t('pricing.title')}</h1>
         <p className="text-muted-foreground mt-2">
-          Sélectionnez le plan qui correspond le mieux à vos besoins
+          {t('pricing.subtitle')}
         </p>
         {currentPlan && (
           <p className="text-sm text-muted-foreground mt-2">
-            Plan actuel : <span className="font-semibold">{currentPlan}</span>
+            {t('pricing.currentPlan', { plan: currentPlan })}
           </p>
         )}
       </div>
@@ -96,7 +98,7 @@ export default function PricingPage() {
               {plan.highlighted && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                    Le plus populaire
+                    {t('pricing.mostPopular')}
                   </span>
                 </div>
               )}
@@ -141,8 +143,8 @@ export default function PricingPage() {
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
-        <p>Tous les plans incluent une garantie satisfait ou remboursé de 14 jours</p>
-        <p className="mt-1">Des questions ? Contactez support@noteflow.app</p>
+        <p>{t('pricing.footer.moneyBack')}</p>
+        <p className="mt-1">{t('pricing.footer.support')}</p>
       </div>
     </div>
   )

@@ -16,8 +16,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { useI18n } from '@/lib/i18n/provider'
 
 export default function AdminDashboardPage() {
+  const { t } = useI18n()
   const [showCleanupDialog, setShowCleanupDialog] = useState(false)
 
   // Fetch admin stats
@@ -30,11 +32,11 @@ export default function AdminDashboardPage() {
   const cleanupMutation = useMutation({
     mutationFn: () => adminApi.cleanupTokens(),
     onSuccess: () => {
-      toast.success('Token cleanup completed successfully!')
+      toast.success(t('admin.dashboard.messages.cleanupSuccess'))
       setShowCleanupDialog(false)
     },
     onError: () => {
-      toast.error('Failed to cleanup tokens')
+      toast.error(t('admin.dashboard.messages.cleanupError'))
       setShowCleanupDialog(false)
     },
   })
@@ -48,7 +50,7 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading stats...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">{t('admin.dashboard.loadingStats')}</p>
         </div>
       </div>
     )
@@ -57,9 +59,9 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold dark:text-white">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold dark:text-white">{t('admin.dashboard.title')}</h1>
         <p className="text-muted-foreground dark:text-gray-400">
-          Manage users, subscriptions, and system settings
+          {t('admin.subtitle')}
         </p>
       </div>
 
@@ -68,7 +70,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Users
+              {t('admin.dashboard.stats.totalUsers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -79,16 +81,17 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Verified Users
+              {t('admin.dashboard.stats.verifiedUsers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats?.verifiedUsers || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {stats?.totalUsers
-                ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100)
-                : 0}
-              % verification rate
+              {t('admin.dashboard.stats.verificationRate', {
+                rate: stats?.totalUsers
+                  ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100)
+                  : 0
+              })}
             </p>
           </CardContent>
         </Card>
@@ -96,7 +99,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Unverified Users
+              {t('admin.dashboard.stats.unverifiedUsers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -107,7 +110,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Admins
+              {t('admin.dashboard.stats.admins')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -121,14 +124,14 @@ export default function AdminDashboardPage() {
       {/* Users by Role */}
       <Card>
         <CardHeader>
-          <CardTitle>Users by Role</CardTitle>
+          <CardTitle>{t('admin.dashboard.usersByRole.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {stats?.byRole.map((roleStats) => (
               <div key={roleStats.role} className="flex justify-between items-center">
                 <span className="font-medium dark:text-gray-200">{roleStats.role}</span>
-                <span className="text-muted-foreground dark:text-gray-400">{roleStats._count} users</span>
+                <span className="text-muted-foreground dark:text-gray-400">{t('admin.dashboard.usersByRole.usersCount', { count: roleStats._count })}</span>
               </div>
             ))}
           </div>
@@ -138,7 +141,7 @@ export default function AdminDashboardPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>{t('admin.dashboard.quickActions.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
@@ -146,10 +149,10 @@ export default function AdminDashboardPage() {
             variant="outline"
             disabled={cleanupMutation.isPending}
           >
-            {cleanupMutation.isPending ? 'Cleaning...' : '🧹 Cleanup Expired Tokens'}
+            {cleanupMutation.isPending ? t('admin.dashboard.quickActions.cleaning') : t('admin.dashboard.quickActions.cleanupTokens')}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Remove expired tokens from the database to keep it clean.
+            {t('admin.dashboard.quickActions.cleanupDescription')}
           </p>
         </CardContent>
       </Card>
@@ -158,21 +161,21 @@ export default function AdminDashboardPage() {
       <AlertDialog open={showCleanupDialog} onOpenChange={setShowCleanupDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cleanup Expired Tokens</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.dashboard.cleanupDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cleanup expired tokens?
+              {t('admin.dashboard.cleanupDialog.description')}
               <br />
               <br />
-              This will remove all expired refresh tokens, verification tokens, password reset tokens, and CSRF tokens from the database. This operation cannot be undone.
+              {t('admin.dashboard.cleanupDialog.warning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('admin.dashboard.cleanupDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmCleanup}
               disabled={cleanupMutation.isPending}
             >
-              {cleanupMutation.isPending ? 'Cleaning...' : 'Confirm Cleanup'}
+              {cleanupMutation.isPending ? t('admin.dashboard.quickActions.cleaning') : t('admin.dashboard.cleanupDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

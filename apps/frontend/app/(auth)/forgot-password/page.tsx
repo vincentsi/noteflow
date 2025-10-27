@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { authApi } from '@/lib/api/auth'
+import { useI18n } from '@/lib/i18n/provider'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -19,12 +20,13 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Adresse email invalide'),
+  email: z.string().email('Invalid email address'),
 })
 
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>
 
 export default function ForgotPasswordPage() {
+  const { t } = useI18n()
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -44,7 +46,7 @@ export default function ForgotPasswordPage() {
       // Extract error message from API response
       const errorData = (error as { response?: { data?: { error?: string; message?: string } } })
         ?.response?.data
-      const errorMessage = errorData?.error || errorData?.message || 'Une erreur est survenue. Veuillez réessayer.'
+      const errorMessage = errorData?.error || errorData?.message || t('auth.forgotPassword.errorMessage')
 
       form.setError('email', {
         message: errorMessage,
@@ -59,14 +61,14 @@ export default function ForgotPasswordPage() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Check your email</CardTitle>
+            <CardTitle>{t('auth.forgotPassword.successTitle')}</CardTitle>
             <CardDescription>
-              If an account exists with that email, we&apos;ve sent password reset instructions.
+              {t('auth.forgotPassword.successMessage')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/login">
-              <Button className="w-full">Back to Login</Button>
+              <Button className="w-full">{t('auth.forgotPassword.backToLogin')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -78,9 +80,9 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Forgot Password</CardTitle>
+          <CardTitle>{t('auth.forgotPassword.title')}</CardTitle>
           <CardDescription>
-            Enter your email address and we&apos;ll send you a link to reset your password.
+            {t('auth.forgotPassword.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,11 +93,11 @@ export default function ForgotPasswordPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('auth.forgotPassword.emailLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder={t('auth.forgotPassword.emailPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -105,12 +107,12 @@ export default function ForgotPasswordPage() {
               />
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Sending...' : 'Send Reset Link'}
+                {isLoading ? t('auth.forgotPassword.sending') : t('auth.forgotPassword.sendButton')}
               </Button>
 
               <div className="text-center text-sm">
                 <Link href="/login" className="text-muted-foreground dark:text-gray-400 hover:text-primary">
-                  Back to Login
+                  {t('auth.forgotPassword.backToLogin')}
                 </Link>
               </div>
             </form>

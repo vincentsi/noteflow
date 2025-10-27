@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { useAllArticles, useArticles, useSaveArticle, useUnsaveArticle } from '@/lib/hooks/useArticles'
-import { useTranslation } from '@/lib/hooks/useTranslation'
+import { useI18n } from '@/lib/i18n/provider'
 import { ArticleFilters } from '@/components/veille/ArticleFilters'
 import { ArticleList } from '@/components/veille/ArticleList'
 import { Pagination } from '@/components/ui/pagination'
@@ -25,7 +25,7 @@ const PLAN_LIMITS = {
 
 export default function VeillePage() {
   const { user } = useAuth()
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
   const showSavedOnly = searchParams.get('saved') === 'true'
@@ -86,16 +86,16 @@ export default function VeillePage() {
           {showSavedOnly && (
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
+              {t('common.actions.back')}
             </Button>
           )}
         </div>
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          {showSavedOnly ? 'Mes articles sauvegardés' : t('veille.title')}
+          {showSavedOnly ? t('veille.savedArticlesTitle') : t('veille.title')}
         </h1>
         <p className="text-muted-foreground mt-2">
           {showSavedOnly
-            ? `${savedCount} article${savedCount > 1 ? 's' : ''} sauvegardé${savedCount > 1 ? 's' : ''}`
+            ? t(savedCount === 1 ? 'veille.savedArticlesCount' : 'veille.savedArticlesCount_plural', { count: savedCount })
             : t('veille.subtitle')
           }
         </p>
@@ -126,7 +126,7 @@ export default function VeillePage() {
               {percentage >= 80 && limit !== Infinity && (
                 <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-xs font-medium text-amber-700 dark:text-amber-500">
-                    ⚠️ {t('veille.planUsage.limitWarning')}
+                    {t('veille.planUsage.limitWarning')}
                   </p>
                 </div>
               )}

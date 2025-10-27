@@ -15,19 +15,21 @@ import { ArrowLeft, ChevronLeft, ChevronRight, FileText, MessageSquare, List, Tr
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 import type { SummaryStyle } from '@/lib/api/summaries'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/provider'
 
 // Style badges configuration with icons and colors
-const STYLE_CONFIG: Record<SummaryStyle, { icon: typeof FileText; label: string; color: string }> = {
-  SHORT: { icon: FileText, label: 'Court', color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
-  TWEET: { icon: Hash, label: 'Tweet', color: 'bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400' },
-  THREAD: { icon: MessageSquare, label: 'Thread', color: 'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400' },
-  BULLET_POINT: { icon: List, label: 'Points clés', color: 'bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400' },
-  TOP3: { icon: Trophy, label: 'Top 3', color: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400' },
-  MAIN_POINTS: { icon: Lightbulb, label: 'Points principaux', color: 'bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400' },
+const STYLE_CONFIG: Record<SummaryStyle, { icon: typeof FileText; color: string }> = {
+  SHORT: { icon: FileText, color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
+  TWEET: { icon: Hash, color: 'bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400' },
+  THREAD: { icon: MessageSquare, color: 'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400' },
+  BULLET_POINT: { icon: List, color: 'bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400' },
+  TOP3: { icon: Trophy, color: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400' },
+  MAIN_POINTS: { icon: Lightbulb, color: 'bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400' },
 }
 
 export default function SummariesPage() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const router = useRouter()
   const showMyOnly = searchParams.get('my') === 'true'
@@ -63,9 +65,9 @@ export default function SummariesPage() {
       onError: (error: Error) => {
         const errorResponse = error as Error & { response?: { status?: number } }
         if (errorResponse?.response?.status === 403) {
-          toast.error('Limite du plan atteinte. Veuillez mettre à niveau votre plan.')
+          toast.error(t('summaries.form.errors.planLimitReached'))
         } else {
-          toast.error('Erreur lors de la création du résumé')
+          toast.error(t('summaries.form.errors.creationFailed'))
         }
       },
     })
@@ -79,17 +81,17 @@ export default function SummariesPage() {
           {showMyOnly && (
             <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
+              {t('summaries.actions.back')}
             </Button>
           )}
         </div>
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          {showMyOnly ? 'Mes résumés' : 'PowerPost'}
+          {showMyOnly ? t('summaries.mySummaries') : t('summaries.title')}
         </h1>
         <p className="text-lg text-muted-foreground">
           {showMyOnly
-            ? `${summariesThisMonth} résumé${summariesThisMonth > 1 ? 's' : ''} ce mois`
-            : 'Générez des résumés IA de vos textes et documents'
+            ? t('summaries.summariesThisMonth', { count: summariesThisMonth.toString() })
+            : t('summaries.subtitle')
           }
         </p>
       </div>
@@ -98,12 +100,12 @@ export default function SummariesPage() {
       {!showMyOnly && (
         <Card className="shadow-lg border-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold">Utilisation du plan</CardTitle>
+            <CardTitle className="text-lg font-semibold">{t('summaries.planUsage.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-foreground">Résumés ce mois</span>
+                <span className="text-sm font-semibold text-foreground">{t('summaries.planUsage.summariesThisMonth')}</span>
                 <span className="text-2xl font-bold text-primary">
                   {summariesThisMonth} <span className="text-lg text-muted-foreground">/ {limit === Infinity ? '∞' : limit}</span>
                 </span>
@@ -119,7 +121,7 @@ export default function SummariesPage() {
               {percentage >= 80 && limit !== Infinity && (
                 <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-xs font-medium text-amber-700 dark:text-amber-500">
-                    ⚠️ Vous approchez de votre limite mensuelle
+                    {t('summaries.planUsage.limitWarning')}
                   </p>
                 </div>
               )}
@@ -136,7 +138,7 @@ export default function SummariesPage() {
             {/* Summary Form */}
             <Card className="shadow-xl border-2">
               <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent">
-                <CardTitle className="text-xl font-bold">✨ Nouveau résumé</CardTitle>
+                <CardTitle className="text-xl font-bold">{t('summaries.form.title')}</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
                 <SummaryForm onSubmit={handleSubmit} isLoading={createSummary.isPending} initialUrl={initialUrl} />
@@ -149,7 +151,7 @@ export default function SummariesPage() {
         <div className={showMyOnly ? '' : 'lg:col-span-1'}>
           <Card className="shadow-lg border-2">
             <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent">
-              <CardTitle className="text-lg font-bold">📚 Historique</CardTitle>
+              <CardTitle className="text-lg font-bold">{t('summaries.history.title')}</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               {isLoadingHistory ? (
@@ -184,10 +186,10 @@ export default function SummariesPage() {
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Aucun résumé pour le moment
+                    {t('summaries.history.empty')}
                   </h3>
                   <p className="text-sm text-muted-foreground text-center max-w-xs mb-4">
-                    Créez votre premier résumé IA pour commencer à organiser vos contenus
+                    {t('summaries.history.emptySubtitle')}
                   </p>
                   {!showMyOnly && (
                     <Button
@@ -200,7 +202,7 @@ export default function SummariesPage() {
                       className="group"
                     >
                       <span className="mr-2 group-hover:scale-110 transition-transform inline-block">📝</span>
-                      Créer un résumé
+                      {t('summaries.history.createButton')}
                     </Button>
                   )}
                 </div>
@@ -244,7 +246,7 @@ export default function SummariesPage() {
                                   styleConfig.color
                                 )}>
                                   <StyleIcon className="h-3 w-3" />
-                                  {styleConfig.label}
+                                  {t(`summaries.styles.${summary.style as SummaryStyle}`)}
                                 </span>
                               )
                             })()}
@@ -264,10 +266,10 @@ export default function SummariesPage() {
                         disabled={historyPage === 1}
                       >
                         <ChevronLeft className="h-4 w-4" />
-                        Précédent
+                        {t('summaries.history.pagination.previous')}
                       </Button>
                       <span className="text-xs text-muted-foreground">
-                        Page {summariesData.data.pagination.page} / {summariesData.data.pagination.totalPages}
+                        {t('summaries.history.pagination.page', { current: summariesData.data.pagination.page.toString(), total: summariesData.data.pagination.totalPages.toString() })}
                       </span>
                       <Button
                         variant="outline"
@@ -275,7 +277,7 @@ export default function SummariesPage() {
                         onClick={() => setHistoryPage((p) => Math.min(summariesData.data.pagination.totalPages, p + 1))}
                         disabled={historyPage === summariesData.data.pagination.totalPages}
                       >
-                        Suivant
+                        {t('summaries.history.pagination.next')}
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>

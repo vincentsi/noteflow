@@ -3,11 +3,13 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api/client'
+import { useI18n } from '@/lib/i18n/provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 function VerifyEmailContent() {
+  const { t } = useI18n()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const searchParams = useSearchParams()
@@ -18,7 +20,7 @@ function VerifyEmailContent() {
     const verifyEmail = async () => {
       if (!token) {
         setStatus('error')
-        setErrorMessage('Invalid verification link')
+        setErrorMessage(t('auth.verifyEmail.errorMessage'))
         return
       }
 
@@ -34,20 +36,20 @@ function VerifyEmailContent() {
         setStatus('error')
         const errorData = (error as { response?: { data?: { error?: string; message?: string } } })
           ?.response?.data
-        setErrorMessage(errorData?.error || errorData?.message || 'Verification failed. The link may have expired.')
+        setErrorMessage(errorData?.error || errorData?.message || t('auth.verifyEmail.errorMessage'))
       }
     }
 
     verifyEmail()
-  }, [token, router])
+  }, [token, router, t])
 
   if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Verifying your email...</CardTitle>
-            <CardDescription>Please wait while we verify your email address.</CardDescription>
+            <CardTitle>{t('auth.verifyEmail.title')}</CardTitle>
+            <CardDescription>{t('auth.verifyEmail.verifying')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
@@ -64,14 +66,14 @@ function VerifyEmailContent() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-green-600">Email verified! ✅</CardTitle>
+            <CardTitle className="text-green-600">{t('auth.verifyEmail.successTitle')}</CardTitle>
             <CardDescription>
-              Your email has been successfully verified. Redirecting to login...
+              {t('auth.verifyEmail.successMessage')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/login">
-              <Button className="w-full">Go to Login</Button>
+              <Button className="w-full">{t('auth.verifyEmail.goToLogin')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -83,21 +85,18 @@ function VerifyEmailContent() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-red-600">Verification failed ❌</CardTitle>
+          <CardTitle className="text-red-600">{t('auth.verifyEmail.errorTitle')}</CardTitle>
           <CardDescription>{errorMessage}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground dark:text-gray-400">
-            The verification link may have expired or is invalid.
-          </p>
           <div className="flex gap-2">
             <Link href="/login" className="flex-1">
               <Button variant="outline" className="w-full">
-                Go to Login
+                {t('auth.verifyEmail.goToLogin')}
               </Button>
             </Link>
-            <Link href="/register" className="flex-1">
-              <Button className="w-full">Sign Up Again</Button>
+            <Link href="/forgot-password" className="flex-1">
+              <Button className="w-full">{t('auth.verifyEmail.requestNewLink')}</Button>
             </Link>
           </div>
         </CardContent>
@@ -106,19 +105,22 @@ function VerifyEmailContent() {
   )
 }
 
+function VerifyEmailFallback() {
+  const { t } = useI18n()
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6">
+          <p className="text-center text-muted-foreground dark:text-gray-400">{t('common.messages.loading')}</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function VerifyEmailPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground dark:text-gray-400">Loading...</p>
-            </CardContent>
-          </Card>
-        </div>
-      }
-    >
+    <Suspense fallback={<VerifyEmailFallback />}>
       <VerifyEmailContent />
     </Suspense>
   )

@@ -17,8 +17,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { useI18n } from '@/lib/i18n/provider'
 
 export default function AdminUsersPage() {
+  const { t } = useI18n()
   const queryClient = useQueryClient()
   const { user: currentUser } = useAuth()
   const [page, setPage] = useState(1)
@@ -38,12 +40,12 @@ export default function AdminUsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
-      toast.success('User deleted successfully')
+      toast.success(t('admin.users.messages.deleteSuccess'))
       setUserToDelete(null)
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : 'Unknown error'
-      toast.error(`Failed to delete user: ${message}`)
+      toast.error(t('admin.users.messages.deleteError', { message }))
     },
   })
 
@@ -54,18 +56,18 @@ export default function AdminUsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
-      toast.success('Role updated successfully')
+      toast.success(t('admin.users.messages.roleUpdateSuccess'))
       setRoleChangeUser(null)
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : 'Unknown error'
-      toast.error(`Failed to update role: ${message}`)
+      toast.error(t('admin.users.messages.roleUpdateError', { message }))
     },
   })
 
   const handleDeleteUser = (user: AdminUser) => {
     if (user.id === currentUser?.id) {
-      toast.error('You cannot delete your own account')
+      toast.error(t('admin.users.messages.cannotDeleteSelf'))
       return
     }
     setUserToDelete(user)
@@ -98,7 +100,7 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading users...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">{t('admin.users.loadingUsers')}</p>
         </div>
       </div>
     )
@@ -111,16 +113,16 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">Users Management</h1>
+          <h1 className="text-3xl font-bold dark:text-white">{t('admin.users.title')}</h1>
           <p className="text-muted-foreground dark:text-gray-400">
-            {pagination?.totalCount || 0} total users
+            {t('admin.users.totalUsers', { count: pagination?.totalCount || 0 })}
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>{t('admin.users.allUsers')}</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Table */}
@@ -128,12 +130,12 @@ export default function AdminUsersPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b dark:border-gray-700">
-                  <th className="text-left p-2 dark:text-gray-300">Email</th>
-                  <th className="text-left p-2 dark:text-gray-300">Name</th>
-                  <th className="text-left p-2 dark:text-gray-300">Role</th>
-                  <th className="text-left p-2 dark:text-gray-300">Verified</th>
-                  <th className="text-left p-2 dark:text-gray-300">Created</th>
-                  <th className="text-right p-2 dark:text-gray-300">Actions</th>
+                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.email')}</th>
+                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.name')}</th>
+                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.role')}</th>
+                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.verified')}</th>
+                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.created')}</th>
+                  <th className="text-right p-2 dark:text-gray-300">{t('admin.users.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -154,7 +156,7 @@ export default function AdminUsersPage() {
                               : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {user.role}
+                        {t(`admin.users.roles.${user.role}`)}
                       </span>
                     </td>
                     <td className="p-2">
@@ -181,9 +183,9 @@ export default function AdminUsersPage() {
                           }
                           disabled={updateRoleMutation.isPending}
                         >
-                          <option value="USER">USER</option>
-                          <option value="MODERATOR">MODERATOR</option>
-                          <option value="ADMIN">ADMIN</option>
+                          <option value="USER">{t('admin.users.roles.USER')}</option>
+                          <option value="MODERATOR">{t('admin.users.roles.MODERATOR')}</option>
+                          <option value="ADMIN">{t('admin.users.roles.ADMIN')}</option>
                         </select>
 
                         {/* Delete Button */}
@@ -193,7 +195,7 @@ export default function AdminUsersPage() {
                           onClick={() => handleDeleteUser(user)}
                           disabled={deleteMutation.isPending || user.id === currentUser?.id}
                         >
-                          Delete
+                          {deleteMutation.isPending ? t('admin.users.actions.deleting') : t('admin.users.actions.delete')}
                         </Button>
                       </div>
                     </td>
@@ -207,7 +209,7 @@ export default function AdminUsersPage() {
           {pagination && pagination.totalPages > 1 && (
             <div className="flex justify-between items-center mt-4 pt-4 border-t dark:border-gray-700">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Page {pagination.page} of {pagination.totalPages}
+                {t('admin.users.pagination.page', { current: pagination.page, total: pagination.totalPages })}
               </div>
               <div className="space-x-2">
                 <Button
@@ -216,7 +218,7 @@ export default function AdminUsersPage() {
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={!pagination.hasPreviousPage}
                 >
-                  Previous
+                  {t('admin.users.pagination.previous')}
                 </Button>
                 <Button
                   size="sm"
@@ -224,7 +226,7 @@ export default function AdminUsersPage() {
                   onClick={() => setPage((p) => p + 1)}
                   disabled={!pagination.hasNextPage}
                 >
-                  Next
+                  {t('admin.users.pagination.next')}
                 </Button>
               </div>
             </div>
@@ -236,22 +238,22 @@ export default function AdminUsersPage() {
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.users.deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <strong>{userToDelete?.email}</strong>?
+              {t('admin.users.deleteDialog.description', { email: userToDelete?.email || '' })}
               <br />
               <br />
-              This action will soft-delete the user account. The data will be marked as deleted but preserved for audit purposes.
+              {t('admin.users.deleteDialog.warning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('admin.users.deleteDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete User'}
+              {deleteMutation.isPending ? t('admin.users.actions.deleting') : t('admin.users.deleteDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -261,26 +263,26 @@ export default function AdminUsersPage() {
       <AlertDialog open={!!roleChangeUser} onOpenChange={() => setRoleChangeUser(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Change User Role</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.users.roleChangeDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to change the role for <strong>{roleChangeUser?.user.email}</strong>?
+              {t('admin.users.roleChangeDialog.description', { email: roleChangeUser?.user.email || '' })}
               <br />
               <br />
-              <span className="font-semibold">From:</span> {roleChangeUser?.user.role}
+              <span className="font-semibold">{t('admin.users.roleChangeDialog.from')}</span> {roleChangeUser?.user.role}
               <br />
-              <span className="font-semibold">To:</span> {roleChangeUser?.newRole}
+              <span className="font-semibold">{t('admin.users.roleChangeDialog.to')}</span> {roleChangeUser?.newRole}
               <br />
               <br />
-              This will take effect immediately and may change the user&apos;s access permissions.
+              {t('admin.users.roleChangeDialog.warning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('admin.users.roleChangeDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmRoleChange}
               disabled={updateRoleMutation.isPending}
             >
-              {updateRoleMutation.isPending ? 'Updating...' : 'Confirm Change'}
+              {updateRoleMutation.isPending ? t('admin.users.roleChangeDialog.updating') : t('admin.users.roleChangeDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -7,6 +7,7 @@ import { z } from 'zod'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { authApi } from '@/lib/api/auth'
+import { useI18n } from '@/lib/i18n/provider'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -19,25 +20,29 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-const resetPasswordSchema = z
+const resetPasswordSchema = (t: (key: string) => string) => z
   .object({
     password: z
       .string()
-      .min(12, 'Password must be at least 12 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+      .min(12, t('auth.resetPassword.passwordMinLength'))
+      .regex(/[A-Z]/, t('auth.resetPassword.passwordUppercase'))
+      .regex(/[a-z]/, t('auth.resetPassword.passwordLowercase'))
+      .regex(/[0-9]/, t('auth.resetPassword.passwordNumber'))
+      .regex(/[^A-Za-z0-9]/, t('auth.resetPassword.passwordSpecial')),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: t('auth.resetPassword.passwordMismatch'),
     path: ['confirmPassword'],
   })
 
-type ResetPasswordForm = z.infer<typeof resetPasswordSchema>
+type ResetPasswordForm = {
+  password: string
+  confirmPassword: string
+}
 
 function ResetPasswordContent() {
+  const { t } = useI18n()
   const [isSuccess, setIsSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -46,7 +51,7 @@ function ResetPasswordContent() {
   const token = searchParams.get('token')
 
   const form = useForm<ResetPasswordForm>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: zodResolver(resetPasswordSchema(t)),
     defaultValues: {
       password: '',
       confirmPassword: '',
@@ -55,13 +60,13 @@ function ResetPasswordContent() {
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid or missing reset token')
+      setError(t('auth.resetPassword.invalidLinkMessage'))
     }
-  }, [token])
+  }, [token, t])
 
   const onSubmit = async (data: ResetPasswordForm) => {
     if (!token) {
-      setError('Invalid or missing reset token')
+      setError(t('auth.resetPassword.invalidLinkMessage'))
       return
     }
 
@@ -80,7 +85,7 @@ function ResetPasswordContent() {
       // Extract error message from API response
       const errorData = (error as { response?: { data?: { error?: string; message?: string } } })
         ?.response?.data
-      const errorMessage = errorData?.error || errorData?.message || 'Failed to reset password. The link may have expired.'
+      const errorMessage = errorData?.error || errorData?.message || t('auth.resetPassword.errorMessage')
 
       setError(errorMessage)
     } finally {
@@ -93,14 +98,14 @@ function ResetPasswordContent() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Invalid Link</CardTitle>
+            <CardTitle>{t('auth.resetPassword.invalidLinkTitle')}</CardTitle>
             <CardDescription>
-              This password reset link is invalid or has expired.
+              {t('auth.resetPassword.invalidLinkMessage')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/forgot-password">
-              <Button className="w-full">Request New Link</Button>
+              <Button className="w-full">{t('auth.resetPassword.requestNewLink')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -113,14 +118,14 @@ function ResetPasswordContent() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Password Reset Successful</CardTitle>
+            <CardTitle>{t('auth.resetPassword.successTitle')}</CardTitle>
             <CardDescription>
-              Your password has been reset successfully. Redirecting to login...
+              {t('auth.resetPassword.successMessage')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/login">
-              <Button className="w-full">Go to Login</Button>
+              <Button className="w-full">{t('auth.resetPassword.backToLogin')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -132,9 +137,9 @@ function ResetPasswordContent() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Reset Password</CardTitle>
+          <CardTitle>{t('auth.resetPassword.title')}</CardTitle>
           <CardDescription>
-            Enter your new password below.
+            {t('auth.resetPassword.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -151,11 +156,11 @@ function ResetPasswordContent() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>{t('auth.resetPassword.newPasswordLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter new password"
+                        placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -169,11 +174,11 @@ function ResetPasswordContent() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>{t('auth.resetPassword.confirmPasswordLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Confirm new password"
+                        placeholder={t('auth.resetPassword.confirmPasswordPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -183,12 +188,12 @@ function ResetPasswordContent() {
               />
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Resetting...' : 'Reset Password'}
+                {isLoading ? t('auth.resetPassword.resetting') : t('auth.resetPassword.resetButton')}
               </Button>
 
               <div className="text-center text-sm">
                 <Link href="/login" className="text-muted-foreground dark:text-gray-400 hover:text-primary">
-                  Back to Login
+                  {t('auth.resetPassword.backToLogin')}
                 </Link>
               </div>
             </form>
@@ -199,17 +204,22 @@ function ResetPasswordContent() {
   )
 }
 
+function ResetPasswordFallback() {
+  const { t } = useI18n()
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6">
+          <p className="text-center text-muted-foreground dark:text-gray-400">{t('common.messages.loading')}</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground dark:text-gray-400">Loading...</p>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+    <Suspense fallback={<ResetPasswordFallback />}>
       <ResetPasswordContent />
     </Suspense>
   )

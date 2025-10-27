@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { PlanUsageCard } from '@/components/dashboard/PlanUsageCard'
 import { useUserStats } from '@/lib/hooks/useUserStats'
+import { useI18n } from '@/lib/i18n/provider'
 
 export default function DashboardPage() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const { data: stats, isLoading } = useUserStats()
+  const { t } = useI18n()
 
   const handleLogout = async () => {
     await logout()
@@ -21,13 +23,13 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">Tableau de bord</h1>
+          <h1 className="text-3xl font-bold dark:text-white">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground dark:text-gray-400">
-            Bienvenue {user?.name || user?.email}
+            {t('dashboard.welcome', { name: user?.name || user?.email || '' })}
           </p>
         </div>
         <Button onClick={handleLogout} variant="outline">
-          Déconnexion
+          {t('common.navigation.logout')}
         </Button>
       </div>
 
@@ -39,16 +41,16 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Informations utilisateur</CardTitle>
+            <CardTitle>{t('dashboard.userInfo.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="space-y-2 text-sm">
               <div>
-                <dt className="font-medium dark:text-gray-200">Email</dt>
+                <dt className="font-medium dark:text-gray-200">{t('dashboard.userInfo.email')}</dt>
                 <dd className="text-muted-foreground dark:text-gray-400">{user?.email}</dd>
               </div>
               <div>
-                <dt className="font-medium dark:text-gray-200">Plan</dt>
+                <dt className="font-medium dark:text-gray-200">{t('dashboard.userInfo.plan')}</dt>
                 <dd className="text-muted-foreground dark:text-gray-400 font-semibold">
                   {user?.planType || 'FREE'}
                 </dd>
@@ -59,18 +61,18 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Abonnement</CardTitle>
+            <CardTitle>{t('dashboard.subscription.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground dark:text-gray-400 mb-4">
-              Plan actuel : <span className="font-semibold dark:text-gray-200">{user?.planType || 'FREE'}</span>
+              {t('dashboard.subscription.currentPlan', { plan: user?.planType || 'FREE' })}
             </p>
             <Button
               onClick={() => router.push('/pricing')}
               variant="outline"
               className="w-full"
             >
-              {user?.planType === 'FREE' ? 'Passer à un plan supérieur' : 'Gérer mon abonnement'}
+              {user?.planType === 'FREE' ? t('dashboard.subscription.upgradePlan') : t('dashboard.subscription.manageSubscription')}
             </Button>
           </CardContent>
         </Card>

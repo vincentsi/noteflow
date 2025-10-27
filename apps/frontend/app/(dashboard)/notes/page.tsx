@@ -8,24 +8,20 @@ import { NoteList } from '@/components/notes/NoteList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, ArrowLeft, Loader2 } from 'lucide-react'
+import { Plus, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
+import { useI18n } from '@/lib/i18n/provider'
 
 // Lazy load the Markdown editor (reduces initial bundle size by ~20-30 KB)
 const NoteEditor = dynamic(
   () => import('@/components/notes/NoteEditor').then(mod => ({ default: mod.NoteEditor })),
   {
-    loading: () => (
-      <div className="flex items-center justify-center p-8 border rounded-lg bg-muted/50">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-sm text-muted-foreground">Chargement de l&apos;éditeur...</span>
-      </div>
-    ),
     ssr: false, // Disable SSR for the editor (client-side only)
   }
 )
 
 export default function NotesPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
   const showMyOnly = searchParams.get('my') === 'true'
@@ -40,7 +36,7 @@ export default function NotesPage() {
 
   const handleCreate = async () => {
     if (!title.trim() || !content.trim()) {
-      toast.error('Le titre et le contenu sont requis')
+      toast.error(t('common.messages.requiredField'))
       return
     }
 
@@ -50,21 +46,21 @@ export default function NotesPage() {
         content,
         tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       })
-      toast.success('Note créée avec succès')
+      toast.success(t('common.messages.success'))
       setTitle('')
       setContent('')
       setTags('')
     } catch {
-      toast.error('Erreur lors de la création de la note')
+      toast.error(t('common.messages.error'))
     }
   }
 
   const handleDelete = async (id: string) => {
     try {
       await deleteNote.mutateAsync(id)
-      toast.success('Note supprimée')
+      toast.success(t('notes.actions.delete'))
     } catch {
-      toast.error('Erreur lors de la suppression')
+      toast.error(t('common.messages.error'))
     }
   }
 
@@ -75,17 +71,17 @@ export default function NotesPage() {
           {showMyOnly && (
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
+              {t('common.actions.back')}
             </Button>
           )}
         </div>
         <h1 className="text-3xl font-bold mb-2">
-          {showMyOnly ? 'Mes notes' : 'PowerNote'}
+          {showMyOnly ? t('notes.myNotes') : t('notes.title')}
         </h1>
         <p className="text-muted-foreground">
           {showMyOnly
             ? `${notes.length} note${notes.length > 1 ? 's' : ''}`
-            : 'Prenez des notes en Markdown avec tags'
+            : t('notes.subtitle')
           }
         </p>
       </div>
@@ -94,43 +90,43 @@ export default function NotesPage() {
       {!showMyOnly && (
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Nouvelle Note</CardTitle>
+            <CardTitle>{t('notes.createNote')}</CardTitle>
             <CardDescription>
-              Créez une note en Markdown avec des tags pour l&apos;organiser
+              {t('notes.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label htmlFor="note-title" className="text-sm font-medium mb-2 block">Titre</label>
+              <label htmlFor="note-title" className="text-sm font-medium mb-2 block">{t('notes.editor.titlePlaceholder')}</label>
               <Input
                 id="note-title"
                 name="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Titre de la note"
+                placeholder={t('notes.editor.titlePlaceholder')}
               />
             </div>
 
             <div>
-              <label htmlFor="note-content" className="text-sm font-medium mb-2 block">Contenu (Markdown)</label>
+              <label htmlFor="note-content" className="text-sm font-medium mb-2 block">{t('notes.editor.contentPlaceholder')}</label>
               <NoteEditor
                 id="note-content"
                 value={content}
                 onChange={setContent}
-                placeholder="# Titre&#10;&#10;Votre contenu en Markdown..."
+                placeholder={t('notes.editor.contentPlaceholder')}
               />
             </div>
 
             <div>
               <label htmlFor="note-tags" className="text-sm font-medium mb-2 block">
-                Tags (séparés par des virgules)
+                {t('notes.editor.tagsPlaceholder')}
               </label>
               <Input
                 id="note-tags"
                 name="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="travail, personnel, important"
+                placeholder={t('notes.editor.tagsPlaceholder')}
               />
             </div>
 
@@ -140,7 +136,7 @@ export default function NotesPage() {
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
-              {createNote.isPending ? 'Création...' : 'Créer la note'}
+              {createNote.isPending ? t('notes.editor.saving') : t('notes.editor.saveButton')}
             </Button>
           </CardContent>
         </Card>
@@ -148,11 +144,11 @@ export default function NotesPage() {
 
       {/* Notes List */}
       <div>
-        {!showMyOnly && <h2 className="text-2xl font-semibold mb-4">Mes Notes ({notes.length})</h2>}
+        {!showMyOnly && <h2 className="text-2xl font-semibold mb-4">{t('notes.myNotes')} ({notes.length})</h2>}
 
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground">
-            Chargement des notes...
+            {t('common.messages.loading')}
           </div>
         ) : (
           <NoteList

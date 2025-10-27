@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useAuth } from '@/providers/auth.provider'
+import { useI18n } from '@/lib/i18n/provider'
 import { registerSchema, type RegisterFormData } from '@/lib/validators/auth'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,6 +27,7 @@ import { Input } from '@/components/ui/input'
 
 export default function RegisterPage() {
   const { register: registerUser } = useAuth()
+  const { t } = useI18n()
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -56,9 +58,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Sign up</CardTitle>
+          <CardTitle>{t('auth.register.title')}</CardTitle>
           <CardDescription>
-            Create your account
+            {t('auth.register.subtitle')}
           </CardDescription>
         </CardHeader>
 
@@ -76,10 +78,10 @@ export default function RegisterPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name (optional)</FormLabel>
+                    <FormLabel>{t('auth.register.nameLabel')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="John Doe"
+                        placeholder={t('auth.register.namePlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -93,11 +95,11 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('auth.register.emailLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder={t('auth.register.emailPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -111,9 +113,9 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('auth.register.passwordLabel')}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder={t('auth.register.passwordPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -125,7 +127,7 @@ export default function RegisterPage() {
                 className="w-full"
                 disabled={form.formState.isSubmitting}
               >
-                {form.formState.isSubmitting ? 'Creating account...' : 'Sign up'}
+                {form.formState.isSubmitting ? t('auth.register.creatingAccount') : t('auth.register.signUpButton')}
               </Button>
             </form>
           </Form>
@@ -133,9 +135,9 @@ export default function RegisterPage() {
 
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground dark:text-gray-400">
-            Already have an account?{' '}
+            {t('auth.register.haveAccount')}{' '}
             <Link href="/login" className="text-primary hover:underline">
-              Sign in
+              {t('auth.register.signInLink')}
             </Link>
           </p>
         </CardFooter>

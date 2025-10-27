@@ -410,6 +410,9 @@
   "veille": {
     "title": "Veille IA",
     "subtitle": "Votre flux organisé d'articles IA et tech",
+    "savedArticlesTitle": "Mes articles sauvegardés",
+    "savedArticlesCount": "{{count}} article sauvegardé",
+    "savedArticlesCount_plural": "{{count}} articles sauvegardés",
     "filters": {
       "source": "Source",
       "allSources": "Toutes les sources"

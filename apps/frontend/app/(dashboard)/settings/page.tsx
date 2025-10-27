@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useI18n } from '@/lib/i18n/provider'
 
 const settingsSchema = z.object({
   language: z.enum(['fr', 'en']),
@@ -32,6 +33,7 @@ const settingsSchema = z.object({
 type SettingsFormData = z.infer<typeof settingsSchema>
 
 export default function SettingsPage() {
+  const { t } = useI18n()
   const { user, isLoading } = useAuth()
   const queryClient = useQueryClient()
   const [updateSuccess, setUpdateSuccess] = useState(false)
@@ -68,7 +70,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t('common.messages.loading')}</p>
       </div>
     )
   }
@@ -76,7 +78,7 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Not authenticated</p>
+        <p className="text-muted-foreground">{t('profile.messages.notAuthenticated')}</p>
       </div>
     )
   }
@@ -84,23 +86,23 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
         <p className="text-muted-foreground">
-          Manage your account settings and preferences
+          {t('settings.subtitle')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Language</CardTitle>
+          <CardTitle>{t('settings.language.title')}</CardTitle>
           <CardDescription>
-            Choose your preferred language
+            {t('settings.language.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {updateSuccess && (
             <div className="mb-4 p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded">
-              Language updated successfully
+              {t('settings.messages.updateSuccess')}
             </div>
           )}
 
@@ -117,16 +119,16 @@ export default function SettingsPage() {
                 name="language"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Language</FormLabel>
+                    <FormLabel>{t('settings.language.label')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a language" />
+                          <SelectValue placeholder={t('settings.language.selectPlaceholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="fr">Français</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="fr">{t('settings.language.french')}</SelectItem>
+                        <SelectItem value="en">{t('settings.language.english')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -135,7 +137,7 @@ export default function SettingsPage() {
               />
 
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+                {form.formState.isSubmitting ? t('settings.actions.saving') : t('settings.actions.saveChanges')}
               </Button>
             </form>
           </Form>
@@ -144,19 +146,19 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
+          <CardTitle>{t('settings.subscription.title')}</CardTitle>
           <CardDescription>
-            Your subscription details
+            {t('settings.subscription.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Plan Type</span>
+              <span className="text-sm font-medium">{t('settings.subscription.planType')}</span>
               <span className="text-sm font-semibold">{user.planType}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Status</span>
+              <span className="text-sm font-medium">{t('settings.subscription.status')}</span>
               <span className="text-sm">{user.subscriptionStatus}</span>
             </div>
           </div>

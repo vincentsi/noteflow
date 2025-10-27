@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { LogOut, User } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/provider'
 
 export function DashboardNav() {
   const { user, logout } = useAuth()
+  const { t } = useI18n()
 
   return (
     <nav className="border-b bg-white dark:bg-gray-900 dark:border-gray-800">
@@ -20,19 +22,19 @@ export function DashboardNav() {
 
           <div className="flex gap-6">
             <Link href="/dashboard" className="text-sm hover:text-primary transition-colors" prefetch>
-              Dashboard
+              {t('common.navigation.dashboard')}
             </Link>
             <Link href="/veille" className="text-sm hover:text-primary transition-colors" prefetch>
-              Veille IA
+              {t('common.navigation.veille')}
             </Link>
             <Link href="/summaries" className="text-sm hover:text-primary transition-colors" prefetch>
-              PowerPost
+              {t('common.navigation.summaries')}
             </Link>
             <Link href="/notes" className="text-sm hover:text-primary transition-colors" prefetch>
-              PowerNote
+              {t('common.navigation.notes')}
             </Link>
             <Link href="/pricing" className="text-sm hover:text-primary transition-colors" prefetch>
-              Pricing
+              {t('common.navigation.pricing')}
             </Link>
             {user?.role === 'ADMIN' && (
               <Link
@@ -40,7 +42,7 @@ export function DashboardNav() {
                 className="text-sm hover:text-primary font-semibold text-red-600 transition-colors"
                 prefetch
               >
-                Admin
+                {t('common.navigation.admin')}
               </Link>
             )}
           </div>
@@ -57,7 +59,7 @@ export function DashboardNav() {
 
           <Button variant="outline" size="sm" onClick={logout}>
             <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            {t('common.navigation.logout')}
           </Button>
         </div>
       </div>

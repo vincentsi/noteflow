@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useI18n } from '@/lib/i18n/provider'
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional(),
@@ -27,6 +28,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>
 
 export default function ProfilePage() {
+  const { t } = useI18n()
   const { user, isLoading } = useAuth()
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
@@ -64,7 +66,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t('common.messages.loading')}</p>
       </div>
     )
   }
@@ -72,7 +74,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Not authenticated</p>
+        <p className="text-muted-foreground">{t('profile.messages.notAuthenticated')}</p>
       </div>
     )
   }
@@ -80,9 +82,9 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Profile</h1>
+        <h1 className="text-3xl font-bold">{t('profile.title')}</h1>
         <p className="text-muted-foreground">
-          View and manage your personal information
+          {t('profile.subtitle')}
         </p>
       </div>
 
@@ -90,14 +92,14 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Personal Information</CardTitle>
+              <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
               <CardDescription>
-                Your account details
+                {t('profile.personalInfo.subtitle')}
               </CardDescription>
             </div>
             {!isEditing && (
               <Button onClick={() => setIsEditing(true)} variant="outline">
-                Edit Profile
+                {t('profile.actions.editProfile')}
               </Button>
             )}
           </div>
@@ -105,7 +107,7 @@ export default function ProfilePage() {
         <CardContent>
           {updateSuccess && (
             <div className="mb-4 p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded">
-              Profile updated successfully
+              {t('profile.messages.updateSuccess')}
             </div>
           )}
 
@@ -123,9 +125,9 @@ export default function ProfilePage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t('profile.personalInfo.nameLabel')}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Your name" />
+                        <Input {...field} placeholder={t('profile.personalInfo.namePlaceholder')} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -137,9 +139,9 @@ export default function ProfilePage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('profile.personalInfo.emailLabel')}</FormLabel>
                       <FormControl>
-                        <Input type="email" {...field} placeholder="your@email.com" />
+                        <Input type="email" {...field} placeholder={t('profile.personalInfo.emailPlaceholder')} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -148,7 +150,7 @@ export default function ProfilePage() {
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+                    {form.formState.isSubmitting ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
                   </Button>
                   <Button
                     type="button"
@@ -158,7 +160,7 @@ export default function ProfilePage() {
                       form.reset()
                     }}
                   >
-                    Cancel
+                    {t('profile.actions.cancel')}
                   </Button>
                 </div>
               </form>
@@ -166,31 +168,31 @@ export default function ProfilePage() {
           ) : (
             <dl className="space-y-4">
               <div>
-                <dt className="text-sm font-medium text-muted-foreground">Email</dt>
+                <dt className="text-sm font-medium text-muted-foreground">{t('profile.personalInfo.emailLabel')}</dt>
                 <dd className="mt-1 text-sm">{user.email}</dd>
               </div>
 
               {user.name && (
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                  <dt className="text-sm font-medium text-muted-foreground">{t('profile.personalInfo.nameLabel')}</dt>
                   <dd className="mt-1 text-sm">{user.name}</dd>
                 </div>
               )}
 
               <div>
-                <dt className="text-sm font-medium text-muted-foreground">User ID</dt>
+                <dt className="text-sm font-medium text-muted-foreground">{t('profile.personalInfo.userId')}</dt>
                 <dd className="mt-1 text-sm font-mono text-xs">{user.id}</dd>
               </div>
 
               {user.planType && (
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">Plan</dt>
+                  <dt className="text-sm font-medium text-muted-foreground">{t('profile.personalInfo.plan')}</dt>
                   <dd className="mt-1 text-sm font-semibold">{user.planType}</dd>
                 </div>
               )}
 
               <div>
-                <dt className="text-sm font-medium text-muted-foreground">Member Since</dt>
+                <dt className="text-sm font-medium text-muted-foreground">{t('profile.personalInfo.memberSince')}</dt>
                 <dd className="mt-1 text-sm">
                   {new Date(user.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',

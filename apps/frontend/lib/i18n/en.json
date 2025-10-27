@@ -410,6 +410,9 @@
   "veille": {
     "title": "AI Watch",
     "subtitle": "Your curated feed of AI and tech articles",
+    "savedArticlesTitle": "My Saved Articles",
+    "savedArticlesCount": "{{count}} saved article",
+    "savedArticlesCount_plural": "{{count}} saved articles",
     "filters": {
       "source": "Source",
       "allSources": "All sources"
