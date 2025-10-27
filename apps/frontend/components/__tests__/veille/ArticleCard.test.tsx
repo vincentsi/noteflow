@@ -42,9 +42,9 @@ describe('ArticleCard', () => {
   it('renders all article tags', () => {
     render(<ArticleCard article={mockArticle} />)
 
-    expect(screen.getByText('ai')).toBeInTheDocument()
-    expect(screen.getByText('dev')).toBeInTheDocument()
-    expect(screen.getByText('startup')).toBeInTheDocument()
+    expect(screen.getByText('#ai')).toBeInTheDocument()
+    expect(screen.getByText('#dev')).toBeInTheDocument()
+    expect(screen.getByText('#startup')).toBeInTheDocument()
   })
 
   it('renders link to article with correct href', () => {

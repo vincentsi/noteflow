@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useTranslation } from '@/lib/hooks/useTranslation'
+import { useI18n } from '@/lib/i18n/provider'
 import type { Article } from '@/types'
 import { Bookmark, BookmarkCheck, ExternalLink, Newspaper, Sparkles } from 'lucide-react'
 
@@ -16,7 +16,7 @@ export interface ArticleCardProps {
 }
 
 export const ArticleCard = memo(function ArticleCard({ article, isSaved = false, onSave, onUnsave, isLoading = false }: ArticleCardProps) {
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const router = useRouter()
   const [imageError, setImageError] = useState(false)
 
@@ -146,7 +146,7 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
               className="w-full group/btn hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 hover:border-primary transition-all"
             >
               <Sparkles className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform" />
-              Résumer avec IA
+              {t('veille.actions.summarize')}
             </Button>
           </CardFooter>
         </div>

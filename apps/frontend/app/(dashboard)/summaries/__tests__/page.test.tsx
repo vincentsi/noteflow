@@ -7,6 +7,10 @@ jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(() => ({
     get: jest.fn(() => null),
   })),
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    back: jest.fn(),
+  })),
 }))
 
 // Mock les hooks

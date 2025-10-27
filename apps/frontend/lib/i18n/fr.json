@@ -431,7 +431,8 @@
     "actions": {
       "save": "Sauvegarder",
       "saved": "Sauvegardé",
-      "unsave": "Retirer"
+      "unsave": "Retirer",
+      "summarize": "Résumer avec IA"
     }
   }
 }
