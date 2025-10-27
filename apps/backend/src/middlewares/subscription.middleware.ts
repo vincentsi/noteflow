@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { PlanType } from '@prisma/client'
+import { PlanType, SubscriptionStatus } from '@prisma/client'
 import { stripeService } from '@/services/stripe.service'
 
 /**
@@ -59,11 +59,15 @@ export function requireSubscription(requiredPlan: PlanType) {
         })
       }
 
-      // Check feature access
-      const hasAccess = await stripeService.hasFeatureAccess(
-        userId,
-        requiredPlan
-      )
+      // Use cached subscription if available (performance optimization)
+      let hasAccess: boolean
+      if (request.subscription !== undefined) {
+        // Subscription already loaded by loadSubscription middleware
+        hasAccess = hasFeatureAccessFromSubscription(request.subscription, requiredPlan)
+      } else {
+        // Fallback to direct check if loadSubscription was not called
+        hasAccess = await stripeService.hasFeatureAccess(userId, requiredPlan)
+      }
 
       if (!hasAccess) {
         return reply.status(403).send({
@@ -94,6 +98,66 @@ export function requireSubscription(requiredPlan: PlanType) {
  * fastify.addHook('preHandler', requireActiveSubscription)
  * ```
  */
+
+/**
+ * Middleware to load subscription once per request (performance optimization)
+ *
+ * Loads user subscription from cache/DB and stores in request.subscription
+ * to avoid multiple DB queries when checking multiple features.
+ *
+ * **Performance Impact:**
+ * - Without this: 3 feature checks = 3 DB queries
+ * - With this: 3 feature checks = 1 DB query
+ *
+ * @example
+ * ```typescript
+ * // In your route setup
+ * app.register(async (fastify) => {
+ *   fastify.addHook('preHandler', loadSubscription)
+ *   fastify.addHook('preHandler', requireSubscription(PlanType.PRO))
+ * })
+ * ```
+ */
+export async function loadSubscription(
+  request: FastifyRequest,
+  _reply: FastifyReply
+): Promise<void> {
+  const userId = request.user?.userId
+  if (!userId) return
+
+  // Load subscription once and cache in request object
+  const subscription = await stripeService.getUserSubscription(userId)
+  // Type assertion needed because CacheService.get() returns unknown type
+  request.subscription = (subscription as FastifyRequest['subscription']) || null
+}
+
+/**
+ * Check if user has feature access using cached subscription
+ * @internal
+ */
+function hasFeatureAccessFromSubscription(
+  subscription: FastifyRequest['subscription'],
+  requiredPlan: PlanType
+): boolean {
+  if (!subscription) return requiredPlan === PlanType.FREE
+
+  // Check if subscription is active
+  const isActive =
+    subscription.status === SubscriptionStatus.ACTIVE ||
+    subscription.status === SubscriptionStatus.TRIALING
+
+  if (!isActive) return false
+
+  // Check plan hierarchy
+  const planHierarchy: Record<PlanType, number> = {
+    FREE: 0,
+    STARTER: 1,
+    PRO: 2,
+  }
+
+  return planHierarchy[subscription.planType] >= planHierarchy[requiredPlan]
+}
+
 export async function requireActiveSubscription(
   request: FastifyRequest,
   reply: FastifyReply
@@ -108,7 +172,18 @@ export async function requireActiveSubscription(
       })
     }
 
-    const hasSubscription = await stripeService.hasActiveSubscription(userId)
+    // Use cached subscription if available (performance optimization)
+    let hasSubscription: boolean
+    if (request.subscription !== undefined) {
+      // Subscription already loaded by loadSubscription middleware
+      hasSubscription = request.subscription !== null && (
+        request.subscription.status === SubscriptionStatus.ACTIVE ||
+        request.subscription.status === SubscriptionStatus.TRIALING
+      )
+    } else {
+      // Fallback to direct check if loadSubscription was not called
+      hasSubscription = await stripeService.hasActiveSubscription(userId)
+    }
 
     if (!hasSubscription) {
       return reply.status(403).send({

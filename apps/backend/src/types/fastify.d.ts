@@ -1,4 +1,5 @@
 import 'fastify'
+import type { Subscription } from '@prisma/client'
 
 /**
  * Extends Fastify types to add custom properties
@@ -8,5 +9,6 @@ declare module 'fastify' {
     user?: {
       userId: string
     }
+    subscription?: Subscription | null
   }
 }

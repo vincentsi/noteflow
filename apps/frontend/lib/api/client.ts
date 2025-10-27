@@ -65,6 +65,12 @@ apiClient.interceptors.request.use(
 // ========================================
 // RESPONSE INTERCEPTOR: Refresh token with queue pattern (prevents race condition)
 // ========================================
+
+// Cross-tab synchronization constants
+const REFRESH_LOCK_KEY = 'auth:refreshing'
+const REFRESH_LOCK_TIMEOUT_MS = 10000 // 10 seconds
+
+// In-tab state
 let isRefreshing = false
 let refreshSubscribers: Array<() => void> = []
 const MAX_SUBSCRIBERS = 100 // Prevent memory leak
@@ -103,6 +109,48 @@ const incrementRefreshAttempts = (): number => {
 
 const resetRefreshAttempts = (): void => {
   refreshAttempts = 0
+}
+
+/**
+ * Check if another tab is currently refreshing the token
+ * Uses localStorage for cross-tab communication
+ */
+function isAnotherTabRefreshing(): boolean {
+  if (typeof window === 'undefined') return false
+
+  const lockValue = localStorage.getItem(REFRESH_LOCK_KEY)
+  if (!lockValue) return false
+
+  const lockTime = parseInt(lockValue, 10)
+  if (isNaN(lockTime)) return false
+
+  // Check if lock is still valid (not expired)
+  return Date.now() - lockTime < REFRESH_LOCK_TIMEOUT_MS
+}
+
+/**
+ * Acquire refresh lock (cross-tab)
+ * Returns true if lock was acquired, false if another tab has it
+ */
+function acquireRefreshLock(): boolean {
+  if (typeof window === 'undefined') return true
+
+  // Check if another tab already has the lock
+  if (isAnotherTabRefreshing()) {
+    return false
+  }
+
+  // Acquire lock
+  localStorage.setItem(REFRESH_LOCK_KEY, Date.now().toString())
+  return true
+}
+
+/**
+ * Release refresh lock (cross-tab)
+ */
+function releaseRefreshLock(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(REFRESH_LOCK_KEY)
 }
 
 /**
@@ -178,6 +226,20 @@ apiClient.interceptors.response.use(
       }
 
       if (!isRefreshing) {
+        // Try to acquire cross-tab lock
+        const lockAcquired = acquireRefreshLock()
+
+        if (!lockAcquired) {
+          // Another tab is refreshing, wait for it to complete
+          logWarn('Another tab is refreshing token, waiting...', {})
+
+          // Wait a bit and retry the request (token should be refreshed by other tab)
+          await new Promise(resolve => setTimeout(resolve, 1000))
+
+          // Retry original request with (hopefully) refreshed token
+          return apiClient(originalRequest)
+        }
+
         isRefreshing = true
         incrementRefreshAttempts()
 
@@ -191,6 +253,7 @@ apiClient.interceptors.response.use(
 
           // Token refreshed successfully
           isRefreshing = false
+          releaseRefreshLock() // Release cross-tab lock
           resetRefreshAttempts() // ✅ Reset on success
           onRefreshed()
 
@@ -199,6 +262,7 @@ apiClient.interceptors.response.use(
         } catch (refreshError: unknown) {
           // Refresh failed
           isRefreshing = false
+          releaseRefreshLock() // Release cross-tab lock
 
           // Convert to Error if needed
           const err = refreshError instanceof Error
