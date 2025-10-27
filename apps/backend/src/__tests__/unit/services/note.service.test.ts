@@ -82,7 +82,7 @@ describe('NoteService', () => {
 
       await expect(
         noteService.createNote('user-123', { title: 'Test', content: '', tags: [] })
-      ).rejects.toThrow('Plan limit reached')
+      ).rejects.toThrow('Note limit reached')
     })
 
     it('should allow creation for STARTER plan under limit', async () => {

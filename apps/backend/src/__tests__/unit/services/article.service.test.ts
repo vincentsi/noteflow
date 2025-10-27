@@ -147,7 +147,7 @@ describe('ArticleService', () => {
       await expect(
         articleService.saveArticle(userId, articleId)
       ).rejects.toThrow(
-        'Article save limit reached. Your FREE plan allows 10 saved articles.'
+        'Article limit reached. Your FREE plan allows 10 saved articles.'
       )
     })
 
