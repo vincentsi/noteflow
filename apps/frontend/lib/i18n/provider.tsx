@@ -1,7 +1,6 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useAuth } from '@/providers/auth.provider'
 import { apiClient } from '@/lib/api/client'
 import type { Language, I18nContextType, Translations } from './types'
 import frTranslations from './fr.json'
@@ -15,31 +14,37 @@ const translations: Record<Language, Translations> = {
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
   const [language, setLanguageState] = useState<Language>('fr')
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Initialize language from localStorage or user preference
+  // Initialize language from localStorage only
+  // User language sync happens in AuthProvider
   useEffect(() => {
-    // Priority: user preference from backend > localStorage > default ('fr')
-    if (user?.language && (user.language === 'fr' || user.language === 'en')) {
-      setLanguageState(user.language as Language)
-      localStorage.setItem('language', user.language)
-    } else {
-      const savedLang = localStorage.getItem('language') as Language | null
-      if (savedLang === 'fr' || savedLang === 'en') {
-        setLanguageState(savedLang)
-      }
+    const savedLang = localStorage.getItem('language') as Language | null
+    if (savedLang === 'fr' || savedLang === 'en') {
+      setLanguageState(savedLang)
     }
     setIsInitialized(true)
-  }, [user])
+
+    // Listen for storage changes (from AuthProvider or other tabs)
+    const handleStorageChange = () => {
+      const updatedLang = localStorage.getItem('language') as Language | null
+      if (updatedLang === 'fr' || updatedLang === 'en') {
+        setLanguageState(updatedLang)
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   const setLanguage = async (lang: Language) => {
     setLanguageState(lang)
     localStorage.setItem('language', lang)
 
-    // Sync with backend if user is authenticated
-    if (user) {
+    // Sync with backend if user is authenticated (check for access token)
+    const accessToken = localStorage.getItem('accessToken')
+    if (accessToken) {
       try {
         await apiClient.patch('/api/users/me', { language: lang })
       } catch (error) {

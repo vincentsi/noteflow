@@ -42,6 +42,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsInitialized(true)
   }, [])
 
+  // Sync user language to localStorage for I18nProvider
+  useEffect(() => {
+    if (data?.language && (data.language === 'fr' || data.language === 'en')) {
+      localStorage.setItem('language', data.language)
+      // Trigger storage event to update I18nProvider in other tabs
+      window.dispatchEvent(new Event('storage'))
+    }
+  }, [data?.language])
+
   // Proactive token refresh every 10 minutes (before 15 min expiration)
   useEffect(() => {
     if (!data) return
