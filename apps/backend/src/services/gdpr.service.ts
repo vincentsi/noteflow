@@ -1,6 +1,8 @@
 import { prisma } from '@/config/prisma'
 import type { User } from '@prisma/client'
 import { TokenCleanup } from '@/utils/token-cleanup.util'
+import { stripeService } from './stripe.service'
+import { logger } from '@/utils/logger'
 
 /**
  * GDPR Compliance Service
@@ -181,6 +183,7 @@ export class GDPRService {
       resetTokens: number
       csrfTokens: number
       subscriptions: number
+      stripeCustomer: boolean
     }
   }> {
     // Check if user exists
@@ -208,21 +211,28 @@ export class GDPRService {
 
     const [refreshTokenCount, verificationTokenCount, resetTokenCount, csrfTokenCount, subscriptionCount] = counts
 
+    // Delete Stripe customer BEFORE deleting user (GDPR compliance)
+    let stripeCustomerDeleted = false
+    if (user.stripeCustomerId) {
+      try {
+        await stripeService.deleteCustomer(user.stripeCustomerId)
+        stripeCustomerDeleted = true
+        logger.info({ stripeCustomerId: user.stripeCustomerId, userId }, 'Stripe customer deleted')
+      } catch (error) {
+        logger.error({ error, stripeCustomerId: user.stripeCustomerId, userId }, 'Failed to delete Stripe customer')
+        throw new Error('Failed to delete payment data. Aborting user deletion for GDPR compliance.')
+      }
+    }
+
     // Delete user (CASCADE will handle related data)
     await prisma.user.delete({
       where: { id: userId },
     })
 
-    // Note: Stripe customer should be deleted via Stripe API
-    // This should be handled separately in the controller
-    const stripeNote = user.stripeCustomerId
-      ? ` Note: Stripe customer ${user.stripeCustomerId} must be deleted separately via Stripe API.`
-      : ''
-
     return {
       success: true,
       deletedAt: new Date().toISOString(),
-      message: `User account and all associated data permanently deleted.${stripeNote}`,
+      message: 'User account and all associated data permanently deleted.',
       deletedData: {
         user: true,
         refreshTokens: refreshTokenCount,
@@ -230,6 +240,7 @@ export class GDPRService {
         resetTokens: resetTokenCount,
         csrfTokens: csrfTokenCount,
         subscriptions: subscriptionCount,
+        stripeCustomer: stripeCustomerDeleted,
       },
     }
   }

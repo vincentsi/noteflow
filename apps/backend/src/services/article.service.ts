@@ -4,6 +4,7 @@ import { CacheService, CacheKeys } from './cache.service'
 import { PAGINATION_CONFIG } from '@/constants/pagination'
 import { CACHE_TTL } from '@/constants/performance'
 import { PlanLimiter } from '@/utils/plan-limiter'
+import { DistributedLockService } from './distributed-lock.service'
 
 export interface GetArticlesFilters {
   source?: string
@@ -170,21 +171,38 @@ export class ArticleService {
 
   /**
    * Save an article for a user (with plan limits)
+   * Uses distributed lock to prevent race condition with plan limit checks
+   *
+   * Race condition protection:
+   * - Without lock: 2 concurrent requests → both pass limit check → user exceeds limit
+   * - With lock: Only first request saves, second waits and gets proper limit check
    */
   async saveArticle(userId: string, articleId: string): Promise<void> {
-    // Check plan limits using centralized utility
-    await PlanLimiter.checkLimit(userId, 'article')
+    // Use distributed lock to ensure atomic limit check + save operation
+    const result = await DistributedLockService.executeWithLock(
+      `article-save-${userId}`,
+      5000, // 5s TTL (enough for limit check + save)
+      async () => {
+        // Check plan limits using centralized utility
+        await PlanLimiter.checkLimit(userId, 'article')
 
-    // Save article
-    await prisma.savedArticle.create({
-      data: {
-        userId,
-        articleId,
-      },
-    })
+        // Save article
+        await prisma.savedArticle.create({
+          data: {
+            userId,
+            articleId,
+          },
+        })
 
-    // Invalidate cache
-    await PlanLimiter.invalidateCache(userId, 'article')
+        // Invalidate cache
+        await PlanLimiter.invalidateCache(userId, 'article')
+      }
+    )
+
+    // If lock couldn't be acquired, throw error (user should retry)
+    if (result === null) {
+      throw new Error('Unable to save article at this time. Please try again.')
+    }
   }
 
   /**

@@ -1,6 +1,9 @@
 import { prismaMock } from '../../helpers/test-db'
 import { ArticleService } from '../../../services/article.service'
 import { PlanType } from '@prisma/client'
+import { DistributedLockService } from '../../../services/distributed-lock.service'
+
+jest.mock('../../../services/distributed-lock.service')
 
 describe('ArticleService', () => {
   let articleService: ArticleService
@@ -77,6 +80,15 @@ describe('ArticleService', () => {
   })
 
   describe('saveArticle', () => {
+    beforeEach(() => {
+      // Mock executeWithLock to execute the callback immediately
+      jest.spyOn(DistributedLockService, 'executeWithLock').mockImplementation(
+        async (_key, _ttl, fn) => {
+          return await fn()
+        }
+      )
+    })
+
     it('should save article for FREE user within limit', async () => {
       const userId = 'user-123'
       const articleId = 'article-1'
@@ -115,6 +127,11 @@ describe('ArticleService', () => {
       expect(prismaMock.savedArticle.create).toHaveBeenCalledWith({
         data: { userId, articleId },
       })
+      expect(DistributedLockService.executeWithLock).toHaveBeenCalledWith(
+        `article-save-${userId}`,
+        5000,
+        expect.any(Function)
+      )
     })
 
     it('should throw error when FREE user reaches limit', async () => {
@@ -188,6 +205,18 @@ describe('ArticleService', () => {
       expect(prismaMock.savedArticle.count).not.toHaveBeenCalled()
       expect(prismaMock.savedArticle.create).toHaveBeenCalled()
     })
+
+    it('should throw error when distributed lock cannot be acquired', async () => {
+      const userId = 'user-123'
+      const articleId = 'article-1'
+
+      // Mock lock failure (another instance is processing)
+      jest.spyOn(DistributedLockService, 'executeWithLock').mockResolvedValue(null)
+
+      await expect(
+        articleService.saveArticle(userId, articleId)
+      ).rejects.toThrow('Unable to save article at this time. Please try again.')
+    })
   })
 
   describe('unsaveArticle', () => {
@@ -219,6 +248,7 @@ describe('ArticleService', () => {
       prismaMock.article.upsert.mockResolvedValue({
         id: 'article-1',
         ...articleData,
+        imageUrl: null,
         createdAt: new Date(),
       })
 

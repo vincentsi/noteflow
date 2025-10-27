@@ -427,6 +427,24 @@ export class StripeService {
     // Delete all feature-access cache for this user (all plans)
     await CacheService.deletePattern(`*:feature-access:${userId}:*`)
   }
+
+  /**
+   * Deletes a Stripe customer (GDPR compliance)
+   * CRITICAL: Called during GDPR deletion process to remove personal data from Stripe
+   *
+   * @param stripeCustomerId - Stripe customer ID
+   * @throws Error if deletion fails
+   *
+   * @example
+   * ```typescript
+   * // GDPR deletion process
+   * await stripeService.deleteCustomer(user.stripeCustomerId)
+   * await prisma.user.delete({ where: { id: userId } })
+   * ```
+   */
+  async deleteCustomer(stripeCustomerId: string): Promise<void> {
+    await this.stripe.customers.del(stripeCustomerId)
+  }
 }
 
 export const stripeService = new StripeService()
