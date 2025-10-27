@@ -95,30 +95,34 @@ npm run test:e2e         # Playwright E2E tests
 - Prisma client for database operations
 - BullMQ queues for async jobs (AI summaries, RSS fetching)
 
-**Key Services (existing):**
+**Key Services (implemented):**
 
 - `auth.service.ts` - JWT authentication, token management
-- `stripe.service.ts` - Subscription management
+- `stripe.service.ts` - Subscription management with Stripe customer deletion
 - `email.service.ts` - Email via Resend
-- `cache.service.ts` - Redis caching
-- `distributed-lock.service.ts` - Redlock for distributed locking
-- `gdpr.service.ts` - Data export/deletion
-
-**Services to be created (see TDD-WORKFLOW.md):**
-
-- `article.service.ts` - Article CRUD and RSS parsing
+- `cache.service.ts` - Redis caching with centralized key helpers
+- `distributed-lock.service.ts` - Redlock for distributed locking (race condition prevention)
+- `gdpr.service.ts` - Data export/deletion with Stripe integration
+- `article.service.ts` - Article CRUD with distributed locks for save operations
 - `rss.service.ts` - RSS feed fetching and parsing
-- `summary.service.ts` - Summary management
-- `ai.service.ts` - OpenAI/Claude integration
-- `note.service.ts` - Note management
-- `post.service.ts` - Public post management
+- `summary.service.ts` - Summary management with pagination
+- `ai.service.ts` - OpenAI integration for summaries
+- `note.service.ts` - Note CRUD operations
+- `post.service.ts` - Public post management (to be created)
 
 **Middleware Stack:**
 
 - `auth.middleware.ts` - JWT validation
 - `rbac.middleware.ts` - Role-based access control
-- `subscription.middleware.ts` - Plan-based feature limiting
-- Plan limit middleware (to be created) - Usage quota enforcement
+- `subscription.middleware.ts` - Plan-based feature limiting with request-level caching
+- `loadSubscription` middleware - Request-level subscription caching to reduce DB queries
+
+**Utilities:**
+
+- `plan-limiter.ts` - Usage quota enforcement with plan type validation
+- `cache-key-helpers.ts` - Centralized cache key generation (prevents month-boundary race conditions)
+- `error-response.ts` - Standardized error handling
+- `custom-errors.ts` - Custom error classes
 
 ### Database Schema (Prisma)
 
@@ -208,11 +212,20 @@ npx prisma migrate dev --name <descriptive_name>  # Creates migration + generate
 npx prisma generate                                # Regenerate client only
 ```
 
-**Reset database (dev only):**
+**⚠️ CRITICAL: Reset BOTH databases after schema changes:**
 
 ```bash
-npx prisma migrate reset  # Drops DB, reruns all migrations, runs seed
+# 1. Reset development database
+npx prisma migrate reset --force
+
+# 2. Reset test database (REQUIRED!)
+DATABASE_URL=postgresql://postgres:0771@localhost:5432/noteflow_test \
+  npx prisma migrate reset --force
 ```
+
+**Why reset test DB?** Jest tests use a separate `noteflow_test` database (configured in `src/__tests__/setup.ts`). If you only reset `noteflow_dev`, tests will fail with `"The column 'colonne' does not exist"` errors because the test database has an outdated schema.
+
+See `plan/TROUBLESHOOTING-TESTS.md` for detailed troubleshooting.
 
 ### Git Commit Messages
 
@@ -237,10 +250,12 @@ Follow conventional commits with ONE LINE only:
 
 - `DATABASE_URL` - PostgreSQL connection (noteflow_dev)
 - `JWT_SECRET`, `JWT_REFRESH_SECRET` - 64-char hex strings
-- `REDIS_URL` - Redis connection
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- `OPENAI_API_KEY` - For AI summaries
-- `RESEND_API_KEY` - Email service
+- `REDIS_URL` - Redis connection (optional, falls back gracefully)
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` - Stripe integration
+- `OPENAI_API_KEY` - **REQUIRED** for AI summaries (min 20 chars, validated in env schema)
+- `RESEND_API_KEY` - Email service (optional)
+- `PORT` - Server port (default: 3001)
+- `NODE_ENV` - Environment (development/test/production)
 
 **Frontend (.env.local):**
 
@@ -253,17 +268,39 @@ Follow conventional commits with ONE LINE only:
 - Mock Prisma client with `jest-mock-extended`
 - Mock external APIs (OpenAI, Stripe, Resend)
 - Test services in isolation
+- Run: `npm run test:unit`
 
 **Integration Tests (80%+ coverage):**
 
-- Use real Prisma with test database
+- Use real Prisma with test database (`noteflow_test`)
 - Test full request/response cycle
 - Run with `--runInBand` to avoid race conditions
+- Run: `npm run test:integration`
+
+**⚠️ Test Database Setup:**
+
+Tests use a separate database configured in `src/__tests__/setup.ts`:
+```typescript
+DATABASE_URL = 'postgresql://postgres:0771@localhost:5432/noteflow_test'
+```
+
+If tests fail with "column does not exist" errors, reset the test database:
+```bash
+DATABASE_URL=postgresql://postgres:0771@localhost:5432/noteflow_test \
+  npx prisma migrate reset --force
+```
 
 **E2E Tests (Playwright):**
 
 - Test critical user flows
 - Auth, subscription, GDPR flows
+- Run: `npm run test:e2e` (from frontend)
+
+**Current Test Coverage:**
+
+- 127/128 tests passing (99.2%)
+- 41%+ statement coverage
+- All critical and high priority bugs fixed
 
 ### Plan Limit Enforcement
 
@@ -303,6 +340,8 @@ Create middleware to check user plan limits before operations:
 - **plan/ARCHITECTURE.md** - Detailed technical architecture and service descriptions
 - **plan/TDD-WORKFLOW.md** - Feature-by-feature development checklist (50+ features)
 - **plan/TESTING-STRATEGY.md** - Test types, coverage targets, TDD examples
+- **plan/CODE-ANALYSIS-REPORT.md** - Code quality analysis with all fixes applied (96/100 score)
+- **plan/TROUBLESHOOTING-TESTS.md** - Solutions for common test issues (Jest, Prisma, databases)
 - **README.md** - Quick start, tech stack, project structure
 
 ## Important Notes
@@ -337,3 +376,54 @@ This is **NON-NEGOTIABLE**. Do not skip this step under any circumstances. Readi
 1. Read at least 4 relevant existing files (similar functionality + imported dependencies)
 2. Understand the patterns, conventions, and API usage
 3. Only then proceed with creating/editing files
+
+### Security & Performance Best Practices
+
+**Race Condition Prevention:**
+
+- Use `DistributedLockService.executeWithLock()` for critical operations
+- Example: Article save operations to prevent duplicate limit checks
+- Lock timeout: 5000ms typical, adjust based on operation
+
+**Cache Management:**
+
+- Use centralized cache keys via `cache-key-helpers.ts`
+- Never use `JSON.stringify()` directly for cache keys (causes collision with different key orders)
+- Use `buildArticleCacheKey()` which sorts keys alphabetically
+- Example: `{ a: 1, b: 2 }` and `{ b: 2, a: 1 }` produce the same key
+
+**Request-Level Caching:**
+
+- Use `loadSubscription` middleware to cache subscription data per request
+- Reduces DB queries by ~66% for subscription checks
+- Pattern: Load once, reuse throughout request lifecycle
+
+**Error Messages:**
+
+- NEVER expose email existence in error messages (prevents user enumeration)
+- Use generic errors: "Registration failed. Please check your information."
+- Log sensitive info server-side only with `logger.warn()`
+
+**Pagination:**
+
+- Always validate: `page: 1-1000, limit: 1-100`
+- Use Zod schemas for automatic validation
+- Example: `getSummariesSchema`, `getNotesSchema`
+
+**Search Queries:**
+
+- Max 200 characters
+- Regex validation: `/^[a-zA-Z0-9\s\-_.,!?'"]*$/`
+- Prevents SQL injection and DoS attacks
+
+**Webhook Logging:**
+
+- Log event metadata: `eventId`, `eventType`, `customerId`, `subscriptionId`
+- Track processing latency: `startTime` → `endTime`
+- Essential for debugging Stripe webhooks
+
+**GDPR Compliance:**
+
+- Delete Stripe customer BEFORE deleting user from database
+- Wrap in try-catch to prevent partial deletion
+- Export limits: max 100 tokens (reduced from 1000 to prevent DoS)
