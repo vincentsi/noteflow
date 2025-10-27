@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/providers/auth.provider'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { LogOut, User } from 'lucide-react'
 
 export function DashboardNav() {
@@ -51,6 +52,7 @@ export function DashboardNav() {
             <span>{user?.email}</span>
           </div>
 
+          <LanguageSwitcher />
           <ThemeToggle />
 
           <Button variant="outline" size="sm" onClick={logout}>
