@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { NoteService } from '@/services/note.service'
+import { noteService } from '@/services/note.service'
 import {
   createNoteSchema,
   updateNoteSchema,
@@ -8,8 +8,6 @@ import {
   noteIdSchema,
 } from '@/schemas/note.schema'
 import { handleControllerError } from '@/utils/error-response'
-
-const noteService = new NoteService()
 
 /**
  * Note controller

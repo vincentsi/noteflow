@@ -193,3 +193,6 @@ export class SummaryService {
     await CacheService.delete(`summary:${summaryId}`)
   }
 }
+
+// Export singleton instance
+export const summaryService = new SummaryService()

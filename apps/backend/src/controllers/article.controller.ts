@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { ArticleService } from '@/services/article.service'
+import { articleService } from '@/services/article.service'
 import {
   getArticlesSchema,
   getSavedArticlesSchema,
@@ -7,8 +7,6 @@ import {
   unsaveArticleSchema,
 } from '@/schemas/article.schema'
 import { handleControllerError } from '@/utils/error-response'
-
-const articleService = new ArticleService()
 
 /**
  * Article controller

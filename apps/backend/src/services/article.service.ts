@@ -270,3 +270,6 @@ export class ArticleService {
     return sources.map((s) => s.source)
   }
 }
+
+// Export singleton instance
+export const articleService = new ArticleService()

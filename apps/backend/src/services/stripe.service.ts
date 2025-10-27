@@ -1,68 +1,11 @@
-import { logger } from '@/utils/logger'
 import { env } from '@/config/env'
 import { prisma } from '@/config/prisma'
 import { queueStripeWebhook } from '@/queues/stripe-webhook.queue'
 import { DistributedLockService } from '@/services/distributed-lock.service'
 import { PlanType, SubscriptionStatus } from '@prisma/client'
 import Stripe from 'stripe'
-import { z } from 'zod'
 import { CacheKeys, CacheService } from './cache.service'
-
-/**
- * Interface for typing Stripe Subscription objects correctly
- * (compatibility with Stripe v19+ using snake_case)
- */
-interface StripeSubscriptionData {
-  id: string
-  customer: string
-  status: Stripe.Subscription.Status
-  items: {
-    data: Array<{
-      price: {
-        id: string
-      }
-    }>
-  }
-  current_period_start: number
-  current_period_end: number
-  cancel_at_period_end: boolean
-  canceled_at: number | null
-  metadata?: Record<string, string>
-}
-
-/**
- * Zod schemas for validating Stripe webhook metadata
- * Prevents injection attacks and ensures type safety
- */
-const checkoutMetadataSchema = z.object({
-  userId: z.string().cuid(),
-  planType: z.enum(['PRO', 'STARTER']),
-})
-
-const subscriptionMetadataSchema = z.object({
-  userId: z.string().cuid(),
-  planType: z.enum(['PRO', 'STARTER']).optional(),
-})
-
-/**
- * Type guard to validate Stripe subscription structure
- */
-function isStripeSubscriptionData(data: unknown): data is StripeSubscriptionData {
-  if (!data || typeof data !== 'object') return false
-
-  const obj = data as Record<string, unknown>
-
-  return (
-    typeof obj.id === 'string' &&
-    typeof obj.customer === 'string' &&
-    typeof obj.status === 'string' &&
-    obj.items !== null &&
-    typeof obj.items === 'object' &&
-    'data' in obj.items &&
-    Array.isArray((obj.items as { data: unknown }).data) &&
-    (obj.items as { data: unknown[] }).data.length > 0
-  )
-}
+import { StripeWebhookHandlers } from './stripe-webhook-handlers'
 
 /**
  * Stripe Subscription Service
@@ -112,6 +55,7 @@ export class StripeService {
   private stripe!: Stripe // Definite assignment - initialized in constructor or mocked in tests
   private static readonly SUBSCRIPTION_CACHE_TTL = 5 * 60 // 5 minutes
   private static readonly FEATURE_ACCESS_CACHE_TTL = 5 * 60 // 5 minutes
+  private webhookHandlers!: StripeWebhookHandlers
 
   constructor() {
     // In test mode, allow missing Stripe key (will be mocked)
@@ -125,6 +69,10 @@ export class StripeService {
         apiVersion: '2025-09-30.clover',
         typescript: true,
       })
+      this.webhookHandlers = new StripeWebhookHandlers(
+        this.stripe,
+        this.invalidateSubscriptionCache.bind(this)
+      )
     }
   }
 
@@ -297,311 +245,44 @@ export class StripeService {
 
   /**
    * Handles checkout.session.completed event
-   * Creates a new subscription in database
+   * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
   async handleCheckoutCompleted(
     session: Stripe.Checkout.Session
   ): Promise<void> {
-    const validationResult = checkoutMetadataSchema.safeParse(session.metadata)
-
-    if (!validationResult.success) {
-      throw new Error(
-        `Invalid checkout metadata: ${validationResult.error.message}`
-      )
-    }
-
-    const { userId, planType } = validationResult.data
-
-    if (!session.subscription) {
-      throw new Error('No subscription in checkout session')
-    }
-
-    const stripeSubscription = await this.stripe.subscriptions.retrieve(
-      session.subscription as string
-    )
-
-    if (!isStripeSubscriptionData(stripeSubscription)) {
-      throw new Error('Invalid Stripe subscription structure')
-    }
-
-    const sub = stripeSubscription
-    const priceId = sub.items.data[0]?.price.id
-
-    if (!priceId) {
-      throw new Error('No price ID found in subscription')
-    }
-
-    await prisma.$transaction(async tx => {
-      await tx.subscription.upsert({
-        where: {
-          stripeSubscriptionId: sub.id,
-        },
-        create: {
-          userId,
-          stripeSubscriptionId: sub.id,
-          stripePriceId: priceId,
-          stripeCustomerId: sub.customer as string,
-          status: this.mapStripeStatus(sub.status),
-          planType,
-          currentPeriodStart: new Date(sub.current_period_start * 1000),
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-          cancelAtPeriodEnd: sub.cancel_at_period_end,
-        },
-        update: {
-          status: this.mapStripeStatus(sub.status),
-          planType,
-          currentPeriodStart: new Date(sub.current_period_start * 1000),
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-          cancelAtPeriodEnd: sub.cancel_at_period_end,
-        },
-      })
-
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          subscriptionStatus: this.mapStripeStatus(sub.status),
-          subscriptionId: sub.id,
-          planType,
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-        },
-      })
-    })
-
-    await this.invalidateSubscriptionCache(userId)
+    return this.webhookHandlers.handleCheckoutCompleted(session)
   }
 
   /**
    * Handles customer.subscription.updated event
-   * Updates subscription in database (renewal, plan change)
+   * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
   async handleSubscriptionUpdated(
     stripeSubscription: Stripe.Subscription
   ): Promise<void> {
-    if (!isStripeSubscriptionData(stripeSubscription)) {
-      throw new Error('Invalid Stripe subscription structure')
-    }
-
-    const subscription = stripeSubscription
-
-    // Extract userId and planType with database fallback
-    const { userId, planType } = await this.extractUserIdFromWebhook(
-      subscription.metadata,
-      subscription.id,
-      true // Include planType
-    )
-
-    const priceId = subscription.items.data[0]?.price.id
-
-    if (!priceId) {
-      throw new Error('No price ID found in subscription')
-    }
-
-    await prisma.$transaction(async tx => {
-      await tx.subscription.update({
-        where: {
-          stripeSubscriptionId: subscription.id,
-        },
-        data: {
-          status: this.mapStripeStatus(subscription.status),
-          planType: planType || undefined,
-          stripePriceId: priceId,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          canceledAt: subscription.canceled_at
-            ? new Date(subscription.canceled_at * 1000)
-            : null,
-        },
-      })
-
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          subscriptionStatus: this.mapStripeStatus(subscription.status),
-          planType: planType || undefined,
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        },
-      })
-    })
-
-    await this.invalidateSubscriptionCache(userId)
+    return this.webhookHandlers.handleSubscriptionUpdated(stripeSubscription)
   }
 
   /**
    * Handles customer.subscription.deleted event
-   * Marks subscription as canceled
+   * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
   async handleSubscriptionDeleted(
     subscription: Stripe.Subscription
   ): Promise<void> {
-    const { userId } = await this.extractUserIdFromWebhook(
-      subscription.metadata,
-      subscription.id,
-      false
-    )
-
-    await prisma.$transaction(async tx => {
-      await tx.subscription.update({
-        where: {
-          stripeSubscriptionId: subscription.id,
-        },
-        data: {
-          status: SubscriptionStatus.CANCELED,
-          cancelAtPeriodEnd: false,
-          canceledAt: new Date(),
-        },
-      })
-
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          subscriptionStatus: SubscriptionStatus.CANCELED,
-          planType: PlanType.FREE,
-          subscriptionId: null,
-          currentPeriodEnd: null,
-        },
-      })
-    })
-
-    await this.invalidateSubscriptionCache(userId)
+    return this.webhookHandlers.handleSubscriptionDeleted(subscription)
   }
 
   /**
    * Handles invoice.payment_failed event
-   * Marks subscription as PAST_DUE
+   * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
   async handlePaymentFailed(stripeInvoice: Stripe.Invoice): Promise<void> {
-    const invoice = stripeInvoice as unknown as { subscription?: string }
-    if (!invoice.subscription) {
-      return
-    }
-
-    const stripeSubscription = await this.stripe.subscriptions.retrieve(
-      invoice.subscription
-    )
-
-    if (!isStripeSubscriptionData(stripeSubscription)) {
-      throw new Error('Invalid Stripe subscription structure')
-    }
-
-    const subscription = stripeSubscription
-
-    const { userId } = await this.extractUserIdFromWebhook(
-      subscription.metadata,
-      subscription.id,
-      false
-    )
-
-    await prisma.$transaction(async tx => {
-      await tx.subscription.update({
-        where: {
-          stripeSubscriptionId: subscription.id,
-        },
-        data: {
-          status: SubscriptionStatus.PAST_DUE,
-        },
-      })
-
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          subscriptionStatus: SubscriptionStatus.PAST_DUE,
-        },
-      })
-    })
-
-    await this.invalidateSubscriptionCache(userId)
-  }
-
-  /**
-   * Extracts userId from Stripe webhook metadata with database fallback
-   * Handles cases where metadata is missing or corrupted
-   *
-   * @param metadata - Stripe subscription metadata
-   * @param subscriptionId - Stripe subscription ID for error logging
-   * @param includeP lanType - Whether to also extract planType (optional)
-   * @returns userId and optionally planType
-   * @throws Error if userId cannot be recovered from either metadata or database
-   *
-   * @private
-   */
-  private async extractUserIdFromWebhook(
-    metadata: unknown,
-    subscriptionId: string,
-    includePlanType: boolean = false
-  ): Promise<{ userId: string; planType?: PlanType }> {
-    const validationResult = subscriptionMetadataSchema.safeParse(metadata)
-
-    if (!validationResult.success) {
-      logger.error(
-        {
-          error: validationResult.error.message,
-          subscriptionId,
-        },
-        'Invalid subscription metadata - attempting fallback'
-      )
-
-      // CRITICAL: Attempt to recover userId from existing DB record
-      const existingSub = await prisma.subscription.findUnique({
-        where: { stripeSubscriptionId: subscriptionId },
-        select: { userId: true, planType: includePlanType },
-      })
-
-      if (!existingSub) {
-        const errorMsg = `Cannot process webhook - missing userId in metadata and no existing subscription found: ${subscriptionId}`
-        logger.error({ subscriptionId }, errorMsg)
-
-        // Send alert to Sentry for manual intervention
-        const { captureException } = await import('@/config/sentry')
-        captureException(new Error(errorMsg), {
-          subscriptionId,
-          metadata,
-        })
-
-        throw new Error(errorMsg)
-      }
-
-      // Use existing data as fallback
-      logger.warn(
-        { subscriptionId, userId: existingSub.userId, planType: existingSub.planType },
-        'Using fallback data from existing subscription'
-      )
-
-      return {
-        userId: existingSub.userId,
-        ...(includePlanType && existingSub.planType ? { planType: existingSub.planType } : {}),
-      }
-    }
-
-    // Metadata is valid
-    return {
-      userId: validationResult.data.userId,
-      ...(includePlanType && validationResult.data.planType ? { planType: validationResult.data.planType } : {}),
-    }
-  }
-
-  /**
-   * Converts Stripe status to database status
-   */
-  private mapStripeStatus(
-    stripeStatus: Stripe.Subscription.Status
-  ): SubscriptionStatus {
-    const statusMap: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
-      active: SubscriptionStatus.ACTIVE,
-      past_due: SubscriptionStatus.PAST_DUE,
-      canceled: SubscriptionStatus.CANCELED,
-      incomplete: SubscriptionStatus.INCOMPLETE,
-      incomplete_expired: SubscriptionStatus.CANCELED,
-      trialing: SubscriptionStatus.TRIALING,
-      unpaid: SubscriptionStatus.PAST_DUE,
-      paused: SubscriptionStatus.CANCELED,
-    }
-
-    return statusMap[stripeStatus] || SubscriptionStatus.NONE
+    return this.webhookHandlers.handlePaymentFailed(stripeInvoice)
   }
 
   /**

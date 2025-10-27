@@ -139,3 +139,6 @@ export class NoteService {
     return notes
   }
 }
+
+// Export singleton instance
+export const noteService = new NoteService()
