@@ -317,6 +317,96 @@
       "support": "Questions? Contact support@noteflow.app"
     }
   },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Manage users, subscriptions, and system settings",
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "loadingStats": "Loading stats...",
+      "stats": {
+        "totalUsers": "Total Users",
+        "verifiedUsers": "Verified Users",
+        "unverifiedUsers": "Unverified Users",
+        "admins": "Admins",
+        "verificationRate": "{{rate}}% verification rate"
+      },
+      "usersByRole": {
+        "title": "Users by Role",
+        "usersCount": "{{count}} user",
+        "usersCount_plural": "{{count}} users"
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "cleanupTokens": "🧹 Cleanup Expired Tokens",
+        "cleaning": "Cleaning...",
+        "cleanupDescription": "Remove expired tokens from the database to keep it clean."
+      },
+      "cleanupDialog": {
+        "title": "Cleanup Expired Tokens",
+        "description": "Are you sure you want to cleanup expired tokens?",
+        "warning": "This will remove all expired refresh tokens, verification tokens, password reset tokens, and CSRF tokens from the database. This operation cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Confirm Cleanup"
+      },
+      "messages": {
+        "cleanupSuccess": "Token cleanup completed successfully!",
+        "cleanupError": "Failed to cleanup tokens"
+      }
+    },
+    "users": {
+      "title": "Users Management",
+      "totalUsers": "{{count}} total user",
+      "totalUsers_plural": "{{count}} total users",
+      "loadingUsers": "Loading users...",
+      "table": {
+        "email": "Email",
+        "name": "Name",
+        "role": "Role",
+        "verified": "Verified",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "allUsers": "All Users",
+      "roles": {
+        "USER": "USER",
+        "ADMIN": "ADMIN",
+        "MODERATOR": "MODERATOR"
+      },
+      "actions": {
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "deleteDialog": {
+        "title": "Delete User",
+        "description": "Are you sure you want to delete {{email}}?",
+        "warning": "This action will soft-delete the user account. The data will be marked as deleted but preserved for audit purposes.",
+        "cancel": "Cancel",
+        "confirm": "Delete User"
+      },
+      "roleChangeDialog": {
+        "title": "Change User Role",
+        "description": "Are you sure you want to change the role for {{email}}?",
+        "from": "From:",
+        "to": "To:",
+        "warning": "This will take effect immediately and may change the user's access permissions.",
+        "cancel": "Cancel",
+        "confirm": "Confirm Change",
+        "updating": "Updating..."
+      },
+      "pagination": {
+        "page": "Page {{current}} of {{total}}",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "messages": {
+        "deleteSuccess": "User deleted successfully",
+        "deleteError": "Failed to delete user: {{message}}",
+        "cannotDeleteSelf": "You cannot delete your own account",
+        "roleUpdateSuccess": "Role updated successfully",
+        "roleUpdateError": "Failed to update role: {{message}}"
+      }
+    }
+  },
   "veille": {
     "title": "AI Watch",
     "subtitle": "Your curated feed of AI and tech articles",

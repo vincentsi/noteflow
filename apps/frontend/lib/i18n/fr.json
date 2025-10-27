@@ -317,6 +317,96 @@
       "support": "Des questions ? Contactez support@noteflow.app"
     }
   },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Gérer les utilisateurs, les abonnements et les paramètres système",
+    "dashboard": {
+      "title": "Tableau de bord administrateur",
+      "loadingStats": "Chargement des statistiques...",
+      "stats": {
+        "totalUsers": "Total utilisateurs",
+        "verifiedUsers": "Utilisateurs vérifiés",
+        "unverifiedUsers": "Utilisateurs non vérifiés",
+        "admins": "Administrateurs",
+        "verificationRate": "{{rate}}% taux de vérification"
+      },
+      "usersByRole": {
+        "title": "Utilisateurs par rôle",
+        "usersCount": "{{count}} utilisateur",
+        "usersCount_plural": "{{count}} utilisateurs"
+      },
+      "quickActions": {
+        "title": "Actions rapides",
+        "cleanupTokens": "🧹 Nettoyer les tokens expirés",
+        "cleaning": "Nettoyage...",
+        "cleanupDescription": "Supprimer les tokens expirés de la base de données pour la garder propre."
+      },
+      "cleanupDialog": {
+        "title": "Nettoyer les tokens expirés",
+        "description": "Êtes-vous sûr de vouloir nettoyer les tokens expirés ?",
+        "warning": "Cela supprimera tous les refresh tokens expirés, tokens de vérification, tokens de réinitialisation de mot de passe et tokens CSRF de la base de données. Cette opération ne peut pas être annulée.",
+        "cancel": "Annuler",
+        "confirm": "Confirmer le nettoyage"
+      },
+      "messages": {
+        "cleanupSuccess": "Nettoyage des tokens terminé avec succès !",
+        "cleanupError": "Échec du nettoyage des tokens"
+      }
+    },
+    "users": {
+      "title": "Gestion des utilisateurs",
+      "totalUsers": "{{count}} utilisateur total",
+      "totalUsers_plural": "{{count}} utilisateurs au total",
+      "loadingUsers": "Chargement des utilisateurs...",
+      "table": {
+        "email": "Email",
+        "name": "Nom",
+        "role": "Rôle",
+        "verified": "Vérifié",
+        "created": "Créé",
+        "actions": "Actions"
+      },
+      "allUsers": "Tous les utilisateurs",
+      "roles": {
+        "USER": "UTILISATEUR",
+        "ADMIN": "ADMIN",
+        "MODERATOR": "MODÉRATEUR"
+      },
+      "actions": {
+        "delete": "Supprimer",
+        "deleting": "Suppression..."
+      },
+      "deleteDialog": {
+        "title": "Supprimer l'utilisateur",
+        "description": "Êtes-vous sûr de vouloir supprimer {{email}} ?",
+        "warning": "Cette action va soft-delete le compte utilisateur. Les données seront marquées comme supprimées mais conservées à des fins d'audit.",
+        "cancel": "Annuler",
+        "confirm": "Supprimer l'utilisateur"
+      },
+      "roleChangeDialog": {
+        "title": "Changer le rôle de l'utilisateur",
+        "description": "Êtes-vous sûr de vouloir changer le rôle de {{email}} ?",
+        "from": "De :",
+        "to": "À :",
+        "warning": "Cela prendra effet immédiatement et peut changer les permissions d'accès de l'utilisateur.",
+        "cancel": "Annuler",
+        "confirm": "Confirmer le changement",
+        "updating": "Mise à jour..."
+      },
+      "pagination": {
+        "page": "Page {{current}} sur {{total}}",
+        "previous": "Précédent",
+        "next": "Suivant"
+      },
+      "messages": {
+        "deleteSuccess": "Utilisateur supprimé avec succès",
+        "deleteError": "Échec de la suppression de l'utilisateur : {{message}}",
+        "cannotDeleteSelf": "Vous ne pouvez pas supprimer votre propre compte",
+        "roleUpdateSuccess": "Rôle mis à jour avec succès",
+        "roleUpdateError": "Échec de la mise à jour du rôle : {{message}}"
+      }
+    }
+  },
   "veille": {
     "title": "Veille IA",
     "subtitle": "Votre flux organisé d'articles IA et tech",
