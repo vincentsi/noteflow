@@ -1,27 +1,16 @@
 import { prisma } from '@/config/prisma'
 import { Prisma } from '@prisma/client'
 import { CacheService, CacheKeys } from './cache.service'
-
-/**
- * Build consistent cache key from filters
- * Sorts object keys alphabetically to prevent cache key collision
- * Example: { b: 1, a: 2 } and { a: 2, b: 1 } produce the same key
- */
-function buildArticleCacheKey(filters: Record<string, unknown>): string {
-  const sortedKeys = Object.keys(filters).sort()
-  const sortedFilters = sortedKeys.reduce(
-    (acc, key) => {
-      acc[key] = filters[key]
-      return acc
-    },
-    {} as Record<string, unknown>
-  )
-  return `articles:list:${JSON.stringify(sortedFilters)}`
-}
 import { PAGINATION_CONFIG } from '@/constants/pagination'
 import { CACHE_TTL } from '@/constants/performance'
 import { PlanLimiter } from '@/utils/plan-limiter'
 import { DistributedLockService } from './distributed-lock.service'
+import {
+  buildCacheKey,
+  buildDateRange,
+  buildTagsFilter,
+  buildPagination,
+} from '@/utils/query-builders'
 
 export interface GetArticlesFilters {
   source?: string
@@ -49,14 +38,22 @@ export class ArticleService {
   async getArticles(filters: GetArticlesFilters = {}) {
     const { source, tags, search, dateRange, skip = 0, take } = filters
 
-    // Enforce pagination limits
-    const limit = Math.min(
-      take || PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
+    // Build pagination options
+    const pagination = buildPagination(
+      skip,
+      take,
+      PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
       PAGINATION_CONFIG.MAX_PAGE_SIZE
     )
 
-    // Generate cache key based on filters (sorted to prevent key collision)
-    const cacheKey = buildArticleCacheKey({ source, tags, search, dateRange, skip, limit })
+    // Generate cache key based on filters
+    const cacheKey = buildCacheKey('articles:list', {
+      source,
+      tags,
+      search,
+      dateRange,
+      ...pagination,
+    })
 
     // Try cache first
     const cached = await CacheService.get<{ articles: unknown[]; total: number }>(cacheKey)
@@ -64,22 +61,18 @@ export class ArticleService {
       return cached
     }
 
+    // Build WHERE clause
     const where: Prisma.ArticleWhereInput = {}
 
-    // Filter by source
     if (source) {
       where.source = source
     }
 
-    // Filter by tags (comma-separated)
-    if (tags) {
-      const tagList = tags.split(',').map((t) => t.trim())
-      where.tags = {
-        hasSome: tagList,
-      }
+    const tagsFilter = buildTagsFilter(tags)
+    if (tagsFilter) {
+      where.tags = tagsFilter.tags
     }
 
-    // Search in title or excerpt
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -87,28 +80,9 @@ export class ArticleService {
       ]
     }
 
-    // Filter by date range
-    if (dateRange && dateRange !== 'all') {
-      const now = new Date()
-      let startDate: Date
-
-      switch (dateRange) {
-        case '24h':
-          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-          break
-        case '7d':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          break
-        case '30d':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          break
-        default:
-          startDate = new Date(0) // All time
-      }
-
-      where.publishedAt = {
-        gte: startDate,
-      }
+    const dateFilter = buildDateRange(dateRange, 'publishedAt')
+    if (dateFilter) {
+      where.publishedAt = dateFilter.publishedAt
     }
 
     const [articles, total] = await Promise.all([
@@ -128,8 +102,7 @@ export class ArticleService {
         orderBy: {
           publishedAt: 'desc',
         },
-        skip,
-        take: limit,
+        ...pagination,
       }),
       prisma.article.count({ where }),
     ])
@@ -151,9 +124,11 @@ export class ArticleService {
   ) {
     const { source, skip = 0, take } = filters
 
-    // Enforce pagination limits
-    const limit = Math.min(
-      take || PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
+    // Build pagination options
+    const pagination = buildPagination(
+      skip,
+      take,
+      PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
       PAGINATION_CONFIG.MAX_PAGE_SIZE
     )
 
@@ -181,8 +156,7 @@ export class ArticleService {
       orderBy: {
         createdAt: 'desc',
       },
-      skip,
-      take: limit,
+      ...pagination,
     })
   }
 

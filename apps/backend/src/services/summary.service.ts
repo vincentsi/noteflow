@@ -3,6 +3,10 @@ import { SummaryStyle } from '@prisma/client'
 import { queueSummary } from '@/queues/summary.queue'
 import { CacheService, CacheKeys } from './cache.service'
 import { PlanLimiter } from '@/utils/plan-limiter'
+import {
+  buildSoftDeleteFilter,
+  buildMonthRange,
+} from '@/utils/query-builders'
 
 export class SummaryService {
   /**
@@ -59,33 +63,31 @@ export class SummaryService {
     // Calculate pagination
     const skip = (page - 1) * limit
 
+    // Build WHERE clause for active summaries (non-deleted)
+    const activeWhere = {
+      userId,
+      ...buildSoftDeleteFilter(),
+    }
+
+    // Build WHERE clause for monthly count (includes deleted for quota)
+    const monthlyWhere = {
+      userId,
+      ...buildMonthRange('createdAt'),
+    }
+
     // Get total count for pagination (only non-deleted)
     const total = await prisma.summary.count({
-      where: {
-        userId,
-        deletedAt: null,
-      },
+      where: activeWhere,
     })
 
     // Get count for current month (includes deleted - for usage quota)
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const totalThisMonth = await prisma.summary.count({
-      where: {
-        userId,
-        createdAt: {
-          gte: startOfMonth,
-        },
-        // Note: deletedAt is NOT filtered here - we count all created summaries
-      },
+      where: monthlyWhere,
     })
 
     // Get summaries (only non-deleted)
     const summaries = await prisma.summary.findMany({
-      where: {
-        userId,
-        deletedAt: null,
-      },
+      where: activeWhere,
       orderBy: {
         createdAt: 'desc',
       },
@@ -121,13 +123,15 @@ export class SummaryService {
    * Note: Uses soft delete to preserve monthly usage count
    */
   async deleteSummary(summaryId: string, userId: string): Promise<void> {
-    // Check if summary exists and belongs to user
+    // Check if summary exists and belongs to user (only active summaries)
+    const where = {
+      id: summaryId,
+      userId,
+      ...buildSoftDeleteFilter(),
+    }
+
     const summary = await prisma.summary.findFirst({
-      where: {
-        id: summaryId,
-        userId,
-        deletedAt: null, // Only active summaries can be deleted
-      },
+      where,
     })
 
     if (!summary) {

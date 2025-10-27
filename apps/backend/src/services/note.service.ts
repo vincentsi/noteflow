@@ -1,5 +1,7 @@
 import { prisma } from '@/config/prisma'
 import { PlanLimiter } from '@/utils/plan-limiter'
+import { buildTagsFilter } from '@/utils/query-builders'
+import { Prisma } from '@prisma/client'
 
 export interface CreateNoteData {
   title: string
@@ -47,12 +49,12 @@ export class NoteService {
    * Optional filtering by tags
    */
   async getUserNotes(userId: string, filters?: GetNotesFilters) {
-    const where: { userId: string; tags?: { hasSome: string[] } } = {
-      userId,
-    }
+    // Build WHERE clause
+    const where: Prisma.NoteWhereInput = { userId }
 
-    if (filters?.tags && filters.tags.length > 0) {
-      where.tags = { hasSome: filters.tags }
+    const tagsFilter = buildTagsFilter(filters?.tags)
+    if (tagsFilter) {
+      where.tags = tagsFilter.tags
     }
 
     const notes = await prisma.note.findMany({
@@ -107,14 +109,17 @@ export class NoteService {
    * Search notes by title or content
    */
   async searchNotes(userId: string, query: string) {
+    // Build WHERE clause
+    const where: Prisma.NoteWhereInput = {
+      userId,
+      OR: [
+        { title: { contains: query, mode: 'insensitive' } },
+        { content: { contains: query, mode: 'insensitive' } },
+      ],
+    }
+
     const notes = await prisma.note.findMany({
-      where: {
-        userId,
-        OR: [
-          { title: { contains: query, mode: 'insensitive' } },
-          { content: { contains: query, mode: 'insensitive' } },
-        ],
-      },
+      where,
       orderBy: { updatedAt: 'desc' },
     })
 
