@@ -14,3 +14,13 @@ export const createSummarySchema = z.object({
 })
 
 export type CreateSummaryDTO = z.infer<typeof createSummarySchema>
+
+/**
+ * Schema for getting summaries with pagination
+ */
+export const getSummariesSchema = z.object({
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+})
+
+export type GetSummariesDTO = z.infer<typeof getSummariesSchema>

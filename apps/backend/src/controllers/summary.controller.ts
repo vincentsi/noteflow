@@ -2,7 +2,11 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
 import { summaryService } from '@/services/summary.service'
 import { aiService } from '@/services/ai.service'
 import { CacheService } from '@/services/cache.service'
-import { createSummarySchema, type SummaryStyle } from '@/schemas/summary.schema'
+import {
+  createSummarySchema,
+  getSummariesSchema,
+  type SummaryStyle,
+} from '@/schemas/summary.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
@@ -392,13 +396,8 @@ export class SummaryController {
         })
       }
 
-      // Parse query parameters
-      const query = request.query as {
-        page?: string
-        limit?: string
-      }
-      const page = query.page ? parseInt(query.page, 10) : 1
-      const limit = query.limit ? parseInt(query.limit, 10) : 20
+      // Validate and parse query parameters
+      const { page, limit } = getSummariesSchema.parse(request.query)
 
       // Get summaries
       const result = await summaryService.getUserSummaries(userId, page, limit)

@@ -1,6 +1,23 @@
 import { prisma } from '@/config/prisma'
 import { Prisma } from '@prisma/client'
 import { CacheService, CacheKeys } from './cache.service'
+
+/**
+ * Build consistent cache key from filters
+ * Sorts object keys alphabetically to prevent cache key collision
+ * Example: { b: 1, a: 2 } and { a: 2, b: 1 } produce the same key
+ */
+function buildArticleCacheKey(filters: Record<string, unknown>): string {
+  const sortedKeys = Object.keys(filters).sort()
+  const sortedFilters = sortedKeys.reduce(
+    (acc, key) => {
+      acc[key] = filters[key]
+      return acc
+    },
+    {} as Record<string, unknown>
+  )
+  return `articles:list:${JSON.stringify(sortedFilters)}`
+}
 import { PAGINATION_CONFIG } from '@/constants/pagination'
 import { CACHE_TTL } from '@/constants/performance'
 import { PlanLimiter } from '@/utils/plan-limiter'
@@ -38,8 +55,8 @@ export class ArticleService {
       PAGINATION_CONFIG.MAX_PAGE_SIZE
     )
 
-    // Generate cache key based on filters
-    const cacheKey = `articles:list:${JSON.stringify({ source, tags, search, dateRange, skip, limit })}`
+    // Generate cache key based on filters (sorted to prevent key collision)
+    const cacheKey = buildArticleCacheKey({ source, tags, search, dateRange, skip, limit })
 
     // Try cache first
     const cached = await CacheService.get<{ articles: unknown[]; total: number }>(cacheKey)
