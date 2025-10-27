@@ -62,10 +62,7 @@ export default async function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
-        {/* Expose nonce to client-side for script injection if needed */}
-        {nonce && (
-          <meta property="csp-nonce" content={nonce} />
-        )}
+        {/* Nonce is already set in CSP headers via middleware.ts */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

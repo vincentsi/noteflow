@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { apiClient, clearCsrfTokenCache } from './client'
 import type { User } from '@/types'
 
 export type RegisterDTO = {
@@ -67,6 +67,8 @@ export const authApi = {
    */
   logout: async (): Promise<void> => {
     await apiClient.post('/api/auth/logout')
+    // Clear CSRF token cache to avoid using stale token after re-login
+    clearCsrfTokenCache()
   },
 
   /**

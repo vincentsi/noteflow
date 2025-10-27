@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authApi, type LoginDTO, type RegisterDTO } from '@/lib/api/auth'
+import { isRefreshingToken } from '@/lib/api/client'
 import type { User } from '@/types'
 
 type AuthContextType = {
@@ -48,6 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const refreshInterval = setInterval(
       async () => {
         try {
+          // Skip if a refresh is already in progress (avoid race condition)
+          if (isRefreshingToken()) {
+            return
+          }
+
           await authApi.refresh()
           queryClient.invalidateQueries({ queryKey: ['me'] })
         } catch (error) {

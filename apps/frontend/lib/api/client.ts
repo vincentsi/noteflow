@@ -106,6 +106,14 @@ const resetRefreshAttempts = (): void => {
   refreshAttempts = 0
 }
 
+/**
+ * Check if a token refresh is currently in progress
+ * Used by AuthProvider to avoid race conditions with proactive refresh
+ */
+export function isRefreshingToken(): boolean {
+  return isRefreshing
+}
+
 const onRefreshed = () => {
   refreshSubscribers.forEach(callback => callback())
   refreshSubscribers = []

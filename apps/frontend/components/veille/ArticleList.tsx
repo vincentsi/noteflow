@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { ArticleCard } from './ArticleCard'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import type { Article } from '@/types'
@@ -12,7 +13,7 @@ export interface ArticleListProps {
   isLoading?: boolean
 }
 
-export function ArticleList({ articles, savedArticleIds = new Set(), onSave, onUnsave, isLoading = false }: ArticleListProps) {
+export const ArticleList = memo(function ArticleList({ articles, savedArticleIds = new Set(), onSave, onUnsave, isLoading = false }: ArticleListProps) {
   const { t } = useTranslation()
 
   // Loading skeleton
@@ -81,4 +82,4 @@ export function ArticleList({ articles, savedArticleIds = new Set(), onSave, onU
       ))}
     </div>
   )
-}
+})

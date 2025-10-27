@@ -3,14 +3,28 @@
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useNotes, useCreateNote, useDeleteNote } from '@/lib/hooks/useNotes'
-import { NoteEditor } from '@/components/notes/NoteEditor'
 import { NoteList } from '@/components/notes/NoteList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, ArrowLeft } from 'lucide-react'
+import { Plus, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+
+// Lazy load the Markdown editor (reduces initial bundle size by ~20-30 KB)
+const NoteEditor = dynamic(
+  () => import('@/components/notes/NoteEditor').then(mod => ({ default: mod.NoteEditor })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center p-8 border rounded-lg bg-muted/50">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-sm text-muted-foreground">Chargement de l'éditeur...</span>
+      </div>
+    ),
+    ssr: false, // Disable SSR for the editor (client-side only)
+  }
+)
 
 export default function NotesPage() {
   const router = useRouter()

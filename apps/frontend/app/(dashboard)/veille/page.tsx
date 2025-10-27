@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { useAllArticles, useArticles, useSaveArticle, useUnsaveArticle } from '@/lib/hooks/useArticles'
@@ -71,13 +71,13 @@ export default function VeillePage() {
   const limit = PLAN_LIMITS[planType]
   const percentage = limit === Infinity ? 0 : Math.round((savedCount / limit) * 100)
 
-  const handleSave = (articleId: string) => {
+  const handleSave = useCallback((articleId: string) => {
     saveArticle.mutate(articleId)
-  }
+  }, [saveArticle])
 
-  const handleUnsave = (articleId: string) => {
+  const handleUnsave = useCallback((articleId: string) => {
     unsaveArticle.mutate(articleId)
-  }
+  }, [unsaveArticle])
 
   return (
     <div className="space-y-6">
