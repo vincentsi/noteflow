@@ -1,4 +1,322 @@
 {
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "update": "Update",
+      "close": "Close",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "confirm": "Confirm",
+      "send": "Send",
+      "export": "Export",
+      "download": "Download",
+      "upload": "Upload",
+      "search": "Search",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "copy": "Copy",
+      "share": "Share",
+      "viewMore": "View more"
+    },
+    "messages": {
+      "success": "Operation successful",
+      "error": "An error occurred",
+      "loading": "Loading...",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "confirmDelete": "Are you sure you want to delete?",
+      "noData": "No data available",
+      "requiredField": "This field is required",
+      "invalidEmail": "Invalid email",
+      "passwordTooShort": "Password too short",
+      "networkError": "Network error. Check your connection.",
+      "copied": "Copied to clipboard"
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "veille": "AI Watch",
+      "summaries": "PowerPost",
+      "notes": "PowerNote",
+      "profile": "Profile",
+      "settings": "Settings",
+      "pricing": "Pricing",
+      "admin": "Admin",
+      "logout": "Logout"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "signInButton": "Sign in",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up"
+    },
+    "register": {
+      "title": "Sign up",
+      "subtitle": "Create your account",
+      "nameLabel": "Name (optional)",
+      "namePlaceholder": "John Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "signUpButton": "Sign up",
+      "creatingAccount": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "sendButton": "Send Reset Link",
+      "sending": "Sending...",
+      "backToLogin": "Back to Login",
+      "successTitle": "Check your email",
+      "successMessage": "If an account exists with that email, we've sent password reset instructions.",
+      "invalidEmail": "Invalid email address",
+      "errorMessage": "An error occurred. Please try again."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password below.",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "resetButton": "Reset Password",
+      "resetting": "Resetting...",
+      "backToLogin": "Back to Login",
+      "successTitle": "Password Reset Successful",
+      "successMessage": "Your password has been reset successfully. Redirecting to login...",
+      "invalidLinkTitle": "Invalid Link",
+      "invalidLinkMessage": "This password reset link is invalid or has expired.",
+      "requestNewLink": "Request New Link",
+      "passwordMismatch": "Passwords don't match",
+      "passwordMinLength": "Password must be at least 12 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "passwordSpecial": "Password must contain at least one special character",
+      "errorMessage": "Failed to reset password. The link may have expired."
+    },
+    "verifyEmail": {
+      "title": "Email Verification",
+      "verifying": "Verifying...",
+      "successTitle": "Email Verified!",
+      "successMessage": "Your email has been verified successfully. You can now log in.",
+      "errorTitle": "Verification Failed",
+      "errorMessage": "The verification link is invalid or has expired.",
+      "goToLogin": "Go to Login",
+      "requestNewLink": "Request New Link"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome {{name}}",
+    "userInfo": {
+      "title": "User Information",
+      "email": "Email",
+      "plan": "Plan"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "currentPlan": "Current plan: {{plan}}",
+      "upgradePlan": "Upgrade plan",
+      "manageSubscription": "Manage subscription"
+    }
+  },
+  "summaries": {
+    "title": "PowerPost",
+    "subtitle": "Generate AI summaries of your texts and documents",
+    "mySummaries": "My summaries",
+    "summariesThisMonth": "{{count}} summary this month",
+    "summariesThisMonth_plural": "{{count}} summaries this month",
+    "styles": {
+      "SHORT": "Short",
+      "TWEET": "Tweet",
+      "THREAD": "Thread",
+      "BULLET_POINT": "Key Points",
+      "TOP3": "Top 3",
+      "MAIN_POINTS": "Main Points"
+    },
+    "planUsage": {
+      "title": "Plan Usage",
+      "summariesThisMonth": "Summaries this month",
+      "limitWarning": "⚠️ You're approaching your monthly limit"
+    },
+    "form": {
+      "title": "✨ New summary",
+      "contentTypeLabel": "Content type",
+      "textPlaceholder": "Paste your text here...",
+      "urlPlaceholder": "https://example.com/article",
+      "pdfUpload": "Upload PDF",
+      "styleLabel": "Summary style",
+      "submitButton": "Generate summary",
+      "generating": "Generating...",
+      "errors": {
+        "planLimitReached": "Plan limit reached. Please upgrade your plan.",
+        "creationFailed": "Error creating summary"
+      }
+    },
+    "history": {
+      "title": "📚 History",
+      "empty": "No summaries yet",
+      "emptySubtitle": "Create your first AI summary to start organizing your content",
+      "createButton": "📝 Create summary",
+      "pagination": {
+        "page": "Page {{current}} / {{total}}",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "actions": {
+      "back": "Back",
+      "viewDetails": "View details",
+      "delete": "Delete",
+      "share": "Share"
+    }
+  },
+  "notes": {
+    "title": "PowerNote",
+    "subtitle": "Your Markdown notes",
+    "myNotes": "My notes",
+    "createNote": "New note",
+    "searchPlaceholder": "Search notes...",
+    "filterByTag": "Filter by tag",
+    "allTags": "All tags",
+    "empty": "No notes",
+    "emptySubtitle": "Create your first note to get started",
+    "editor": {
+      "titlePlaceholder": "Note title",
+      "contentPlaceholder": "Start writing...",
+      "tagsPlaceholder": "Add tags",
+      "saveButton": "Save",
+      "saving": "Saving...",
+      "cancelButton": "Cancel",
+      "loadingEditor": "Loading editor..."
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "convertToPost": "Convert to public post",
+      "viewPost": "View post"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "View and manage your personal information",
+    "personalInfo": {
+      "title": "Personal Information",
+      "subtitle": "Your account details",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "userId": "User ID",
+      "plan": "Plan",
+      "memberSince": "Member Since"
+    },
+    "actions": {
+      "editProfile": "Edit Profile",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Failed to update profile",
+      "notAuthenticated": "Not authenticated"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "language": {
+      "title": "Language",
+      "subtitle": "Choose your preferred language",
+      "label": "Language",
+      "selectPlaceholder": "Select a language",
+      "french": "Français",
+      "english": "English"
+    },
+    "subscription": {
+      "title": "Current Plan",
+      "subtitle": "Your subscription details",
+      "planType": "Plan Type",
+      "status": "Status"
+    },
+    "actions": {
+      "saveChanges": "Save Changes",
+      "saving": "Saving..."
+    },
+    "messages": {
+      "updateSuccess": "Language updated successfully",
+      "updateError": "Failed to update settings"
+    }
+  },
+  "pricing": {
+    "title": "Choose your plan",
+    "subtitle": "Select the plan that best fits your needs",
+    "currentPlan": "Current plan: {{plan}}",
+    "mostPopular": "Most popular",
+    "plans": {
+      "FREE": {
+        "name": "FREE",
+        "description": "Perfect to get started",
+        "features": [
+          "10 saved articles",
+          "5 AI summaries per month",
+          "20 notes",
+          "Access to RSS feeds",
+          "6 summary styles"
+        ]
+      },
+      "STARTER": {
+        "name": "STARTER",
+        "description": "For regular users",
+        "features": [
+          "All FREE features",
+          "50 saved articles",
+          "20 AI summaries per month",
+          "100 notes",
+          "Priority support"
+        ]
+      },
+      "PRO": {
+        "name": "PRO",
+        "description": "For professionals",
+        "features": [
+          "All STARTER features",
+          "Unlimited articles",
+          "Unlimited summaries",
+          "Unlimited notes",
+          "Priority support",
+          "PDF export"
+        ]
+      }
+    },
+    "perMonth": "/month",
+    "selectPlan": "Select",
+    "currentPlanButton": "Current plan",
+    "footer": {
+      "moneyBack": "All plans include a 14-day money-back guarantee",
+      "support": "Questions? Contact support@noteflow.app"
+    }
+  },
   "veille": {
     "title": "AI Watch",
     "subtitle": "Your curated feed of AI and tech articles",
