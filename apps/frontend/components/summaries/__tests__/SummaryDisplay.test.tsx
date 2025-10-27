@@ -50,7 +50,8 @@ describe('SummaryDisplay', () => {
   it('should show style badge', () => {
     render(<SummaryDisplay summary={mockSummary} />, { wrapper: Wrapper })
 
-    expect(screen.getByText('SHORT')).toBeInTheDocument()
+    // Style is displayed in French ("Court" for SHORT)
+    expect(screen.getByText('Court')).toBeInTheDocument()
   })
 
   it('should have copy button', () => {

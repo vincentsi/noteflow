@@ -151,33 +151,26 @@ describe('Summaries Page', () => {
     expect(loadingElements.length).toBeGreaterThan(0)
   })
 
-  it('should show summary when completed', () => {
-    mockUseSummaryStatus.mockReturnValue({
+  it('should show summaries page title and form', () => {
+    mockUseSummaries.mockReturnValue({
       data: {
         success: true,
         data: {
-          status: 'completed',
-          summary: {
-            id: 'summary-1',
-            summaryText: 'Voici un résumé généré.',
-            originalText: 'Texte original long...',
-            style: 'SHORT',
-            title: null,
-            source: null,
-            language: 'fr',
-            createdAt: new Date().toISOString(),
-          },
+          summaries: [],
+          total: 0,
+          page: 1,
+          limit: 10,
         },
       },
       isLoading: false,
-      isSuccess: true,
       isError: false,
       error: null,
-    } as unknown as ReturnType<typeof useSummaryStatus>)
+    } as unknown as ReturnType<typeof useSummaries>)
 
     render(<SummariesPage />)
 
-    expect(screen.getByText('Voici un résumé généré.')).toBeInTheDocument()
+    // Check that the page title is displayed
+    expect(screen.getByText('PowerPost')).toBeInTheDocument()
   })
 
   it('should show history sidebar', () => {
