@@ -8,6 +8,7 @@ import {
 } from '@/constants/plan-limits'
 import { CACHE_TTL } from '@/constants/performance'
 import { PlanLimitError, NotFoundError } from './custom-errors'
+import { getSummaryUsageCacheKey } from './cache-key-helpers'
 
 /**
  * Plan Limiter Utility
@@ -58,10 +59,7 @@ const RESOURCE_CONFIG: Record<ResourceType, LimitConfig> = {
   },
   summary: {
     limits: SUMMARY_LIMITS,
-    cacheKeyFn: (userId) => {
-      const now = new Date()
-      return CacheKeys.summaryUsage(userId, now.getFullYear(), now.getMonth())
-    },
+    cacheKeyFn: (userId) => getSummaryUsageCacheKey(userId, new Date()),
     countFn: async (userId) => {
       const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -126,6 +124,11 @@ export class PlanLimiter {
 
     const config = RESOURCE_CONFIG[resourceType]
     const limit = config.limits[user.planType]
+
+    // Validate that plan type exists in limits configuration
+    if (limit === undefined) {
+      throw new Error(`Invalid plan type: ${user.planType}. Plan type not found in limits configuration.`)
+    }
 
     // PRO plan has unlimited access (Infinity)
     if (limit === Infinity) {
@@ -230,6 +233,12 @@ export class PlanLimiter {
 
     const config = RESOURCE_CONFIG[resourceType]
     const limit = config.limits[user.planType]
+
+    // Validate that plan type exists in limits configuration
+    if (limit === undefined) {
+      throw new Error(`Invalid plan type: ${user.planType}. Plan type not found in limits configuration.`)
+    }
+
     const used = await this.getCurrentCount(userId, config)
 
     return {

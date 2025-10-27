@@ -60,7 +60,7 @@ export class GDPRService {
             expiresAt: true,
             revoked: true,
           },
-          take: 1000, // Limit to last 1000 tokens
+          take: 100, // Reasonable limit (normal user has ~5)
           orderBy: { createdAt: 'desc' },
         },
         verificationTokens: {
@@ -68,7 +68,7 @@ export class GDPRService {
             createdAt: true,
             expiresAt: true,
           },
-          take: 100,
+          take: 50, // Reasonable limit
           orderBy: { createdAt: 'desc' },
         },
         resetTokens: {
@@ -76,7 +76,7 @@ export class GDPRService {
             createdAt: true,
             expiresAt: true,
           },
-          take: 100,
+          take: 50, // Reasonable limit
           orderBy: { createdAt: 'desc' },
         },
         csrfTokens: {
@@ -84,7 +84,7 @@ export class GDPRService {
             createdAt: true,
             expiresAt: true,
           },
-          take: 100,
+          take: 50, // Reasonable limit
           orderBy: { createdAt: 'desc' },
         },
         subscriptions: {
@@ -96,7 +96,7 @@ export class GDPRService {
             cancelAtPeriodEnd: true,
             createdAt: true,
           },
-          take: 100,
+          take: 50, // Reasonable limit (normal user has 1-2)
           orderBy: { createdAt: 'desc' },
         },
       },

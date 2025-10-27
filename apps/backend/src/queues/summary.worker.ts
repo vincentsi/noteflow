@@ -4,6 +4,7 @@ import { CacheService } from '@/services/cache.service'
 import { prisma as defaultPrisma } from '@/config/prisma'
 import type { PrismaClient } from '@prisma/client'
 import type { SummaryJob } from './summary.queue'
+import { getSummaryUsageCacheKey } from '@/utils/cache-key-helpers'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 
@@ -140,8 +141,8 @@ export async function processSummary(
 
   // SECURITY: Invalidate cache after summary creation
   // This ensures plan limit enforcement stays accurate
-  const now = new Date()
-  const cacheKey = `summary-usage:${userId}:${now.getFullYear()}-${now.getMonth()}`
+  // Use the summary's creation date to ensure consistency at month boundaries
+  const cacheKey = getSummaryUsageCacheKey(userId, summary.createdAt)
   await CacheService.delete(cacheKey)
 
   logger.info(`✅ Summary generated and saved for user ${userId} with ID ${summary.id}`)

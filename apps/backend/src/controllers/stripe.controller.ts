@@ -40,10 +40,27 @@ export class StripeController {
       // Validation
       const schema = z.object({
         priceId: z.string().startsWith('price_'),
-        planType: z.enum([PlanType.PRO, PlanType.STARTER]),
+        planType: z.nativeEnum(PlanType),
       })
 
       const { priceId, planType } = schema.parse(request.body)
+
+      // Validate plan type is not FREE
+      if (planType === PlanType.FREE) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Cannot create checkout session for FREE plan',
+        })
+      }
+
+      // Check if user already has an active subscription
+      const hasActiveSubscription = await stripeService.hasActiveSubscription(userId)
+      if (hasActiveSubscription) {
+        return reply.status(400).send({
+          success: false,
+          error: 'User already has an active subscription. Please cancel your current subscription before upgrading.',
+        })
+      }
 
       // Create session
       const session = await stripeService.createCheckoutSession(
