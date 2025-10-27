@@ -1,6 +1,5 @@
 import { prisma } from '@/config/prisma'
-import { PlanType } from '@prisma/client'
-import { NOTE_LIMITS } from '@/constants/plan-limits'
+import { PlanLimiter } from '@/utils/plan-limiter'
 
 export interface CreateNoteData {
   title: string
@@ -24,28 +23,8 @@ export class NoteService {
    * Checks plan limits before creating
    */
   async createNote(userId: string, data: CreateNoteData) {
-    // Get user's plan type
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { planType: true },
-    })
-
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    // Check plan limits (PRO = unlimited)
-    if (user.planType !== PlanType.PRO) {
-      const limit = NOTE_LIMITS[user.planType]
-
-      const currentCount = await prisma.note.count({
-        where: { userId },
-      })
-
-      if (currentCount >= limit) {
-        throw new Error('Plan limit reached')
-      }
-    }
+    // Check plan limits using centralized utility
+    await PlanLimiter.checkLimit(userId, 'note')
 
     // Create the note
     const note = await prisma.note.create({
@@ -56,6 +35,9 @@ export class NoteService {
         tags: data.tags,
       },
     })
+
+    // Invalidate cache
+    await PlanLimiter.invalidateCache(userId, 'note')
 
     return note
   }

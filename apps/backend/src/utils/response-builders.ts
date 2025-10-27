@@ -132,6 +132,27 @@ export const SuccessResponse = {
    * Note: Fastify automatically sends 204 if reply.send() is empty
    */
   noContent: () => ({}),
+
+  /**
+   * 200 OK - Paginated response
+   */
+  paginated: <T>(
+    items: T[],
+    pagination: {
+      page: number
+      limit: number
+      total: number
+    }
+  ) => ({
+    success: true,
+    data: items,
+    pagination: {
+      page: pagination.page,
+      limit: pagination.limit,
+      total: pagination.total,
+      totalPages: Math.ceil(pagination.total / pagination.limit),
+    },
+  }),
 } as const
 
 /**

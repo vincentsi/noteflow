@@ -1,9 +1,9 @@
 import { prisma } from '@/config/prisma'
-import { Prisma, PlanType } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { CacheService, CacheKeys } from './cache.service'
-import { ARTICLE_LIMITS } from '@/constants/plan-limits'
 import { PAGINATION_CONFIG } from '@/constants/pagination'
 import { CACHE_TTL } from '@/constants/performance'
+import { PlanLimiter } from '@/utils/plan-limiter'
 
 export interface GetArticlesFilters {
   source?: string
@@ -172,41 +172,8 @@ export class ArticleService {
    * Save an article for a user (with plan limits)
    */
   async saveArticle(userId: string, articleId: string): Promise<void> {
-    // Get user's plan type
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { planType: true },
-    })
-
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    // Check plan limits (PRO = unlimited)
-    if (user.planType !== PlanType.PRO) {
-      const cacheKey = CacheKeys.articleCount(userId)
-
-      // Try to get count from cache
-      let currentCount = await CacheService.get<number>(cacheKey)
-
-      if (currentCount === null) {
-        // Cache miss - count from database
-        currentCount = await prisma.savedArticle.count({
-          where: { userId },
-        })
-
-        // Cache for 1 hour
-        await CacheService.set(cacheKey, currentCount, CACHE_TTL.ARTICLE_COUNT)
-      }
-
-      const limit = ARTICLE_LIMITS[user.planType]
-
-      if (currentCount >= limit) {
-        throw new Error(
-          `Article save limit reached. Your ${user.planType} plan allows ${limit} saved articles.`
-        )
-      }
-    }
+    // Check plan limits using centralized utility
+    await PlanLimiter.checkLimit(userId, 'article')
 
     // Save article
     await prisma.savedArticle.create({
@@ -216,9 +183,8 @@ export class ArticleService {
       },
     })
 
-    // Increment cache counter
-    const cacheKey = CacheKeys.articleCount(userId)
-    await CacheService.increment(cacheKey, CACHE_TTL.ARTICLE_COUNT)
+    // Invalidate cache
+    await PlanLimiter.invalidateCache(userId, 'article')
   }
 
   /**

@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { ZodError } from 'zod'
+import { isAppError } from './custom-errors'
 
 /**
  * Custom error handler map
@@ -68,7 +69,15 @@ export function handleControllerError(
 ): FastifyReply | Promise<FastifyReply> {
   // Handle Error instances
   if (error instanceof Error) {
-    // Check custom handlers first (supports partial matching with startsWith)
+    // Handle custom AppError classes (NotFoundError, PlanLimitError, etc.)
+    if (isAppError(error)) {
+      return reply.status(error.statusCode).send({
+        success: false,
+        error: error.message,
+      }) as FastifyReply
+    }
+
+    // Check custom handlers (supports partial matching with startsWith)
     if (customHandlers) {
       for (const [key, handler] of Object.entries(customHandlers)) {
         if (error.message.startsWith(key)) {
