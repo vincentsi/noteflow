@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { SummaryStyle } from '@prisma/client'
 import { extractText } from 'unpdf'
 import axios from 'axios'
+import { env } from '@/config/env'
 
 const PROMPTS = {
   [SummaryStyle.SHORT]: {
@@ -35,7 +36,7 @@ export class AIService {
 
   constructor() {
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || 'test-key',
+      apiKey: env.OPENAI_API_KEY,
     })
   }
 

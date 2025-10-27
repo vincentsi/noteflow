@@ -56,6 +56,9 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('noreply@example.com'),
 
+  // AI Service (OpenAI)
+  OPENAI_API_KEY: z.string().min(20, 'OPENAI_API_KEY must be at least 20 characters'),
+
   // Redis (optional but validated if provided)
   REDIS_URL: z.string().url().optional().or(z.literal('')),
 
