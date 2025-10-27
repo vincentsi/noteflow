@@ -6,6 +6,7 @@ import type { User } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { VerificationService } from './verification.service'
+import { AUTH_CONFIG } from '@/constants/performance'
 
 /**
  * Authentication Service
@@ -72,8 +73,7 @@ export class AuthService {
    * @returns Hashed password
    */
   async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10
-    return bcrypt.hash(password, saltRounds)
+    return bcrypt.hash(password, AUTH_CONFIG.BCRYPT_SALT_ROUNDS)
   }
 
   /**

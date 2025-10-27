@@ -67,7 +67,6 @@ apiClient.interceptors.request.use(
 // ========================================
 let isRefreshing = false
 let refreshSubscribers: Array<() => void> = []
-const MAX_REFRESH_ATTEMPTS = 3
 const MAX_SUBSCRIBERS = 100 // Prevent memory leak
 
 // SECURITY: Use in-memory variable instead of localStorage
@@ -163,7 +162,7 @@ apiClient.interceptors.response.use(
 
       // Check if max attempts reached
       const currentAttempts = getRefreshAttempts()
-      if (currentAttempts >= MAX_REFRESH_ATTEMPTS) {
+      if (currentAttempts >= API_CONFIG.MAX_REFRESH_ATTEMPTS) {
         logError(
           new Error('Max refresh attempts reached'),
           'TokenRefresh'
@@ -208,7 +207,7 @@ apiClient.interceptors.response.use(
 
           // If we've exhausted attempts, redirect
           const attempts = getRefreshAttempts()
-          if (attempts >= MAX_REFRESH_ATTEMPTS) {
+          if (attempts >= API_CONFIG.MAX_REFRESH_ATTEMPTS) {
             resetRefreshAttempts()
             if (
               typeof window !== 'undefined' &&

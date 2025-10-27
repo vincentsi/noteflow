@@ -8,6 +8,47 @@
  */
 
 /**
+ * Authentication and security configuration
+ */
+export const AUTH_CONFIG = {
+  /**
+   * Bcrypt salt rounds for password hashing
+   * - Higher = more secure but slower
+   * - 10 is recommended balance (2^10 = 1024 iterations)
+   * - Each increment doubles the time
+   */
+  BCRYPT_SALT_ROUNDS: 10,
+
+  /**
+   * Access token expiration time in minutes
+   * - Short-lived for security
+   * - Refresh token used for renewal
+   */
+  ACCESS_TOKEN_TTL_MIN: 30,
+
+  /**
+   * Refresh token expiration time in days
+   * - Long-lived for better UX
+   * - Stored securely in httpOnly cookie
+   */
+  REFRESH_TOKEN_TTL_DAYS: 7,
+
+  /**
+   * Maximum token refresh attempts before forcing re-login
+   * - Prevents infinite refresh loops
+   * - Balances UX vs security
+   */
+  MAX_REFRESH_ATTEMPTS: 3,
+
+  /**
+   * Proactive token refresh interval in minutes
+   * - Refresh before expiration to avoid disruption
+   * - Should be less than ACCESS_TOKEN_TTL_MIN
+   */
+  PROACTIVE_REFRESH_MIN: 25,
+} as const
+
+/**
  * Redis cache operation constants
  */
 export const CACHE_CONFIG = {

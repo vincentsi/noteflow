@@ -31,6 +31,13 @@ export const API_CONFIG = {
   RETRY_DELAY_MS: 1_000,
 
   /**
+   * Maximum token refresh attempts before forcing logout
+   * - Prevents infinite refresh loops
+   * - Balances UX vs security
+   */
+  MAX_REFRESH_ATTEMPTS: 3,
+
+  /**
    * Token refresh settings
    */
   TOKEN_REFRESH: {
