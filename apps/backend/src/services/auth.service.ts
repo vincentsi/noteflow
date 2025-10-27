@@ -2,6 +2,7 @@ import { env } from '@/config/env'
 import { prisma } from '@/config/prisma'
 import type { LoginDTO, RegisterDTO } from '@/schemas/auth.schema'
 import { TokenHasher } from '@/utils/token-hasher'
+import { logger } from '@/utils/logger'
 import type { User } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -221,7 +222,13 @@ export class AuthService {
     })
 
     if (existingUser) {
-      throw new Error('Email already in use')
+      // Generic error to prevent email enumeration
+      // Log for monitoring but don't reveal email exists to client
+      logger.warn(
+        { email: data.email },
+        'Registration attempt with existing email'
+      )
+      throw new Error('Registration failed. Please check your information.')
     }
 
     const hashedPassword = await this.hashPassword(data.password)
@@ -481,7 +488,12 @@ export class AuthService {
       })
 
       if (existingUser) {
-        throw new Error('Email already in use')
+        // Generic error to prevent email enumeration
+        logger.warn(
+          { userId, requestedEmail: data.email },
+          'Profile update attempt with existing email'
+        )
+        throw new Error('Profile update failed. Please check your information.')
       }
     }
 

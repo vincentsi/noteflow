@@ -122,9 +122,10 @@ describe('Auth Routes Integration Tests', () => {
         },
       })
 
-      expect(response.statusCode).toBe(409) // 409 Conflict for duplicate resource
+      // Return 400 with generic message to prevent email enumeration
+      expect(response.statusCode).toBe(400)
       const body = JSON.parse(response.body)
-      expect(body.error).toContain('already')
+      expect(body.error).toBe('Registration failed. Please check your information.')
     })
   })
 

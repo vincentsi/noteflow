@@ -150,6 +150,7 @@ export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
     const worker = new Worker<StripeWebhookJob>(
       QUEUE_NAME,
       async (job) => {
+        const startTime = Date.now()
         logger.info(`📨 Processing webhook: ${job.data.type} (${job.id})`)
 
         try {
@@ -177,11 +178,19 @@ export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
             }
           }
 
+          const processingTimeMs = Date.now() - startTime
           const jobType = (job.data as { type: string }).type
-          logger.info(`✅ Processed webhook: ${jobType}`)
+          logger.info(
+            { jobType, processingTimeMs, jobId: job.id },
+            `✅ Processed webhook: ${jobType} in ${processingTimeMs}ms`
+          )
         } catch (error) {
+          const processingTimeMs = Date.now() - startTime
           const errorType = (job.data as { type: string }).type
-          logger.error({ error, errorType }, 'Failed to process webhook')
+          logger.error(
+            { error, errorType, processingTimeMs, jobId: job.id },
+            'Failed to process webhook'
+          )
           throw error // Will trigger retry
         }
       },

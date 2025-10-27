@@ -4,6 +4,7 @@ import { queueStripeWebhook } from '@/queues/stripe-webhook.queue'
 import { DistributedLockService } from '@/services/distributed-lock.service'
 import { PlanType, SubscriptionStatus } from '@prisma/client'
 import Stripe from 'stripe'
+import { logger } from '@/utils/logger'
 import { CacheKeys, CacheService } from './cache.service'
 import { StripeWebhookHandlers } from './stripe-webhook-handlers'
 
@@ -240,7 +241,33 @@ export class StripeService {
       env.STRIPE_WEBHOOK_SECRET
     )
 
+    // Extract event metadata for logging
+    const eventMetadata: Record<string, unknown> = {
+      eventId: event.id,
+      eventType: event.type,
+      createdAt: new Date(event.created * 1000).toISOString(),
+    }
+
+    // Add customer/subscription IDs if available
+    if ('object' in event.data && event.data.object) {
+      const obj = event.data.object as unknown as Record<string, unknown>
+      if ('customer' in obj && typeof obj.customer === 'string') {
+        eventMetadata.customerId = obj.customer
+      }
+      if ('subscription' in obj && typeof obj.subscription === 'string') {
+        eventMetadata.subscriptionId = obj.subscription
+      }
+      if ('id' in obj && typeof obj.id === 'string') {
+        eventMetadata.objectId = obj.id
+      }
+    }
+
+    logger.info(eventMetadata, 'Stripe webhook received')
+
+    // Queue for async processing
     await queueStripeWebhook(event)
+
+    logger.info({ eventId: event.id, eventType: event.type }, 'Stripe webhook queued for processing')
   }
 
   /**

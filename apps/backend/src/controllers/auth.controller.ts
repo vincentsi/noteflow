@@ -53,13 +53,10 @@ export class AuthController {
       })
     } catch (error) {
       return handleControllerError(error, request, reply, {
-        'Email already in use': (err, reply, req) => {
-          // Log without email for GDPR compliance (only IP address)
-          req.log.warn(
-            { ip: req.ip },
-            'Registration failed - email already exists'
-          )
-          return reply.status(409).send({
+        'Registration failed. Please check your information.': (err, reply) => {
+          // Error already logged in service with email (server-side only)
+          // Return generic 400 error to prevent email enumeration
+          return reply.status(400).send({
             success: false,
             error: err.message,
           })
@@ -276,8 +273,10 @@ export class AuthController {
           reply.status(404).send({ success: false, error: err.message }),
         'Account has been deleted': (err, reply) =>
           reply.status(403).send({ success: false, error: err.message }),
-        'Email already in use': (err, reply) =>
-          reply.status(409).send({ success: false, error: err.message }),
+        'Profile update failed. Please check your information.': (err, reply) =>
+          // Error already logged in service (server-side only)
+          // Return generic 400 error to prevent email enumeration
+          reply.status(400).send({ success: false, error: err.message }),
       })
     }
   }
