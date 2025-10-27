@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/providers/theme.provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { Toaster } from "@/components/ui/sonner";
-import { getNonce } from "@/lib/utils/nonce";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,8 +56,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const nonce = await getNonce()
-
+  // Nonce is retrieved in middleware.ts and set in CSP headers
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>

@@ -11,7 +11,6 @@ import { Pagination } from '@/components/ui/pagination'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import type { GetArticlesParams } from '@/lib/api/articles'
 
 // Pagination constants

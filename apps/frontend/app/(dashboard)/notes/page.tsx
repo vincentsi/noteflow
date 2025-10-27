@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useNotes, useCreateNote, useDeleteNote } from '@/lib/hooks/useNotes'
 import { NoteList } from '@/components/notes/NoteList'
@@ -19,7 +18,7 @@ const NoteEditor = dynamic(
     loading: () => (
       <div className="flex items-center justify-center p-8 border rounded-lg bg-muted/50">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-sm text-muted-foreground">Chargement de l'éditeur...</span>
+        <span className="ml-2 text-sm text-muted-foreground">Chargement de l&apos;éditeur...</span>
       </div>
     ),
     ssr: false, // Disable SSR for the editor (client-side only)
