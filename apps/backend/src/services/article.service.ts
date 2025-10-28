@@ -55,8 +55,11 @@ export class ArticleService {
       ...pagination,
     })
 
-    // Try cache first
-    const cached = await CacheService.get<{ articles: unknown[]; total: number }>(cacheKey)
+    // Try cache first with version check (PERF-004)
+    const { data: cached, version } = await CacheService.getWithVersion<{
+      articles: unknown[]
+      total: number
+    }>(cacheKey)
     if (cached) {
       return cached
     }
@@ -109,8 +112,9 @@ export class ArticleService {
 
     const result = { articles, total }
 
-    // Cache for 5 minutes (articles change slowly - RSS fetched hourly)
-    await CacheService.set(cacheKey, result, CACHE_TTL.ARTICLES_LIST)
+    // Cache for 5 minutes with version check (PERF-004)
+    // Only cache if version hasn't changed (prevents stale data)
+    await CacheService.setWithVersion(cacheKey, result, version, CACHE_TTL.ARTICLES_LIST)
 
     return result
   }
@@ -219,11 +223,17 @@ export class ArticleService {
    * Create or update an article (used by RSS worker)
    */
   async upsertArticle(data: CreateArticleData) {
-    return await prisma.article.upsert({
+    const article = await prisma.article.upsert({
       where: { url: data.url },
       update: {},
       create: data,
     })
+
+    // Invalidate all article list caches (PERF-004)
+    // Increment version for all possible article list queries
+    await CacheService.invalidateVersion('articles:list')
+
+    return article
   }
 
   /**

@@ -182,6 +182,127 @@ export class CacheService {
   }
 
   /**
+   * Get value with version check for race condition prevention (PERF-004)
+   * @param key Cache key
+   * @returns Object with data and version number
+   */
+  static async getWithVersion<T = unknown>(key: string): Promise<{ data: T | null; version: number }> {
+    if (!isRedisAvailable()) {
+      return { data: null, version: 0 }
+    }
+
+    try {
+      const redis = getRedis()
+      if (!redis) return { data: null, version: 0 }
+
+      const versionKey = `${key}:version`
+      const [cached, versionStr] = await Promise.all([
+        redis.get(key),
+        redis.get(versionKey),
+      ])
+
+      const version = versionStr ? parseInt(versionStr, 10) : 0
+      const keyPrefix = key.split(':')[0] || 'unknown'
+
+      if (!cached) {
+        recordCacheMiss(keyPrefix)
+        return { data: null, version }
+      }
+
+      recordCacheHit(keyPrefix)
+      return {
+        data: JSON.parse(cached) as T,
+        version,
+      }
+    } catch (error) {
+      logger.error({ error, key }, 'Cache getWithVersion error')
+      return { data: null, version: 0 }
+    }
+  }
+
+  /**
+   * Set value with version check to prevent stale data (PERF-004)
+   * @param key Cache key
+   * @param value Value to cache
+   * @param expectedVersion Expected version (from getWithVersion)
+   * @param ttl Time to live in seconds
+   * @returns true if set successfully, false if version mismatch
+   */
+  static async setWithVersion(
+    key: string,
+    value: unknown,
+    expectedVersion: number,
+    ttl: number = 3600
+  ): Promise<boolean> {
+    if (!isRedisAvailable()) {
+      return false
+    }
+
+    try {
+      const redis = getRedis()
+      if (!redis) return false
+
+      const versionKey = `${key}:version`
+      const serialized = JSON.stringify(value)
+
+      // Use Lua script for atomic version check + set
+      // This prevents race conditions between check and set
+      const script = `
+        local current_version = redis.call('GET', KEYS[2])
+        if current_version == false then
+          current_version = '0'
+        end
+
+        if tonumber(current_version) == tonumber(ARGV[1]) then
+          redis.call('SETEX', KEYS[1], ARGV[3], ARGV[2])
+          redis.call('SETEX', KEYS[2], ARGV[3], tostring(tonumber(current_version) + 1))
+          return 1
+        else
+          return 0
+        end
+      `
+
+      const result = await redis.eval(
+        script,
+        2,
+        key,
+        versionKey,
+        expectedVersion.toString(),
+        serialized,
+        ttl.toString()
+      )
+
+      return result === 1
+    } catch (error) {
+      logger.error({ error, key }, 'Cache setWithVersion error')
+      return false
+    }
+  }
+
+  /**
+   * Invalidate cache by incrementing version (PERF-004)
+   * This makes all existing cached data for this key stale
+   * @param key Cache key
+   */
+  static async invalidateVersion(key: string): Promise<void> {
+    if (!isRedisAvailable()) {
+      return
+    }
+
+    try {
+      const redis = getRedis()
+      if (!redis) return
+
+      const versionKey = `${key}:version`
+      await redis.incr(versionKey)
+      // Set TTL on version key to match data TTL
+      await redis.expire(versionKey, 3600)
+    } catch (error) {
+      logger.error({ error, key }, 'Cache invalidateVersion error')
+    }
+  }
+
+  /**
    * Check if key exists in cache
    * @param key Cache key
    */
