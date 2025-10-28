@@ -61,7 +61,7 @@ apiClient.interceptors.request.use(
 
         // Validate token format
         if (cachedCsrfToken && !isValidCsrfToken(cachedCsrfToken)) {
-          console.warn('Invalid CSRF token format detected, clearing cache')
+          logWarn('Invalid CSRF token format detected, clearing cache')
           cachedCsrfToken = null
         }
       }

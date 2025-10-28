@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api/client'
 import type { Language, I18nContextType, Translations } from './types'
 import frTranslations from './fr.json'
 import enTranslations from './en.json'
+import { logError } from '@/lib/utils/logger'
 
 const translations: Record<Language, Translations> = {
   fr: frTranslations,
@@ -51,7 +52,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       // - User might not be authenticated (401) - expected behavior
       // - Network error - local preference still saved
       // Backend sync will happen on next successful auth
-      console.error('Failed to sync language with backend:', error)
+      logError(error, 'Failed to sync language with backend')
     }
   }
 

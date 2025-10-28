@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authApi, type LoginDTO, type RegisterDTO } from '@/lib/api/auth'
 import { isRefreshingToken } from '@/lib/api/client'
 import type { User } from '@/types'
+import { logError } from '@/lib/utils/logger'
 
 type AuthContextType = {
   user: User | null
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await authApi.refresh()
           queryClient.invalidateQueries({ queryKey: ['me'] })
         } catch (error) {
-          console.error('Failed to refresh token:', error)
+          logError(error, 'Failed to refresh token')
         }
       },
       10 * 60 * 1000

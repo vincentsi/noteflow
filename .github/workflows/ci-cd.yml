@@ -111,6 +111,7 @@ jobs:
         run: cd apps/frontend && npm run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
       - name: Check build size
         run: |

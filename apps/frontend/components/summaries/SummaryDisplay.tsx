@@ -5,19 +5,30 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Copy, ChevronDown, ChevronUp, Trash2, Share2, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, BarChart3 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useDeleteSummary } from '@/lib/hooks/useSummaries'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/provider'
 
-// Style badges configuration with icons and colors
-const STYLE_CONFIG = {
-  SHORT: { icon: FileText, label: 'Court', color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
-  TWEET: { icon: Hash, label: 'Tweet', color: 'bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400' },
-  THREAD: { icon: MessageSquare, label: 'Thread', color: 'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400' },
-  BULLET_POINT: { icon: List, label: 'Points clés', color: 'bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400' },
-  TOP3: { icon: Trophy, label: 'Top 3', color: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400' },
-  MAIN_POINTS: { icon: Lightbulb, label: 'Points principaux', color: 'bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400' },
+// Style badges configuration with icons and colors (labels will be translated)
+const STYLE_ICON_CONFIG = {
+  SHORT: { icon: FileText, color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
+  TWEET: { icon: Hash, color: 'bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400' },
+  THREAD: { icon: MessageSquare, color: 'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400' },
+  BULLET_POINT: { icon: List, color: 'bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400' },
+  TOP3: { icon: Trophy, color: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400' },
+  MAIN_POINTS: { icon: Lightbulb, color: 'bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400' },
 }
 
 export interface SummaryDisplayProps {
@@ -36,41 +47,40 @@ export interface SummaryDisplayProps {
 
 export function SummaryDisplay({ summary }: SummaryDisplayProps) {
   const [showOriginal, setShowOriginal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const router = useRouter()
   const deleteSummary = useDeleteSummary()
+  const { t } = useI18n()
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(summary.summaryText)
-      toast.success('Résumé copié dans le presse-papiers')
+      toast.success(t('summaries.messages.summaryCopied'))
     } catch {
-      toast.error('Erreur lors de la copie')
+      toast.error(t('summaries.messages.summaryCopyError'))
     }
   }
 
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href)
-      toast.success('Lien copié dans le presse-papiers')
+      toast.success(t('summaries.messages.linkCopied'))
     } catch {
-      toast.error('Erreur lors de la copie du lien')
+      toast.error(t('summaries.messages.linkCopyError'))
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce résumé ?\n\nNote: Votre quota mensuel ne changera pas, car il est basé sur le nombre de résumés créés, pas sur ceux existants.')) {
-      return
-    }
-
+  const handleDeleteConfirm = () => {
     deleteSummary.mutate(summary.id, {
       onSuccess: () => {
-        toast.success('Résumé supprimé avec succès')
+        toast.success(t('summaries.messages.deleteSuccess'))
         router.push('/summaries')
       },
       onError: () => {
-        toast.error('Erreur lors de la suppression du résumé')
+        toast.error(t('summaries.messages.deleteError'))
       },
     })
+    setShowDeleteDialog(false)
   }
 
   // Calculate compression stats
@@ -92,8 +102,9 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
     })
   }
 
-  const styleConfig = STYLE_CONFIG[summary.style as keyof typeof STYLE_CONFIG]
-  const StyleIcon = styleConfig?.icon || FileText
+  const styleIconConfig = STYLE_ICON_CONFIG[summary.style as keyof typeof STYLE_ICON_CONFIG]
+  const StyleIcon = styleIconConfig?.icon || FileText
+  const styleLabel = t(`summaries.styles.${summary.style}` as 'summaries.styles.SHORT')
 
   return (
     <Card className="shadow-xl border-2 overflow-hidden">
@@ -118,13 +129,13 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
               </CardTitle>
             )}
             <CardDescription className="flex flex-wrap items-center gap-3">
-              {styleConfig && (
+              {styleIconConfig && (
                 <span className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold shrink-0 shadow-sm border",
-                  styleConfig.color
+                  styleIconConfig.color
                 )}>
                   <StyleIcon className="h-3.5 w-3.5" />
-                  {styleConfig.label}
+                  {styleLabel}
                 </span>
               )}
               <span className="text-muted-foreground text-sm">{formatDate(summary.createdAt)}</span>
@@ -133,7 +144,7 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
                 "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400"
               )}>
                 <BarChart3 className="h-3.5 w-3.5" />
-                {compressionRate}% de compression
+                {compressionRate}% {t('summaries.messages.compression')}
               </span>
             </CardDescription>
           </div>
@@ -154,11 +165,11 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
           <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/30 border">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{originalLength.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Caractères originaux</div>
+              <div className="text-xs text-muted-foreground mt-1">{t('summaries.messages.originalChars')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{summaryLength.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Caractères résumés</div>
+              <div className="text-xs text-muted-foreground mt-1">{t('summaries.messages.summarizedChars')}</div>
             </div>
           </div>
 
@@ -170,7 +181,7 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
             <div className="p-6 bg-muted/50 rounded-xl border-2 border-dashed border-muted-foreground/20">
               <div className="flex items-center gap-2 mb-4">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Texte original</h4>
+                <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{t('summaries.messages.originalText')}</h4>
               </div>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                 {summary.originalText}
@@ -185,18 +196,18 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
             variant="ghost"
             size="sm"
             onClick={toggleOriginal}
-            aria-label="Afficher le texte original"
+            aria-label={showOriginal ? t('summaries.buttons.hideOriginal') : t('summaries.buttons.showOriginal')}
             className="group"
           >
             {showOriginal ? (
               <>
                 <ChevronUp className="h-4 w-4 mr-2 group-hover:-translate-y-0.5 transition-transform" />
-                Masquer l&apos;original
+                {t('summaries.buttons.hideOriginal')}
               </>
             ) : (
               <>
                 <ChevronDown className="h-4 w-4 mr-2 group-hover:translate-y-0.5 transition-transform" />
-                Voir l&apos;original
+                {t('summaries.buttons.showOriginal')}
               </>
             )}
           </Button>
@@ -204,35 +215,56 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
             variant="outline"
             size="sm"
             onClick={handleCopy}
-            aria-label="Copier le résumé"
+            aria-label={t('summaries.buttons.copyText')}
             className="group"
           >
             <Copy className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-            Copier le texte
+            {t('summaries.buttons.copyText')}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={handleShare}
-            aria-label="Partager le résumé"
+            aria-label={t('summaries.buttons.copyLink')}
             className="group"
           >
             <Share2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-            Copier le lien
+            {t('summaries.buttons.copyLink')}
           </Button>
         </div>
         <Button
           variant="destructive"
           size="sm"
-          onClick={handleDelete}
+          onClick={() => setShowDeleteDialog(true)}
           disabled={deleteSummary.isPending}
           aria-label="Supprimer le résumé"
           className="group"
         >
           <Trash2 className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-          {deleteSummary.isPending ? 'Suppression...' : 'Supprimer'}
+          {deleteSummary.isPending ? t('common.messages.deleting') : t('summaries.actions.delete')}
         </Button>
       </CardFooter>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('summaries.messages.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('summaries.messages.deleteConfirmMessage')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('common.actions.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }

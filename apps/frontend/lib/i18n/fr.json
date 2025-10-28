@@ -188,6 +188,26 @@
       "viewDetails": "Voir les détails",
       "delete": "Supprimer",
       "share": "Partager"
+    },
+    "messages": {
+      "linkCopied": "Lien copié dans le presse-papiers",
+      "linkCopyError": "Erreur lors de la copie du lien",
+      "summaryCopied": "Résumé copié dans le presse-papiers",
+      "summaryCopyError": "Erreur lors de la copie",
+      "deleteSuccess": "Résumé supprimé avec succès",
+      "deleteError": "Erreur lors de la suppression du résumé",
+      "deleteConfirmTitle": "Supprimer le résumé",
+      "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer ce résumé ?\n\nNote: Votre quota mensuel ne changera pas, car il est basé sur le nombre de résumés créés, pas sur ceux existants.",
+      "compression": "de compression",
+      "originalChars": "Caractères originaux",
+      "summarizedChars": "Caractères résumés",
+      "originalText": "Texte original"
+    },
+    "buttons": {
+      "showOriginal": "Voir l'original",
+      "hideOriginal": "Masquer l'original",
+      "copyText": "Copier le texte",
+      "copyLink": "Copier le lien"
     }
   },
   "notes": {
