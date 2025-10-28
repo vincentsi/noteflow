@@ -3,6 +3,7 @@ import { prisma } from '@/config/prisma'
 import { PlanType, SubscriptionStatus } from '@prisma/client'
 import Stripe from 'stripe'
 import { z } from 'zod'
+import { invalidatePlanCache } from '@/middlewares/load-plan.middleware'
 
 /**
  * Interface for typing Stripe Subscription objects correctly
@@ -241,6 +242,7 @@ export class StripeWebhookHandlers {
     })
 
     await this.invalidateCache(userId)
+    await invalidatePlanCache(userId)
   }
 
   /**
@@ -299,6 +301,7 @@ export class StripeWebhookHandlers {
     })
 
     await this.invalidateCache(userId)
+    await invalidatePlanCache(userId)
   }
 
   /**
@@ -339,6 +342,7 @@ export class StripeWebhookHandlers {
     })
 
     await this.invalidateCache(userId)
+    await invalidatePlanCache(userId)
   }
 
   /**

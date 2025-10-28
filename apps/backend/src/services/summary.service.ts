@@ -1,7 +1,7 @@
 import { prisma } from '@/config/prisma'
 import { SummaryStyle } from '@prisma/client'
 import { queueSummary } from '@/queues/summary.queue'
-import { CacheService, CacheKeys } from './cache.service'
+import { CacheService } from './cache.service'
 import { PlanLimiter } from '@/utils/plan-limiter'
 import {
   buildSoftDeleteFilter,

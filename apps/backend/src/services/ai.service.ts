@@ -3,6 +3,7 @@ import { SummaryStyle } from '@prisma/client'
 import { extractText } from 'unpdf'
 import axios from 'axios'
 import { env } from '@/config/env'
+import { readFile } from 'node:fs/promises'
 
 const PROMPTS = {
   [SummaryStyle.SHORT]: {
@@ -37,6 +38,8 @@ export class AIService {
   constructor() {
     this.openai = new OpenAI({
       apiKey: env.OPENAI_API_KEY,
+      timeout: 30000, // 30 second timeout for all OpenAI requests
+      maxRetries: 2, // Retry failed requests up to 2 times
     })
   }
 
@@ -139,6 +142,19 @@ export class AIService {
     } catch (error) {
       throw new Error(
         `Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
+
+  async extractTextFromPDFFile(filePath: string): Promise<string> {
+    try {
+      const buffer = await readFile(filePath)
+      const uint8Array = new Uint8Array(buffer)
+      const { text } = await extractText(uint8Array)
+      return text.join('\n')
+    } catch (error) {
+      throw new Error(
+        `Failed to extract text from PDF file: ${error instanceof Error ? error.message : 'Unknown error'}`
       )
     }
   }

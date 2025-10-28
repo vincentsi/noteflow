@@ -235,7 +235,7 @@ describe('AuthService', () => {
       }
 
       ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(mockToken)
-      ;(prisma.refreshToken.update as jest.Mock).mockResolvedValue({ ...mockToken, revoked: true })
+      ;(prisma.refreshToken.delete as jest.Mock).mockResolvedValue(mockToken)
       ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({
         id: 'new_token_123',
         token: 'new_refresh_token',
@@ -246,9 +246,8 @@ describe('AuthService', () => {
 
       expect(result).toHaveProperty('accessToken')
       expect(result).toHaveProperty('refreshToken')
-      expect(prisma.refreshToken.update).toHaveBeenCalledWith({
+      expect(prisma.refreshToken.delete).toHaveBeenCalledWith({
         where: { id: 'token_123' },
-        data: { revoked: true },
       })
     })
 

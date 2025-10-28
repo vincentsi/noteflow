@@ -150,6 +150,13 @@ export async function createApp(): Promise<FastifyInstance> {
   // Register security middlewares
   await registerSecurityMiddlewares(app)
 
+  // Register security headers middleware
+  const { securityHeadersMiddleware, contentSecurityPolicyMiddleware } = await import(
+    '@/middlewares/security-headers.middleware'
+  )
+  app.addHook('onRequest', securityHeadersMiddleware)
+  app.addHook('onRequest', contentSecurityPolicyMiddleware)
+
   // Register correlation ID middleware (for distributed tracing)
   app.addHook('onRequest', correlationIdMiddleware)
 

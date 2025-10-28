@@ -1,4 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
+import type { Summary } from '@prisma/client'
 import { summaryService } from '@/services/summary.service'
 import { aiService } from '@/services/ai.service'
 import { CacheService } from '@/services/cache.service'
@@ -12,6 +13,12 @@ import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
 import { logger } from '@/utils/logger'
 import { CACHE_TTL } from '@/constants/performance'
+import {
+  streamFileToDisk,
+  cleanupTempFile,
+  getFileSizeLimitForPlan,
+} from '@/utils/streaming-upload'
+import { PlanType } from '@prisma/client'
 
 /**
  * Summary controller
@@ -43,7 +50,7 @@ export class SummaryController {
       let language: 'fr' | 'en' | undefined
 
       if (isMultipart) {
-        // Handle multipart file upload
+        // Handle multipart file upload with streaming
         const data = await request.file()
 
         if (!data) {
@@ -59,16 +66,44 @@ export class SummaryController {
         style = (fields.style?.value || 'SHORT') as SummaryStyle
         language = fields.language?.value as 'fr' | 'en' | undefined
 
-        // Extract text from PDF
-        const buffer = await data.toBuffer()
-        text = await aiService.extractTextFromPDF(buffer)
+        // Get user's plan to determine file size limit
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { planType: true },
+        })
+        const planType = (user?.planType || PlanType.FREE) as PlanType
+        const maxFileSize = getFileSizeLimitForPlan(planType)
 
-        if (!text || text.trim().length < 10) {
-          return reply.status(400).send({
-            success: false,
-            error: 'Bad Request',
-            message: 'Could not extract text from PDF or text is too short',
-          })
+        let tempFilePath: string | null = null
+
+        try {
+          // Stream file to disk instead of loading to memory
+          tempFilePath = await streamFileToDisk(data, maxFileSize)
+
+          // Extract text from PDF file
+          text = await aiService.extractTextFromPDFFile(tempFilePath)
+
+          if (!text || text.trim().length < 10) {
+            return reply.status(400).send({
+              success: false,
+              error: 'Bad Request',
+              message: 'Could not extract text from PDF or text is too short',
+            })
+          }
+        } catch (error) {
+          if (error instanceof Error && error.message.includes('exceeds limit')) {
+            return reply.status(413).send({
+              success: false,
+              error: 'Payload Too Large',
+              message: error.message,
+            })
+          }
+          throw error
+        } finally {
+          // Always cleanup temp file
+          if (tempFilePath) {
+            await cleanupTempFile(tempFilePath)
+          }
         }
       } else {
         // Handle JSON request
@@ -180,7 +215,7 @@ export class SummaryController {
   /**
    * Validates that the job belongs to the requesting user
    */
-  private checkJobOwnership(job: any, userId: string) {
+  private checkJobOwnership(job: { data: { userId: string } }, userId: string) {
     if (job.data.userId !== userId) {
       return {
         success: false,
@@ -203,7 +238,7 @@ export class SummaryController {
   /**
    * Formats summary data for API response
    */
-  private formatSummaryData(summary: any) {
+  private formatSummaryData(summary: Summary) {
     return {
       id: summary.id,
       title: summary.title,
@@ -252,8 +287,12 @@ export class SummaryController {
   /**
    * Handles completed job by fetching and returning the summary
    */
-  private async handleCompletedJob(job: any, userId: string, reply: FastifyReply) {
-    const returnValue = await job.returnvalue
+  private async handleCompletedJob(
+    job: { id?: string; returnvalue?: { summaryId?: string } },
+    userId: string,
+    reply: FastifyReply
+  ) {
+    const returnValue = job.returnvalue
     const summaryId = returnValue?.summaryId
 
     if (!summaryId) {

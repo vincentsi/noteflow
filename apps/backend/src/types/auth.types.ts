@@ -1,4 +1,4 @@
-import { Role as PrismaRole } from '@prisma/client'
+import { Role as PrismaRole, PlanType } from '@prisma/client'
 
 /**
  * Auth Types
@@ -27,4 +27,5 @@ export interface AuthUser {
   userId: string
   role: Role
   email: string
+  planType?: PlanType
 }

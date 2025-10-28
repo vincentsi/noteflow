@@ -42,14 +42,14 @@ export interface TierLimits {
  */
 function parseWindow(window: string): number {
   const match = window.match(/^(\d+)\s*(second|minute|hour|day)s?$/)
-  if (!match) {
+  if (!match || !match[1] || !match[2]) {
     throw new Error(`Invalid window format: ${window}`)
   }
 
   const value = parseInt(match[1], 10)
-  const unit = match[2]
+  const unit = match[2] as 'second' | 'minute' | 'hour' | 'day'
 
-  const multipliers: Record<string, number> = {
+  const multipliers: Record<'second' | 'minute' | 'hour' | 'day', number> = {
     second: 1000,
     minute: 60 * 1000,
     hour: 60 * 60 * 1000,
@@ -76,10 +76,13 @@ export function createTierRateLimit(
       throw new RateLimitError('Authentication required')
     }
 
-    const { userId, planType } = request.user
+    const { userId } = request.user
+
+    // Get user's plan type from subscription or default to FREE
+    const planType: PlanType = request.user.planType || (request.subscription?.planType as PlanType) || 'FREE'
 
     // Get limits for user's tier
-    const tierLimit = limits[planType as PlanType]
+    const tierLimit = limits[planType as keyof TierLimits]
     if (!tierLimit) {
       throw new Error(`No rate limit configured for plan: ${planType}`)
     }

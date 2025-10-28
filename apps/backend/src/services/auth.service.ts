@@ -290,6 +290,10 @@ export class AuthService {
     accessToken: string
     refreshToken: string
   }> {
+    // Check for account lockout (SEC-015, SEC-020)
+    const { AccountLockoutService } = await import('./account-lockout.service')
+    await AccountLockoutService.checkLockout(data.email, ipAddress || 'unknown')
+
     const user = await prisma.user.findUnique({
       where: { email: data.email },
     })
@@ -303,6 +307,11 @@ export class AuthService {
     )
 
     if (!user || !isPasswordValid) {
+      // Record failed attempt (SEC-015, SEC-020)
+      await AccountLockoutService.recordFailedAttempt(
+        data.email,
+        ipAddress || 'unknown'
+      )
       throw new Error('Invalid credentials')
     }
 
@@ -310,6 +319,9 @@ export class AuthService {
     if (user.deletedAt) {
       throw new Error('Account has been deleted')
     }
+
+    // Reset lockout attempts after successful login (SEC-015, SEC-020)
+    await AccountLockoutService.resetAttempts(data.email, ipAddress || 'unknown')
 
     // Update audit trail
     await prisma.user.update({
@@ -379,10 +391,9 @@ export class AuthService {
       throw new Error('Account has been deleted')
     }
 
-    // Revoke old token (rotation)
-    await prisma.refreshToken.update({
+    // Delete old token to prevent database bloat
+    await prisma.refreshToken.delete({
       where: { id: storedToken.id },
-      data: { revoked: true },
     })
 
     const newAccessToken = this.generateAccessToken(
@@ -418,17 +429,15 @@ export class AuthService {
     if (refreshToken) {
       const hashedToken = TokenHasher.hash(refreshToken)
 
-      await prisma.refreshToken.updateMany({
+      await prisma.refreshToken.deleteMany({
         where: {
           userId,
           token: hashedToken,
         },
-        data: { revoked: true },
       })
     } else {
-      await prisma.refreshToken.updateMany({
+      await prisma.refreshToken.deleteMany({
         where: { userId },
-        data: { revoked: true },
       })
     }
   }
