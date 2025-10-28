@@ -1,6 +1,6 @@
 import { prisma } from '@/config/prisma'
 import { PlanLimiter } from '@/utils/plan-limiter'
-import { buildTagsFilter } from '@/utils/query-builders'
+import { buildTagsFilter, buildSoftDeleteFilter } from '@/utils/query-builders'
 import { Prisma } from '@prisma/client'
 
 export interface CreateNoteData {
@@ -49,8 +49,11 @@ export class NoteService {
    * Optional filtering by tags
    */
   async getUserNotes(userId: string, filters?: GetNotesFilters) {
-    // Build WHERE clause
-    const where: Prisma.NoteWhereInput = { userId }
+    // Build WHERE clause (only active notes - soft delete)
+    const where: Prisma.NoteWhereInput = {
+      userId,
+      ...buildSoftDeleteFilter(),
+    }
 
     const tagsFilter = buildTagsFilter(filters?.tags)
     if (tagsFilter) {
@@ -70,11 +73,12 @@ export class NoteService {
    * Only the note owner can update it
    */
   async updateNote(noteId: string, userId: string, data: UpdateNoteData) {
-    // Check if note exists and belongs to user
+    // Check if note exists and belongs to user (only active notes)
     const existingNote = await prisma.note.findFirst({
       where: {
         id: noteId,
         userId,
+        ...buildSoftDeleteFilter(),
       },
     })
 
@@ -93,15 +97,28 @@ export class NoteService {
   }
 
   /**
-   * Delete a note
+   * Delete a note (soft delete)
    * Only the note owner can delete it
+   * Note: Uses soft delete to allow recovery
    */
   async deleteNote(noteId: string, userId: string) {
-    await prisma.note.delete({
+    // Check if note exists and belongs to user (only active notes)
+    const note = await prisma.note.findFirst({
       where: {
         id: noteId,
-        userId, // Ensures only owner can delete
+        userId,
+        ...buildSoftDeleteFilter(),
       },
+    })
+
+    if (!note) {
+      throw new Error('Note not found')
+    }
+
+    // Soft delete the note (set deletedAt timestamp)
+    await prisma.note.update({
+      where: { id: noteId },
+      data: { deletedAt: new Date() },
     })
   }
 
@@ -109,9 +126,10 @@ export class NoteService {
    * Search notes by title or content
    */
   async searchNotes(userId: string, query: string) {
-    // Build WHERE clause
+    // Build WHERE clause (only active notes)
     const where: Prisma.NoteWhereInput = {
       userId,
+      ...buildSoftDeleteFilter(),
       OR: [
         { title: { contains: query, mode: 'insensitive' } },
         { content: { contains: query, mode: 'insensitive' } },

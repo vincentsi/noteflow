@@ -168,6 +168,7 @@ describe('NoteService', () => {
       expect(prismaMock.note.findMany).toHaveBeenCalledWith({
         where: {
           userId: 'user-123',
+          deletedAt: null, // Soft delete filter
           tags: { hasSome: ['work'] },
         },
         orderBy: { updatedAt: 'desc' },
@@ -209,6 +210,7 @@ describe('NoteService', () => {
         where: {
           id: 'note-1',
           userId: 'user-123',
+          deletedAt: null, // Soft delete filter
         },
       })
       expect(prismaMock.note.update).toHaveBeenCalledWith({
@@ -232,22 +234,45 @@ describe('NoteService', () => {
 
   describe('deleteNote', () => {
     it('should delete note', async () => {
-      prismaMock.note.delete.mockResolvedValue({
+      // Mock findFirst to check if note exists
+      prismaMock.note.findFirst.mockResolvedValue({
         id: 'note-1',
         userId: 'user-123',
         title: 'Deleted',
         content: 'Content',
         tags: [],
+        deletedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      // Mock update for soft delete
+      prismaMock.note.update.mockResolvedValue({
+        id: 'note-1',
+        userId: 'user-123',
+        title: 'Deleted',
+        content: 'Content',
+        tags: [],
+        deletedAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
       })
 
       await noteService.deleteNote('note-1', 'user-123')
 
-      expect(prismaMock.note.delete).toHaveBeenCalledWith({
+      expect(prismaMock.note.findFirst).toHaveBeenCalledWith({
         where: {
           id: 'note-1',
           userId: 'user-123',
+          deletedAt: null,
+        },
+      })
+      expect(prismaMock.note.update).toHaveBeenCalledWith({
+        where: {
+          id: 'note-1',
+        },
+        data: {
+          deletedAt: expect.any(Date),
         },
       })
     })
@@ -273,6 +298,7 @@ describe('NoteService', () => {
       expect(prismaMock.note.findMany).toHaveBeenCalledWith({
         where: {
           userId: 'user-123',
+          deletedAt: null, // Soft delete filter
           OR: [
             { title: { contains: 'search term', mode: 'insensitive' } },
             { content: { contains: 'search term', mode: 'insensitive' } },
