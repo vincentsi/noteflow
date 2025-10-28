@@ -55,6 +55,11 @@ export async function createApp(): Promise<FastifyInstance> {
     // Security: Limit request body size to prevent DoS attacks
     // 10MB limit to support PDF uploads (increased from 100KB)
     bodyLimit: 1024 * 1024 * 10, // 10MB
+    // Security: Request timeout to prevent Slowloris attacks
+    // Requests taking longer than 30s will be aborted
+    requestTimeout: 30 * 1000, // 30 seconds
+    // Security: Connection timeout for initial connection establishment
+    connectionTimeout: 10 * 1000, // 10 seconds
     // Trust proxy headers in production (X-Forwarded-For, X-Real-IP)
     // Required for correct IP tracking in audit trail and rate limiting
     trustProxy: env.NODE_ENV === 'production',
@@ -161,8 +166,7 @@ export async function createApp(): Promise<FastifyInstance> {
   // Register global error handler
   app.setErrorHandler(errorHandler)
 
-  // Note: Custom content type parser removed because it breaks regular JSON parsing
-  // Stripe webhook now handles raw body differently (see stripe.controller.ts)
+  // Note: Content type parser for Stripe webhook is registered in stripe.route.ts
 
   // Register routes
   await app.register(metricsRoutes) // Prometheus metrics endpoint
@@ -178,7 +182,13 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(articleRoutes, { prefix: '/api/articles' })
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
   await app.register(noteRoutes, { prefix: '/api/notes' })
-  await app.register(testSetupRoutes, { prefix: '/api/test-setup' }) // Dev only
+
+  // SECURITY: Only register test routes in development/test mode
+  // Test routes provide dangerous operations (data seeding, cleanup) that must NEVER be exposed in production
+  if ((env.NODE_ENV === 'development' || env.NODE_ENV === 'test') && env.ENABLE_TEST_ROUTES) {
+    await app.register(testSetupRoutes, { prefix: '/api/test-setup' })
+    app.log.warn('⚠️  Test routes enabled - DO NOT USE IN PRODUCTION')
+  }
 
   return app
 }

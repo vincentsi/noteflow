@@ -434,5 +434,27 @@
       "unsave": "Retirer",
       "summarize": "Résumer avec IA"
     }
+  },
+  "billing": {
+    "title": "Facturation",
+    "subtitle": "Gérez votre abonnement et votre facturation",
+    "success": {
+      "title": "Paiement réussi !",
+      "message": "Votre abonnement a été activé avec succès.",
+      "refreshing": "Mise à jour de votre compte..."
+    },
+    "canceled": {
+      "title": "Paiement annulé",
+      "message": "Vous avez annulé le processus de paiement. Aucun frais n'a été effectué."
+    },
+    "currentPlan": {
+      "title": "Plan actuel",
+      "plan": "Plan"
+    },
+    "actions": {
+      "upgrade": "Mettre à niveau",
+      "change": "Changer de plan",
+      "backToDashboard": "Retour au tableau de bord"
+    }
   }
 }

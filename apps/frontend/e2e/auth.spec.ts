@@ -78,7 +78,7 @@ baseTest.describe('Authentication Flow', () => {
     await expect(page).toHaveURL(TEST_ROUTES.dashboard, { timeout: TEST_CONFIG.timeouts.long })
 
     // Verify user is logged in by checking for logout button
-    await expect(page.getByTestId('logout-button')).toBeVisible({
+    await expect(page.getByTestId('nav-logout-button')).toBeVisible({
       timeout: TEST_CONFIG.timeouts.medium,
     })
   })
@@ -162,7 +162,7 @@ baseTest.describe('Authentication Flow', () => {
     await expect(page).toHaveURL(TEST_ROUTES.dashboard, { timeout: TEST_CONFIG.timeouts.long })
 
     // Verify user is logged in
-    await expect(page.getByTestId('logout-button')).toBeVisible({
+    await expect(page.getByTestId('nav-logout-button')).toBeVisible({
       timeout: TEST_CONFIG.timeouts.medium,
     })
 
@@ -263,7 +263,7 @@ baseTest.describe('Authentication Flow', () => {
     await expect(page).toHaveURL(TEST_ROUTES.dashboard, { timeout: TEST_CONFIG.timeouts.long })
 
     // Wait for logout button to appear
-    const logoutButton = page.getByTestId('logout-button')
+    const logoutButton = page.getByTestId('nav-logout-button')
     await expect(logoutButton).toBeVisible({ timeout: TEST_CONFIG.timeouts.medium })
 
     // Click logout
@@ -273,7 +273,7 @@ baseTest.describe('Authentication Flow', () => {
     await expect(page).toHaveURL(/\/(|login)/, { timeout: TEST_CONFIG.timeouts.medium })
 
     // Verify logout button is gone (user is logged out)
-    await expect(page.getByTestId('logout-button')).toHaveCount(0)
+    await expect(page.getByTestId('nav-logout-button')).toHaveCount(0)
   })
 })
 
@@ -297,6 +297,6 @@ baseTest.describe('Protected Routes', () => {
     await expect(authenticatedPage).toHaveURL(TEST_ROUTES.dashboard)
 
     // Should see logout button (confirms user is authenticated and on dashboard)
-    await expect(authenticatedPage.getByTestId('logout-button')).toBeVisible()
+    await expect(authenticatedPage.getByTestId('nav-logout-button')).toBeVisible()
   })
 })

@@ -23,12 +23,12 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">{t('dashboard.title')}</h1>
+          <h1 className="text-3xl font-bold dark:text-white" data-testid="dashboard-title">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground dark:text-gray-400">
             {t('dashboard.welcome', { name: user?.name || user?.email || '' })}
           </p>
         </div>
-        <Button onClick={handleLogout} variant="outline">
+        <Button onClick={handleLogout} variant="outline" data-testid="dashboard-logout-button">
           {t('common.navigation.logout')}
         </Button>
       </div>

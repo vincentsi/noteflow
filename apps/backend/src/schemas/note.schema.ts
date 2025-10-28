@@ -26,7 +26,8 @@ export const searchNotesSchema = z.object({
   q: z
     .string()
     .min(1)
-    .max(200, 'Search query must not exceed 200 characters'),
+    .max(100, 'Search query must not exceed 100 characters')
+    .regex(/^[a-zA-Z0-9\s\-_.]*$/, 'Search query contains invalid characters'),
   page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 })

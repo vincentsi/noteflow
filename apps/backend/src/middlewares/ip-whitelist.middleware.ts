@@ -65,9 +65,19 @@ export function requireIPWhitelist() {
     try {
       const allowedIPs = env.METRICS_ALLOWED_IPS
 
-      // If no IPs configured, allow all (development convenience)
+      // SECURITY: If no IPs configured in production, deny all access by default
+      // Development mode allows all IPs for convenience
       if (!allowedIPs || allowedIPs.length === 0) {
-        return // Allow all IPs
+        if (env.NODE_ENV === 'production') {
+          request.log.error({ url: request.url }, 'SECURITY: METRICS_ALLOWED_IPS not configured in production')
+          return reply.status(403).send({
+            success: false,
+            error: 'Access denied: IP whitelist not configured',
+          })
+        }
+        // Development: allow all IPs for convenience
+        request.log.warn({ url: request.url }, 'IP whitelist empty - allowing all IPs (development mode)')
+        return // Allow all IPs in development
       }
 
       // Get client IP (supports X-Forwarded-For from reverse proxy)

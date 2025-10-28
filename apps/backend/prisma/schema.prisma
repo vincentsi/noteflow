@@ -229,6 +229,7 @@ model Summary {
   @@index([createdAt(sort: Desc)])
   @@index([userId, createdAt])
   @@index([userId, deletedAt]) // Optimizes soft delete queries
+  @@index([userId, deletedAt, createdAt(sort: Desc)]) // PERF-002: Pagination with soft delete
   @@index([userId, style, createdAt(sort: Desc)]) // Optimizes filtered queries
   @@index([userId, deletedAt, style, createdAt(sort: Desc)]) // Optimizes queries with deletedAt + style filter
   @@map("summaries")
@@ -249,7 +250,9 @@ model Note {
 
   @@index([userId])
   @@index([userId, updatedAt])
+  @@index([userId, createdAt(sort: Desc)]) // PERF-002: List queries sorted by creation date
   @@index([userId, deletedAt]) // Optimizes soft delete queries
+  @@index([userId, deletedAt, createdAt(sort: Desc)]) // PERF-002: Pagination with soft delete
   @@map("notes")
 }
 
@@ -271,6 +274,8 @@ model Post {
   @@index([userId])
   @@index([isPublic])
   @@index([userId, deletedAt]) // Optimizes soft delete queries
+  @@index([userId, isPublic, createdAt(sort: Desc)]) // PERF-002: Public posts list queries
+  @@index([isPublic, createdAt(sort: Desc)]) // PERF-002: Global public posts feed
   @@map("posts")
 }
 

@@ -48,12 +48,15 @@ export async function csrfMiddleware(
     return
   }
 
-  // Ignore public routes (login, register, refresh)
+  // Ignore public routes (login, register, refresh, Stripe webhook)
   // SECURITY: /api/auth/refresh must be exempt from CSRF validation
   // - The refresh endpoint generates NEW CSRF tokens
   // - Requiring CSRF for refresh creates a circular dependency (can't refresh if CSRF expired)
   // - Refresh token in httpOnly cookie provides sufficient security
-  const publicRoutes = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh']
+  // SECURITY: /api/stripe/webhook must be exempt from CSRF validation
+  // - Stripe webhooks use signature verification (more secure than CSRF)
+  // - Webhooks come from Stripe servers, not browsers (no CSRF risk)
+  const publicRoutes = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/stripe/webhook']
   if (publicRoutes.some((route) => request.url.startsWith(route))) {
     return
   }

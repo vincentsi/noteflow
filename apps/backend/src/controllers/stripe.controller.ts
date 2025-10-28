@@ -166,23 +166,23 @@ export class StripeController {
         })
       }
 
-      // Validate Content-Type
+      // Validate Content-Type (Stripe sends 'application/json; charset=utf-8')
       const contentType = request.headers['content-type']
-      if (contentType !== 'application/json') {
+      if (!contentType?.startsWith('application/json')) {
         return reply.status(400).send({
           success: false,
           error: 'Content-Type must be application/json',
         })
       }
 
-      // Body must be raw (Buffer) for signature verification
-      const rawBody = request.body
+      // Get raw body for signature verification (captured by fastify-raw-body plugin)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawBody = (request as any).rawBody as Buffer
 
-      // CRITICAL: Verify body is actually a Buffer
       if (!Buffer.isBuffer(rawBody)) {
         request.log.error(
           { bodyType: typeof rawBody },
-          'Webhook body is not a Buffer - signature verification will fail'
+          'Webhook rawBody is not a Buffer - fastify-raw-body plugin may have failed'
         )
         return reply.status(400).send({
           success: false,
@@ -195,7 +195,7 @@ export class StripeController {
       reply.send({ received: true })
     } catch (error) {
       if (error instanceof Error) {
-        request.log.error(error)
+        request.log.error({ err: error, message: error.message }, 'Webhook error')
         return reply.status(400).send({
           success: false,
           error: error.message,

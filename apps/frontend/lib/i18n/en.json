@@ -434,5 +434,27 @@
       "unsave": "Unsave",
       "summarize": "Summarize with AI"
     }
+  },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Manage your subscription and billing",
+    "success": {
+      "title": "Payment Successful!",
+      "message": "Your subscription has been activated successfully.",
+      "refreshing": "Updating your account..."
+    },
+    "canceled": {
+      "title": "Payment Canceled",
+      "message": "You canceled the payment process. No charges were made."
+    },
+    "currentPlan": {
+      "title": "Current Plan",
+      "plan": "Plan"
+    },
+    "actions": {
+      "upgrade": "Upgrade Plan",
+      "change": "Change Plan",
+      "backToDashboard": "Back to Dashboard"
+    }
   }
 }
