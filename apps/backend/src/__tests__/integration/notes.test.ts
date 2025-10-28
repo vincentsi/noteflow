@@ -247,10 +247,12 @@ describe('Notes API Integration Tests', () => {
 
       expect(response.statusCode).toBe(204)
 
+      // Verify note is soft-deleted (deletedAt is set)
       const deleted = await prisma.note.findUnique({
         where: { id: note.id },
       })
-      expect(deleted).toBeNull()
+      expect(deleted).not.toBeNull()
+      expect(deleted?.deletedAt).not.toBeNull()
     })
   })
 
