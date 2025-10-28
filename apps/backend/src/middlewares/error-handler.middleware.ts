@@ -3,11 +3,17 @@ import { ZodError } from 'zod'
 import { Prisma } from '@prisma/client'
 import { env } from '@/config/env'
 import { captureException } from '@/config/sentry'
+import { AppError, isAppError } from '@/utils/custom-errors'
 
 /**
- * Global Error Handler
+ * Global Error Handler (ARCH-003)
  * Centralizes error handling to avoid duplication
- * Handles Zod, Prisma, JWT, and generic errors
+ * Handles:
+ * - Custom AppError classes (BadRequestError, NotFoundError, etc.)
+ * - Zod validation errors
+ * - Prisma database errors
+ * - JWT token errors
+ * - Rate limit errors
  * Captures 5xx errors in Sentry for monitoring
  */
 export async function errorHandler(
@@ -15,6 +21,46 @@ export async function errorHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
+  // Custom AppError classes (ARCH-003)
+  if (isAppError(error)) {
+    const appError = error as AppError
+
+    // Log operational errors (4xx) at info level
+    if (appError.statusCode < 500) {
+      request.log.info(
+        {
+          statusCode: appError.statusCode,
+          errorType: appError.name,
+          message: appError.message,
+          userId: request.user?.userId,
+        },
+        'Client error'
+      )
+    } else {
+      // Log server errors (5xx) at error level
+      request.log.error(appError, 'Server error')
+
+      // Capture non-operational errors in Sentry
+      if (!appError.isOperational && env.NODE_ENV === 'production') {
+        captureException(appError, {
+          user: request.user ? { id: request.user.userId } : undefined,
+          extra: {
+            url: request.url,
+            method: request.method,
+            ip: request.ip,
+            statusCode: appError.statusCode,
+          },
+        })
+      }
+    }
+
+    return reply.status(appError.statusCode).send({
+      success: false,
+      error: appError.message,
+      code: appError.name,
+    })
+  }
+
   // Zod validation errors
   if (error instanceof ZodError) {
     const zodError = error as ZodError<unknown>

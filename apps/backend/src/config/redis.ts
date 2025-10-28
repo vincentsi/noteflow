@@ -36,7 +36,7 @@ export function initializeRedis(): Redis | null {
 
   try {
     redisClient = new Redis(redisUrl, {
-      // Retry strategy
+      // Retry strategy (PERF-005)
       retryStrategy(times) {
         const delay = Math.min(times * 50, 2000)
         return delay
@@ -52,15 +52,26 @@ export function initializeRedis(): Redis | null {
         return false
       },
 
-      // Timeout
-      connectTimeout: 10000,
-      commandTimeout: 5000,
+      // Connection timeouts (PERF-005)
+      connectTimeout: 10000, // 10s to establish connection
+      commandTimeout: 5000, // 5s per command
+      maxLoadingRetryTime: 10000, // Max time to wait for loading scripts
 
-      // Auto pipelining for better performance
-      enableAutoPipelining: true,
+      // Request retries (PERF-005)
+      maxRetriesPerRequest: 3, // Retry failed commands up to 3 times
+
+      // Performance optimizations (PERF-005)
+      enableAutoPipelining: true, // Batch multiple commands automatically
+      enableReadyCheck: false, // Skip INFO check on connect (faster startup)
+      enableOfflineQueue: true, // Queue commands when offline (prevents errors)
 
       // Lazy connect - don't block startup
       lazyConnect: false,
+
+      // Connection pool settings (PERF-005)
+      // ioredis maintains a single connection per instance by default
+      // For production, consider using a connection pool with ioredis-cluster
+      // or multiple Redis instances
     })
 
     // Connection success
