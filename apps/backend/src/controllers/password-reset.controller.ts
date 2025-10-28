@@ -1,5 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { PasswordResetService } from '../services/password-reset.service'
+import { CsrfService } from '@/services/csrf.service'
+import { setCsrfTokenCookie } from '@/utils/cookie-helpers'
 import {
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -53,6 +55,10 @@ export class PasswordResetController {
    * Reset password with token
    * POST /api/auth/reset-password
    * Body: { token: string, password: string }
+   *
+   * Security Enhancement (SEC-006):
+   * - Rotates CSRF token after password reset
+   * - Prevents leaked CSRF tokens from being used after password change
    */
   async resetPassword(
     request: FastifyRequest<{ Body: ResetPasswordDTO }>,
@@ -62,11 +68,17 @@ export class PasswordResetController {
       // Validate data with Zod (strict password validation included)
       const data = resetPasswordSchema.parse(request.body)
 
-      await PasswordResetService.resetPassword(data.token, data.password)
+      // Reset password and get userId
+      const result = await PasswordResetService.resetPassword(data.token, data.password)
+
+      // SEC-006: Rotate CSRF token after sensitive operation (password reset)
+      // This invalidates any potentially leaked CSRF tokens
+      const newCsrfToken = await CsrfService.rotateToken(result.userId)
+      setCsrfTokenCookie(reply, newCsrfToken)
 
       reply.send({
         success: true,
-        message: 'Password reset successfully',
+        message: 'Password reset successfully. Please log in with your new password.',
       })
     } catch (error) {
       // Zod validation error (password too weak, etc.)

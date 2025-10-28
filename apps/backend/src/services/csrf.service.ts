@@ -132,4 +132,24 @@ export class CsrfService {
 
     await TokenCleanup.revokeUserCsrfTokens(userId)
   }
+
+  /**
+   * Rotates CSRF token after sensitive operations (SEC-006)
+   * Deletes old token and generates a new one
+   * Should be called after:
+   * - Password change
+   * - Email update
+   * - Two-factor authentication enable/disable
+   * - API key generation
+   *
+   * @param userId - User ID
+   * @returns New CSRF token (plain text)
+   */
+  static async rotateToken(userId: string): Promise<string> {
+    // Revoke all existing tokens for this user
+    await this.revokeUserTokens(userId)
+
+    // Generate and return new token
+    return await this.generateToken(userId)
+  }
 }

@@ -158,6 +158,37 @@ export function setRefreshTokenCookie(
 }
 
 /**
+ * Set only CSRF token cookie
+ * Used when rotating CSRF token after sensitive operations (SEC-006)
+ *
+ * @param reply - Fastify Reply instance
+ * @param csrfToken - New CSRF token
+ *
+ * @example
+ * ```typescript
+ * // After password change
+ * import { setCsrfTokenCookie } from '@/utils/cookie-helpers'
+ *
+ * const newCsrfToken = await CsrfService.rotateToken(userId)
+ * setCsrfTokenCookie(reply, newCsrfToken)
+ * ```
+ */
+export function setCsrfTokenCookie(
+  reply: FastifyReply,
+  csrfToken: string
+): void {
+  const isProduction = env.NODE_ENV === 'production'
+
+  reply.setCookie('csrfToken', csrfToken, {
+    httpOnly: false, // Accessible via JS to be sent in X-CSRF-Token header
+    secure: isProduction,
+    sameSite: 'strict',
+    maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
+    path: '/',
+  })
+}
+
+/**
  * Export token expiry durations for external use
  */
 export { TOKEN_EXPIRY }

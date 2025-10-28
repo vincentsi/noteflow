@@ -4,6 +4,7 @@ import { prisma } from '../config/prisma'
 import { TokenHasher } from '../utils/token-hasher'
 import { authService } from './auth.service'
 import { EmailService } from './email.service'
+import { checkRateLimit } from '@/utils/rate-limiter'
 
 /**
  * Password Reset Service
@@ -58,12 +59,31 @@ export class PasswordResetService {
    * @param email - User email
    * @returns Success (even if email doesn't exist, for security)
    *
-   * Timing attack protection:
-   * - Constant delay whether email exists or not
-   * - Prevents email enumeration via response time analysis
+   * Security (SEC-010):
+   * - Rate limiting by email (3 requests per hour per email)
+   * - Timing attack protection via constant delay
+   * - Prevents email enumeration and email bombing
    */
   static async requestReset(email: string): Promise<{ success: boolean }> {
     try {
+      // SEC-010: Rate limit by email address (3 requests/hour)
+      // Prevents email bombing attacks
+      const rateLimit = await checkRateLimit(
+        `password-reset-email:${email.toLowerCase()}`,
+        3, // Max 3 requests
+        60 * 60 * 1000 // 1 hour window
+      )
+
+      if (!rateLimit.allowed) {
+        // Rate limit exceeded - still return success to prevent enumeration
+        await this.addConstantDelay()
+        logger.warn(
+          { email: email.substring(0, 3) + '***', resetAt: rateLimit.resetAt },
+          'Password reset rate limit exceeded'
+        )
+        return { success: true }
+      }
+
       const user = await prisma.user.findUnique({
         where: { email },
       })
@@ -106,9 +126,31 @@ export class PasswordResetService {
    * @param token - Token to verify (plain text)
    * @returns Token if valid
    * @throws Error if token is invalid or expired
+   *
+   * Security (SEC-008):
+   * - Tracks failed attempts per token
+   * - Auto-deletes token after 5 failed attempts
+   * - Prevents brute force attacks on tokens
    */
   static async verifyResetToken(token: string) {
     const hashedToken = TokenHasher.hash(token)
+
+    // SEC-008: Check brute force attempts on this token
+    const attemptKey = `password-reset-attempts:${hashedToken.substring(0, 16)}`
+    const rateLimit = await checkRateLimit(
+      attemptKey,
+      5, // Max 5 attempts per token
+      15 * 60 * 1000 // 15 minutes window
+    )
+
+    if (!rateLimit.allowed) {
+      // Too many failed attempts - delete the token
+      await prisma.passwordResetToken.deleteMany({
+        where: { token: hashedToken },
+      })
+      logger.warn({ tokenPrefix: hashedToken.substring(0, 8) }, 'Password reset token deleted after brute force attempts')
+      throw new Error('Too many failed attempts. Please request a new reset link.')
+    }
 
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { token: hashedToken },
@@ -129,12 +171,12 @@ export class PasswordResetService {
    * Resets user password
    * @param token - Reset token
    * @param newPassword - New password
-   * @returns Success
+   * @returns Success with userId for CSRF token rotation
    */
   static async resetPassword(
     token: string,
     newPassword: string
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ success: boolean; userId: string }> {
     const resetToken = await this.verifyResetToken(token)
 
     const hashedPassword = await authService.hashPassword(newPassword)
@@ -153,6 +195,6 @@ export class PasswordResetService {
       data: { revoked: true },
     })
 
-    return { success: true }
+    return { success: true, userId: resetToken.userId }
   }
 }
