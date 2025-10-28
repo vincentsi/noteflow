@@ -2,6 +2,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
 import { gdprService } from '@/services/gdpr.service'
 import { asyncHandler } from '@/utils/controller-wrapper'
 import { logUserAction, logSecurityEvent } from '@/utils/logger'
+import { securityLogger } from '@/utils/security-logger'
 import { SuccessResponse, ErrorResponse } from '@/utils/response-builders'
 
 /**
@@ -31,6 +32,11 @@ export class GDPRController {
     // Log the export request
     logUserAction(request, 'gdpr_data_export_requested', { userId })
     logSecurityEvent(request, 'gdpr_data_export', 'medium', { userId })
+    securityLogger.gdprDataExport({
+      userId,
+      ip: request.ip,
+      userAgent: request.headers['user-agent'],
+    })
 
     // Export data
     const userData = await gdprService.exportUserData(userId)
@@ -79,6 +85,12 @@ export class GDPRController {
     // Log the deletion request
     logUserAction(request, 'gdpr_data_deletion_requested', { userId, reason })
     logSecurityEvent(request, 'gdpr_data_deletion', 'critical', { userId, reason })
+    securityLogger.gdprDataDeletion({
+      userId,
+      ip: request.ip,
+      userAgent: request.headers['user-agent'],
+      reason,
+    })
 
     // Delete data
     const result = await gdprService.deleteUserData(userId, reason)
@@ -132,6 +144,11 @@ export class GDPRController {
     // Log the anonymization request
     logUserAction(request, 'gdpr_data_anonymization_requested', { userId })
     logSecurityEvent(request, 'gdpr_data_anonymization', 'high', { userId })
+    securityLogger.gdprDataAnonymization({
+      userId,
+      ip: request.ip,
+      userAgent: request.headers['user-agent'],
+    })
 
     // Anonymize data
     const result = await gdprService.anonymizeUserData(userId)

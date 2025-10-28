@@ -14,6 +14,7 @@ import {
   setRefreshTokenCookie,
 } from '@/utils/cookie-helpers'
 import { handleControllerError } from '@/utils/error-response'
+import { securityLogger } from '@/utils/security-logger'
 
 /**
  * Authentication controller
@@ -83,6 +84,13 @@ export class AuthController {
       // Log successful login (use userId instead of email for GDPR compliance)
       request.log.info({ userId: result.user.id }, 'User logged in successfully')
 
+      // SEC-011: Log security event
+      securityLogger.authSuccess({
+        userId: result.user.id,
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+      })
+
       // Generate CSRF token
       const csrfToken = await CsrfService.generateToken(result.user.id)
 
@@ -99,8 +107,13 @@ export class AuthController {
     } catch (error) {
       return handleControllerError(error, request, reply, {
         'Invalid credentials': (err, reply, req) => {
-          // Log without email for GDPR compliance (only IP address)
-          req.log.warn({ ip: req.ip }, 'Failed login attempt')
+          // SEC-011: Log authentication failure
+          securityLogger.authFailure({
+            email: (req.body as LoginDTO)?.email,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            reason: 'Invalid credentials',
+          })
           return reply.status(401).send({
             success: false,
             error: err.message,

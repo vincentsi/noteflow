@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { PasswordResetService } from '../services/password-reset.service'
 import { CsrfService } from '@/services/csrf.service'
 import { setCsrfTokenCookie } from '@/utils/cookie-helpers'
+import { securityLogger } from '@/utils/security-logger'
 import {
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -71,10 +72,23 @@ export class PasswordResetController {
       // Reset password and get userId
       const result = await PasswordResetService.resetPassword(data.token, data.password)
 
+      // SEC-011: Log password change
+      securityLogger.passwordChanged({
+        userId: result.userId,
+        ip: request.ip,
+        metadata: { initiatedBy: 'reset' },
+      })
+
       // SEC-006: Rotate CSRF token after sensitive operation (password reset)
       // This invalidates any potentially leaked CSRF tokens
       const newCsrfToken = await CsrfService.rotateToken(result.userId)
       setCsrfTokenCookie(reply, newCsrfToken)
+
+      // SEC-011: Log CSRF rotation
+      securityLogger.csrfTokenRotated({
+        userId: result.userId,
+        reason: 'Password reset',
+      })
 
       reply.send({
         success: true,
