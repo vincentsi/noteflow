@@ -11,6 +11,8 @@ import { captureException, initializeSentry } from '@/config/sentry'
 import { startStripeWebhookWorker } from '@/queues/stripe-webhook.queue'
 import { startRSSWorker, queueRSSFetch, setupRSSCron } from '@/queues/rss.queue'
 import { startSummaryWorker } from '@/queues/summary.queue'
+import { scheduleRSSCleanup } from '@/queues/rss-cleanup.queue'
+import '@/queues/rss-cleanup.worker' // Import worker to register it
 import { BackupService } from '@/services/backup.service'
 import { CleanupService } from '@/services/cleanup.service'
 import type { FastifyInstance } from 'fastify'
@@ -85,6 +87,14 @@ async function start() {
         logger.info('📰 Initial RSS feed fetch job queued')
       } catch (error) {
         logger.error({ error }, '❌ Failed to queue initial RSS fetch')
+      }
+
+      // Schedule RSS cleanup (daily at 2 AM)
+      try {
+        await scheduleRSSCleanup()
+        logger.info('🧹 RSS cleanup scheduled (daily at 2 AM via BullMQ)')
+      } catch (error) {
+        logger.error({ error }, '❌ Failed to schedule RSS cleanup')
       }
     } else {
       logger.warn('⚠️  Redis not available, RSS feeds will not be auto-fetched')
