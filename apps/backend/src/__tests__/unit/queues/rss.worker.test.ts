@@ -32,7 +32,7 @@ describe('RSS Worker', () => {
         title: 'New Article',
         url: 'https://example.com/new',
         excerpt: 'Test excerpt',
-        publishedAt: new Date('2024-01-01'),
+        publishedAt: new Date(), // Use current date so article is not skipped
         source: 'TechCrunch',
       },
     ]
@@ -47,7 +47,7 @@ describe('RSS Worker', () => {
       excerpt: 'Test excerpt',
       source: 'TechCrunch',
       tags: ['tech', 'ai'],
-      publishedAt: new Date('2024-01-01'),
+      publishedAt: new Date(), // Use current date
       createdAt: new Date(),
     })
 

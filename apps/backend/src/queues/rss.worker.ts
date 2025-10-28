@@ -30,6 +30,15 @@ export async function processRSSFeeds(
 
       // Upsert articles into database
       for (const article of articles) {
+        // Skip articles older than 90 days to prevent re-creating deleted old articles
+        const articleAge = Date.now() - article.publishedAt.getTime()
+        const maxAge = 90 * 24 * 60 * 60 * 1000 // 90 days in milliseconds
+
+        if (articleAge > maxAge) {
+          logger.debug(`Skipping old article: ${article.title} (published ${article.publishedAt})`)
+          continue
+        }
+
         await prisma.article.upsert({
           where: { url: article.url },
           update: {

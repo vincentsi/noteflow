@@ -60,9 +60,18 @@ const envSchema = z.object({
   // Required in production, optional in test (mocked)
   OPENAI_API_KEY: z
     .string()
-    .min(20, 'OPENAI_API_KEY must be at least 20 characters')
-    .or(z.string().length(0)) // Allow empty string in test
-    .transform((val) => val || 'test-key-for-unit-tests'),
+    .default('test-key-for-unit-tests-default-value')
+    .refine(
+      (val) => {
+        // In test/development, allow the default test key
+        if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+          return true
+        }
+        // In production, require a real key (min 20 chars)
+        return val.length >= 20 && val !== 'test-key-for-unit-tests-default-value'
+      },
+      { message: 'OPENAI_API_KEY must be at least 20 characters in production' }
+    ),
 
   // Redis (optional but validated if provided)
   REDIS_URL: z.string().url().optional().or(z.literal('')),

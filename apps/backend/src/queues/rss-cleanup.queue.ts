@@ -61,7 +61,7 @@ export async function scheduleRSSCleanup(data: RSSCleanupJobData = {}) {
 /**
  * Run RSS cleanup immediately (for manual triggers or testing)
  */
-export async function runRSSCleanupNow(retentionDays: number = 30) {
+export async function runRSSCleanupNow(retentionDays: number = 90) {
   if (!rssCleanupQueue) {
     logger.warn('⚠️  Cannot run RSS cleanup: Redis not available')
     return null

@@ -10,10 +10,10 @@ export class RSSCleanupService {
    * Delete old articles that are not saved by any user
    * Keeps articles from the last N days only
    *
-   * @param retentionDays - Number of days to keep articles (default: 30)
+   * @param retentionDays - Number of days to keep articles (default: 90)
    * @returns Number of articles deleted
    */
-  async cleanupOldArticles(retentionDays: number = 30): Promise<number> {
+  async cleanupOldArticles(retentionDays: number = 90): Promise<number> {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
 
@@ -85,7 +85,7 @@ export class RSSCleanupService {
    * @param retentionDays - Number of days to keep articles
    * @returns Object with cleanup statistics
    */
-  async runCleanup(retentionDays: number = 30): Promise<{
+  async runCleanup(retentionDays: number = 90): Promise<{
     oldArticlesDeleted: number
     orphanedArticlesDeleted: number
     totalDeleted: number
