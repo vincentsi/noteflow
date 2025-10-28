@@ -5,6 +5,7 @@ import { unlink, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { randomUUID } from 'node:crypto'
+import { logger } from './logger'
 
 /**
  * Streaming Upload Utility
@@ -119,7 +120,7 @@ export async function cleanupTempFile(filePath: string): Promise<void> {
   } catch (error) {
     // Ignore errors (file may not exist)
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error('Failed to cleanup temp file:', error)
+      logger.error({ error, filePath }, 'Failed to cleanup temp file')
     }
   }
 }
@@ -149,7 +150,7 @@ export async function cleanupOldTempFiles(
   } catch (error) {
     // Directory may not exist yet
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error('Failed to cleanup old temp files:', error)
+      logger.error({ error }, 'Failed to cleanup old temp files')
     }
   }
 }

@@ -36,6 +36,14 @@ export function clearCsrfTokenCache(): void {
   cachedCsrfToken = null
 }
 
+/**
+ * Validate CSRF token format
+ * Tokens should be 64-character hex strings (SHA-256 hash)
+ */
+function isValidCsrfToken(token: string): boolean {
+  return /^[a-f0-9]{64}$/i.test(token)
+}
+
 apiClient.interceptors.request.use(
   config => {
     // Add CSRF token on all mutating requests (POST, PUT, PATCH, DELETE)
@@ -50,6 +58,12 @@ apiClient.interceptors.request.use(
           .split('; ')
           .find(row => row.startsWith('csrfToken='))
           ?.split('=')[1] || null
+
+        // Validate token format
+        if (cachedCsrfToken && !isValidCsrfToken(cachedCsrfToken)) {
+          console.warn('Invalid CSRF token format detected, clearing cache')
+          cachedCsrfToken = null
+        }
       }
 
       if (cachedCsrfToken) {

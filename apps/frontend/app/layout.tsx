@@ -8,6 +8,7 @@ import { I18nProvider } from "@/lib/i18n/provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { Toaster } from "@/components/ui/sonner";
+import { env } from "@/lib/env";
 
 export const dynamic = 'force-dynamic'
 
@@ -22,21 +23,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: {
-    default: "Fullstack Boilerplate - SaaS Starter Kit",
-    template: "%s | Fullstack Boilerplate"
+    default: "NoteFlow - AI-Powered Note Taking & Content Summarization",
+    template: "%s | NoteFlow"
   },
-  description: "Production-ready SaaS boilerplate with authentication, payments, RBAC, and enterprise-grade features. Built with Next.js, Fastify, PostgreSQL, and TypeScript.",
-  keywords: ["SaaS", "boilerplate", "Next.js", "Fastify", "TypeScript", "authentication", "Stripe", "PostgreSQL"],
+  description: "NoteFlow combines AI-powered content summarization, markdown note-taking, and RSS feed aggregation for developers. Save time with intelligent summaries and organized notes.",
+  keywords: ["AI", "note-taking", "summarization", "RSS", "markdown", "developers", "productivity", "OpenAI"],
   authors: [{ name: "Vincent SI" }],
   creator: "Vincent SI",
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-    title: "Fullstack Boilerplate - SaaS Starter Kit",
-    description: "Production-ready SaaS boilerplate with authentication, payments, RBAC, and enterprise-grade features.",
+    url: env.NEXT_PUBLIC_SITE_URL,
+    title: "NoteFlow - AI-Powered Note Taking & Content Summarization",
+    description: "NoteFlow combines AI-powered content summarization, markdown note-taking, and RSS feed aggregation for developers.",
     siteName: "Fullstack Boilerplate",
   },
   twitter: {

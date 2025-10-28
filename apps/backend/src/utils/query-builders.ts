@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client'
-
 /**
  * Reusable query builders for common Prisma patterns
  * Eliminates duplication and provides consistent query construction
@@ -16,7 +14,11 @@ import { Prisma } from '@prisma/client'
 export function buildTextSearch<T extends Record<string, unknown>>(
   query: string | undefined,
   fields: Array<keyof T>
-): Prisma.XOR<Prisma.NoteWhereInput, Prisma.ArticleWhereInput> | undefined {
+):
+  | {
+      OR: Array<Record<string, { contains: string; mode: 'insensitive' }>>
+    }
+  | undefined {
   if (!query || fields.length === 0) return undefined
 
   return {
@@ -26,8 +28,7 @@ export function buildTextSearch<T extends Record<string, unknown>>(
         mode: 'insensitive' as const,
       },
     })),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any
+  }
 }
 
 /**

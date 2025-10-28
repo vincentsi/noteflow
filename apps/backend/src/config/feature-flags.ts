@@ -1,4 +1,5 @@
 import { env } from './env'
+import { logger } from '@/utils/logger'
 
 /**
  * Feature Flags Configuration
@@ -202,5 +203,5 @@ export function requireFeatureFlag(flag: FeatureFlag) {
  * Log feature flag state on startup (for debugging)
  */
 if (env.NODE_ENV === 'development') {
-  console.log('Feature Flags:', FeatureFlags.getAll())
+  logger.debug({ flags: FeatureFlags.getAll() }, 'Feature flags loaded')
 }

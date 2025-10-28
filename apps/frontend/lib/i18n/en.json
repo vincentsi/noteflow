@@ -271,8 +271,12 @@
   "pricing": {
     "title": "Choose your plan",
     "subtitle": "Select the plan that best fits your needs",
-    "currentPlan": "Current plan: {{plan}}",
+    "currentPlan": "Current plan",
     "mostPopular": "Most popular",
+    "free": "Free",
+    "loading": "Loading...",
+    "upgrade": "Upgrade to plan",
+    "error": "Error - Retry",
     "plans": {
       "FREE": {
         "name": "FREE",

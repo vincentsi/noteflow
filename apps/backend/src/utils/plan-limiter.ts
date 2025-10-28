@@ -70,10 +70,10 @@ const RESOURCE_CONFIG: Record<ResourceType, LimitConfig> = {
         },
       })
     },
-    cacheTTL: CACHE_TTL.PLAN_LIMITS_MONTHLY(
-      new Date().getFullYear(),
-      new Date().getMonth()
-    ),
+    cacheTTL: (() => {
+      const now = new Date()
+      return CACHE_TTL.PLAN_LIMITS_MONTHLY(now.getFullYear(), now.getMonth())
+    })(),
     resourceName: 'summaries this month',
   },
   note: {

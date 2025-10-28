@@ -19,6 +19,15 @@ const envSchema = z.object({
       'NEXT_PUBLIC_API_URL must start with http:// or https://'
     ),
 
+  // Site URL (REQUIRED for SEO, metadata, sitemaps)
+  NEXT_PUBLIC_SITE_URL: z
+    .string()
+    .url('NEXT_PUBLIC_SITE_URL must be a valid URL')
+    .refine(
+      url => url.startsWith('http://') || url.startsWith('https://'),
+      'NEXT_PUBLIC_SITE_URL must start with http:// or https://'
+    ),
+
   // Stripe Publishable Key (OPTIONAL)
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z
     .string()
@@ -31,6 +40,10 @@ const envSchema = z.object({
   // Stripe Price IDs (OPTIONAL - used for subscription checkout)
   NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID: z.string().optional(),
   NEXT_PUBLIC_STRIPE_PRO_PRICE_ID: z.string().optional(),
+
+  // Sentry (OPTIONAL - for error tracking)
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_APP_VERSION: z.string().optional(),
 })
 
 /**
@@ -39,10 +52,13 @@ const envSchema = z.object({
  */
 const parsed = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID,
   NEXT_PUBLIC_STRIPE_PRO_PRICE_ID: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,
 })
 
 if (!parsed.success) {

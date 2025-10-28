@@ -51,6 +51,8 @@ export class GDPRService {
     }
   }> {
     // Fetch user with all related data
+    // Note: No pagination limits to ensure complete GDPR data export compliance
+    // Most users have <10 tokens, but we must export ALL data
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -60,7 +62,6 @@ export class GDPRService {
             expiresAt: true,
             revoked: true,
           },
-          take: 100, // Reasonable limit (normal user has ~5)
           orderBy: { createdAt: 'desc' },
         },
         verificationTokens: {
@@ -68,7 +69,6 @@ export class GDPRService {
             createdAt: true,
             expiresAt: true,
           },
-          take: 50, // Reasonable limit
           orderBy: { createdAt: 'desc' },
         },
         resetTokens: {
@@ -76,7 +76,6 @@ export class GDPRService {
             createdAt: true,
             expiresAt: true,
           },
-          take: 50, // Reasonable limit
           orderBy: { createdAt: 'desc' },
         },
         csrfTokens: {
@@ -84,7 +83,6 @@ export class GDPRService {
             createdAt: true,
             expiresAt: true,
           },
-          take: 50, // Reasonable limit
           orderBy: { createdAt: 'desc' },
         },
         subscriptions: {
@@ -96,7 +94,6 @@ export class GDPRService {
             cancelAtPeriodEnd: true,
             createdAt: true,
           },
-          take: 50, // Reasonable limit (normal user has 1-2)
           orderBy: { createdAt: 'desc' },
         },
       },

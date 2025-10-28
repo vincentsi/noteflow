@@ -99,14 +99,10 @@ export async function stripeRoutes(fastify: FastifyInstance) {
     {
       config: {
         rawBody: true, // Enable fastify-raw-body for this route
-        ...(env.NODE_ENV === 'production'
-          ? {
-              rateLimit: {
-                max: 100,
-                timeWindow: '1 minute',
-              },
-            }
-          : {}),
+        rateLimit: {
+          max: env.NODE_ENV === 'production' ? 100 : 50,
+          timeWindow: '1 minute',
+        },
       },
       preHandler: requireStripeIPWhitelist(), // Defense-in-depth IP restriction
       bodyLimit: 1048576, // 1MB limit for webhook payloads

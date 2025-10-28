@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { env } from '@/lib/env'
 
 /**
  * Sitemap configuration
@@ -7,7 +8,7 @@ import { MetadataRoute } from 'next'
  * Add all public pages here (not dashboard/protected routes)
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const baseUrl = env.NEXT_PUBLIC_SITE_URL
 
   return [
     {
@@ -28,12 +29,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    // Add more public pages here as needed
-    // {
-    //   url: `${baseUrl}/pricing`,
-    //   lastModified: new Date(),
-    //   changeFrequency: 'weekly',
-    //   priority: 0.9,
-    // },
+    {
+      url: `${baseUrl}/pricing`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
   ]
 }

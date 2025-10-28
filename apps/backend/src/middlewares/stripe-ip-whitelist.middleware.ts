@@ -62,11 +62,19 @@ export function requireStripeIPWhitelist() {
 
       // If no IPs configured, allow all (development convenience)
       if (!allowedIPs || allowedIPs.length === 0) {
+        if (env.NODE_ENV === 'production') {
+          request.log.error('Stripe IP whitelist: No IPs configured in production!')
+          return reply.status(500).send({
+            success: false,
+            error: 'Server misconfiguration',
+          })
+        }
         request.log.debug('Stripe IP whitelist: No IPs configured, allowing all (dev mode)')
         return // Allow all IPs
       }
 
       // Get client IP (supports X-Forwarded-For from reverse proxy)
+      // In production, we trust the proxy since trustProxy is enabled
       const clientIP = request.ip || request.headers['x-forwarded-for'] || request.socket.remoteAddress
 
       if (!clientIP) {

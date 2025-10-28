@@ -176,8 +176,7 @@ export class StripeController {
       }
 
       // Get raw body for signature verification (captured by fastify-raw-body plugin)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rawBody = (request as any).rawBody as Buffer
+      const rawBody = request.rawBody
 
       if (!Buffer.isBuffer(rawBody)) {
         request.log.error(

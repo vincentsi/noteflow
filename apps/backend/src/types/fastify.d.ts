@@ -26,6 +26,12 @@ declare module 'fastify' {
      * Populated by subscriptionMiddleware or loadSubscription middleware
      */
     subscription?: Subscription | null
+
+    /**
+     * Raw request body as Buffer
+     * Populated by fastify-raw-body plugin for webhook signature verification
+     */
+    rawBody?: Buffer
   }
 
   /**

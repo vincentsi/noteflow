@@ -2,6 +2,7 @@
 
 import { useCheckout } from '@/lib/stripe/hooks-react-query'
 import { Button } from '@/components/ui/button'
+import { useI18n } from '@/lib/i18n/provider'
 
 interface StripeCheckoutProps {
   priceId: string | null
@@ -24,6 +25,7 @@ export function StripeCheckout({
   isCurrentPlan,
   variant = 'outline',
 }: StripeCheckoutProps) {
+  const { t } = useI18n()
   const { mutate: createCheckout, isPending, isError } = useCheckout()
 
   const handleUpgrade = () => {
@@ -38,7 +40,7 @@ export function StripeCheckout({
   if (isError) {
     return (
       <Button className="w-full" variant="destructive" disabled>
-        Erreur - Réessayer
+        {t('pricing.error')}
       </Button>
     )
   }
@@ -46,7 +48,7 @@ export function StripeCheckout({
   if (isCurrentPlan) {
     return (
       <Button className="w-full" disabled variant="outline">
-        Plan actuel
+        {t('pricing.currentPlan')}
       </Button>
     )
   }
@@ -54,7 +56,7 @@ export function StripeCheckout({
   if (!priceId) {
     return (
       <Button className="w-full" variant="outline" disabled>
-        Gratuit
+        {t('pricing.free')}
       </Button>
     )
   }
@@ -66,7 +68,7 @@ export function StripeCheckout({
       disabled={isPending}
       variant={variant}
     >
-      {isPending ? 'Chargement...' : 'Passer au plan'}
+      {isPending ? t('pricing.loading') : t('pricing.upgrade')}
     </Button>
   )
 }
