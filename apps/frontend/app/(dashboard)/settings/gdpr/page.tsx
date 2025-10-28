@@ -1,71 +1,96 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Download, Trash2, Shield, FileText } from 'lucide-react'
 import { logError } from '@/lib/utils/logger'
+import { gdprApi } from '@/lib/api/gdpr'
+import { toast } from 'sonner'
 
 export default function GDPRSettingsPage() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const router = useRouter()
   const [isExporting, setIsExporting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [confirmEmail, setConfirmEmail] = useState('')
+  const [deleteReason, setDeleteReason] = useState('')
 
   const handleExportData = async () => {
     setIsExporting(true)
     try {
-      // TODO: Call API to export user data
-      // const response = await gdprApi.exportData()
-      // downloadFile(response.data, 'my-data.json')
+      const data = await gdprApi.exportData()
 
-      // Simulate export
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      // Mock data export
-      const mockData = {
-        user: {
-          id: user?.id,
-          email: user?.email,
-          name: user?.name,
-          createdAt: new Date().toISOString(),
-        },
-        exportedAt: new Date().toISOString(),
-      }
-
-      const blob = new Blob([JSON.stringify(mockData, null, 2)], { type: 'application/json' })
+      // Download data as JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'my-data.json'
+      a.download = `noteflow-data-export-${new Date().toISOString().split('T')[0]}.json`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+
+      toast.success('Your data has been exported successfully')
     } catch (error) {
       logError(error, 'GDPR Data Export')
+      toast.error('Failed to export data. Please try again.')
     } finally {
       setIsExporting(false)
     }
   }
 
   const handleDeleteAccount = async () => {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (!user?.email) {
+      toast.error('User email not found')
+      return
+    }
+
+    if (confirmEmail !== user.email) {
+      toast.error('Email does not match your account email')
       return
     }
 
     setIsDeleting(true)
     try {
-      // TODO: Call API to delete account
-      // await gdprApi.deleteAccount()
+      await gdprApi.deleteAccount({
+        confirmEmail,
+        reason: deleteReason || undefined,
+      })
 
-      // Simulate deletion
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      alert('Account deletion requested. You will receive a confirmation email.')
+      toast.success('Your account has been deleted successfully')
+
+      // Logout and redirect to login
+      logout()
+      router.push('/login')
     } catch (error) {
       logError(error, 'GDPR Account Deletion')
+
+      // Check for rate limit error
+      if (error instanceof Error && error.message.includes('Rate limit')) {
+        toast.error('You can only request account deletion once per day')
+      } else {
+        toast.error('Failed to delete account. Please try again.')
+      }
     } finally {
       setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -140,6 +165,7 @@ export default function GDPRSettingsPage() {
               <li>• Account information (email, name)</li>
               <li>• Authentication data (hashed passwords, tokens)</li>
               <li>• Subscription information</li>
+              <li>• Content data (notes, summaries, saved articles)</li>
               <li>• Usage data and logs</li>
               <li>• Payment information (processed by Stripe)</li>
             </ul>
@@ -160,18 +186,77 @@ export default function GDPRSettingsPage() {
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
               Warning: This action cannot be undone. All your data will be permanently deleted
-              from our systems within 30 days.
+              from our systems, including your Stripe subscription.
             </p>
             <Button
               variant="destructive"
-              onClick={handleDeleteAccount}
+              onClick={() => setShowDeleteDialog(true)}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Processing...' : 'Delete My Account'}
+              Delete My Account
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-500">Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action is <strong>IRREVERSIBLE</strong>. All your data will be permanently deleted:
+              <ul className="mt-2 list-disc list-inside space-y-1">
+                <li>Your account and profile</li>
+                <li>All your notes and summaries</li>
+                <li>All saved articles</li>
+                <li>Your Stripe subscription</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="confirm-email">
+                Confirm your email to continue
+              </Label>
+              <Input
+                id="confirm-email"
+                type="email"
+                placeholder={user?.email || 'your@email.com'}
+                value={confirmEmail}
+                onChange={(e) => setConfirmEmail(e.target.value)}
+                disabled={isDeleting}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="delete-reason">
+                Reason for deletion (optional)
+              </Label>
+              <Input
+                id="delete-reason"
+                type="text"
+                placeholder="Help us improve..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                disabled={isDeleting}
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeleting || !confirmEmail}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Account Permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
