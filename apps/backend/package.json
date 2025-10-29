@@ -8,7 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
-    "start:prod": "npx prisma migrate deploy && node dist/server.js",
+    "start:prod": "npx prisma migrate deploy && tsx scripts/seed-rss-feeds.ts && node dist/server.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "jest --coverage",

@@ -9,118 +9,326 @@ async function seedRSSFeeds() {
   console.log('🌱 Seeding RSS feeds...')
 
   const feeds = [
-    // Developer Communities
+    // ===== DEVELOPER COMMUNITIES (Daily updates) =====
     {
       name: 'Hacker News',
-      url: 'https://news.ycombinator.com/rss',
-      tags: ['dev', 'programming', 'startup', 'tech'],
+      url: 'https://hnrss.org/frontpage',
+      tags: ['tech-news', 'programming', 'startup', 'community'],
       active: true,
     },
     {
       name: 'Dev.to',
       url: 'https://dev.to/feed',
-      tags: ['dev', 'programming', 'tutorial', 'webdev'],
+      tags: ['webdev', 'tutorial', 'programming', 'community'],
       active: true,
     },
     {
-      name: 'GitHub Blog',
-      url: 'https://github.blog/feed/',
-      tags: ['dev', 'github', 'opensource', 'tools'],
+      name: 'freeCodeCamp',
+      url: 'https://freecodecamp.org/news/rss',
+      tags: ['tutorial', 'webdev', 'data-science', 'learning'],
+      active: true,
+    },
+    {
+      name: 'Stack Overflow Blog',
+      url: 'https://stackoverflow.blog/feed',
+      tags: ['programming', 'career', 'best-practices', 'community'],
       active: true,
     },
 
-    // Programming Languages & Frameworks
+    // ===== JAVASCRIPT & FRONTEND FRAMEWORKS =====
     {
       name: 'React Blog',
-      url: 'https://react.dev/rss.xml',
-      tags: ['react', 'javascript', 'frontend', 'framework'],
+      url: 'https://reactjs.org/feed.xml',
+      tags: ['react', 'javascript', 'frontend'],
       active: true,
     },
     {
+      name: 'Vue.js News',
+      url: 'https://news.vuejs.org/feed.xml',
+      tags: ['vue', 'javascript', 'frontend'],
+      active: true,
+    },
+    {
+      name: 'Angular Blog',
+      url: 'https://blog.angular.io/feed',
+      tags: ['angular', 'typescript', 'frontend'],
+      active: true,
+    },
+    {
+      name: 'Svelte Blog',
+      url: 'https://svelte.dev/blog/rss.xml',
+      tags: ['svelte', 'javascript', 'frontend'],
+      active: true,
+    },
+    {
+      name: 'Next.js Blog',
+      url: 'https://nextjs.org/feed.xml',
+      tags: ['nextjs', 'react', 'ssr', 'fullstack'],
+      active: true,
+    },
+
+    // ===== BACKEND & LANGUAGES =====
+    {
       name: 'Node.js Blog',
       url: 'https://nodejs.org/en/feed/blog.xml',
-      tags: ['nodejs', 'javascript', 'backend', 'runtime'],
+      tags: ['nodejs', 'javascript', 'backend'],
       active: true,
     },
     {
       name: 'TypeScript Blog',
       url: 'https://devblogs.microsoft.com/typescript/feed/',
-      tags: ['typescript', 'javascript', 'programming', 'microsoft'],
+      tags: ['typescript', 'javascript', 'programming'],
+      active: true,
+    },
+    {
+      name: 'Go Blog',
+      url: 'https://go.dev/blog/feed.atom',
+      tags: ['go', 'golang', 'backend', 'programming'],
+      active: true,
+    },
+    {
+      name: 'Rust Blog',
+      url: 'https://blog.rust-lang.org/feed.xml',
+      tags: ['rust', 'systems-programming', 'performance'],
+      active: true,
+    },
+    {
+      name: 'Real Python',
+      url: 'https://realpython.com/atom.xml',
+      tags: ['python', 'tutorial', 'backend', 'data-science'],
       active: true,
     },
 
-    // AI & Machine Learning for Devs
+    // ===== AI & MACHINE LEARNING =====
     {
       name: 'OpenAI Blog',
-      url: 'https://openai.com/blog/rss.xml',
-      tags: ['ai', 'openai', 'llm', 'research'],
+      url: 'https://openai.com/news/rss.xml',
+      tags: ['ai', 'llm', 'gpt', 'research'],
+      active: true,
+    },
+    {
+      name: 'Anthropic',
+      url: 'https://www.anthropic.com/news/rss.xml',
+      tags: ['ai', 'llm', 'claude', 'ai-safety'],
+      active: true,
+    },
+    {
+      name: 'Google AI Blog',
+      url: 'http://feeds.feedburner.com/blogspot/gJZg',
+      tags: ['ai', 'ml', 'tensorflow', 'research'],
+      active: true,
+    },
+    {
+      name: 'DeepMind Blog',
+      url: 'https://deepmind.google/blog/rss.xml',
+      tags: ['ai', 'research', 'deep-learning'],
       active: true,
     },
     {
       name: 'Hugging Face Blog',
       url: 'https://huggingface.co/blog/feed.xml',
-      tags: ['ai', 'ml', 'nlp', 'opensource'],
+      tags: ['ai', 'ml', 'nlp', 'transformers'],
+      active: true,
+    },
+    {
+      name: 'Machine Learning Mastery',
+      url: 'http://machinelearningmastery.com/blog/feed',
+      tags: ['ml', 'tutorial', 'python', 'deep-learning'],
+      active: true,
+    },
+    {
+      name: 'Towards Data Science',
+      url: 'https://towardsdatascience.com/feed',
+      tags: ['ml', 'data-science', 'ai', 'tutorial'],
       active: true,
     },
 
-    // DevOps & Cloud
+    // ===== DEVOPS & CLOUD =====
     {
-      name: 'AWS News Blog',
-      url: 'https://aws.amazon.com/blogs/aws/feed/',
-      tags: ['aws', 'cloud', 'devops', 'infrastructure'],
+      name: 'Kubernetes Blog',
+      url: 'https://kubernetes.io/feed.xml',
+      tags: ['kubernetes', 'devops', 'cloud-native'],
       active: true,
     },
     {
       name: 'Docker Blog',
       url: 'https://www.docker.com/blog/feed/',
-      tags: ['docker', 'containers', 'devops', 'deployment'],
+      tags: ['docker', 'containers', 'devops'],
+      active: true,
+    },
+    {
+      name: 'CNCF Blog',
+      url: 'https://www.cncf.io/feed/',
+      tags: ['cloud-native', 'kubernetes', 'devops'],
+      active: true,
+    },
+    {
+      name: 'AWS Blog',
+      url: 'https://aws.amazon.com/blogs/aws/feed/',
+      tags: ['aws', 'cloud', 'infrastructure'],
+      active: true,
+    },
+    {
+      name: 'Google Cloud Blog',
+      url: 'https://cloudblog.withgoogle.com/rss',
+      tags: ['gcp', 'cloud', 'google-cloud'],
+      active: true,
+    },
+    {
+      name: 'The New Stack',
+      url: 'https://thenewstack.io/feed',
+      tags: ['cloud-native', 'devops', 'kubernetes'],
       active: true,
     },
 
-    // Web Development & Standards
+    // ===== MOBILE DEVELOPMENT =====
     {
-      name: 'web.dev',
-      url: 'https://web.dev/feed.xml',
-      tags: ['webdev', 'performance', 'best-practices', 'google'],
+      name: 'React Native Blog',
+      url: 'https://reactnative.dev/blog/rss.xml',
+      tags: ['react-native', 'mobile', 'javascript'],
       active: true,
     },
+    {
+      name: 'Flutter on Medium',
+      url: 'https://medium.com/feed/flutter',
+      tags: ['flutter', 'dart', 'mobile'],
+      active: true,
+    },
+    {
+      name: 'Android Developers Blog',
+      url: 'https://feeds.feedburner.com/blogspot/hsDu',
+      tags: ['android', 'kotlin', 'mobile'],
+      active: true,
+    },
+    {
+      name: 'Hacking with Swift',
+      url: 'https://www.hackingwithswift.com/articles/rss',
+      tags: ['swift', 'ios', 'mobile', 'tutorial'],
+      active: true,
+    },
+
+    // ===== WEB DESIGN & CSS =====
     {
       name: 'CSS-Tricks',
       url: 'https://css-tricks.com/feed/',
-      tags: ['css', 'frontend', 'webdev', 'design'],
+      tags: ['css', 'frontend', 'design'],
+      active: true,
+    },
+    {
+      name: 'Smashing Magazine',
+      url: 'https://www.smashingmagazine.com/feed',
+      tags: ['css', 'javascript', 'ux', 'design'],
+      active: true,
+    },
+    {
+      name: 'A List Apart',
+      url: 'https://alistapart.com/main/feed/',
+      tags: ['web-standards', 'design', 'accessibility'],
+      active: true,
+    },
+    {
+      name: 'Codrops',
+      url: 'https://tympanus.net/codrops/feed',
+      tags: ['css', 'javascript', 'design', 'inspiration'],
       active: true,
     },
 
-    // Tech News for Devs
+    // ===== ENGINEERING BLOGS (Companies) =====
     {
-      name: 'The Verge - Tech',
-      url: 'https://www.theverge.com/tech/rss/index.xml',
-      tags: ['tech', 'news', 'industry', 'innovation'],
+      name: 'GitHub Engineering',
+      url: 'https://github.blog/feed/',
+      tags: ['engineering', 'devops', 'opensource'],
+      active: true,
+    },
+    {
+      name: 'Netflix Tech Blog',
+      url: 'https://netflixtechblog.com/feed',
+      tags: ['engineering', 'microservices', 'cloud', 'scale'],
+      active: true,
+    },
+    {
+      name: 'Vercel Blog',
+      url: 'https://vercel.com/atom',
+      tags: ['nextjs', 'deployment', 'frontend'],
+      active: true,
+    },
+    {
+      name: 'Stripe Engineering',
+      url: 'https://stripe.com/blog/feed.rss',
+      tags: ['engineering', 'api', 'infrastructure'],
+      active: true,
+    },
+
+    // ===== TECH NEWS =====
+    {
+      name: 'TechCrunch',
+      url: 'http://feeds.feedburner.com/TechCrunch/',
+      tags: ['tech-news', 'startup', 'funding'],
+      active: true,
+    },
+    {
+      name: 'The Verge',
+      url: 'https://www.theverge.com/rss/index.xml',
+      tags: ['tech-news', 'reviews', 'culture'],
       active: true,
     },
     {
       name: 'Ars Technica',
-      url: 'https://feeds.arstechnica.com/arstechnica/index',
-      tags: ['tech', 'science', 'news', 'analysis'],
+      url: 'http://feeds.arstechnica.com/arstechnica/index/',
+      tags: ['tech-news', 'science', 'analysis'],
+      active: true,
+    },
+    {
+      name: 'MIT Technology Review',
+      url: 'https://www.technologyreview.com/feed/',
+      tags: ['innovation', 'research', 'future-tech'],
       active: true,
     },
 
-    // French Dev Resources
+    // ===== FRENCH CONTENT =====
     {
-      name: 'Journal du Net - Développeurs',
-      url: 'https://www.journaldunet.com/rss/developpeurs/',
-      tags: ['dev', 'french', 'programming', 'tech'],
+      name: 'Numerama',
+      url: 'https://www.numerama.com/feed/rss/',
+      tags: ['tech-news', 'french', 'science', 'culture'],
+      active: true,
+    },
+    {
+      name: '01net',
+      url: 'https://www.01net.com/feed',
+      tags: ['tech-news', 'french', 'tests', 'actualite'],
+      active: true,
+    },
+    {
+      name: 'Developpez.com',
+      url: 'https://www.developpez.com/index/rss',
+      tags: ['programming', 'french', 'tutorial', 'community'],
+      active: true,
+    },
+    {
+      name: 'Next INpact',
+      url: 'https://www.nextinpact.com/rss/news.xml',
+      tags: ['tech-news', 'french', 'droit', 'analyse'],
+      active: true,
+    },
+    {
+      name: 'FrenchWeb',
+      url: 'https://www.frenchweb.fr/feed',
+      tags: ['startup', 'french', 'innovation', 'digital'],
       active: true,
     },
   ]
 
   for (const feed of feeds) {
-    const created = await prisma.rSSFeed.upsert({
-      where: { url: feed.url },
-      update: feed,
-      create: feed,
-    })
-    console.log(`✅ ${created.name}`)
+    try {
+      const created = await prisma.rSSFeed.upsert({
+        where: { name: feed.name },
+        update: { url: feed.url, tags: feed.tags, active: feed.active },
+        create: feed,
+      })
+      console.log(`✅ ${created.name}`)
+    } catch {
+      console.log(`⚠️  Skipped ${feed.name} (already exists with different constraints)`)
+    }
   }
 
   console.log(`\n🎉 Seeded ${feeds.length} RSS feeds!`)
