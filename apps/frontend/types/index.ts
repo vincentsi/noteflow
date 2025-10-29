@@ -7,6 +7,7 @@ export type User = {
   createdAt: string
   planType?: 'FREE' | 'STARTER' | 'PRO'
   subscriptionStatus?: 'NONE' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'UNPAID'
+  currentPeriodEnd?: string
 }
 
 export type Article = {
