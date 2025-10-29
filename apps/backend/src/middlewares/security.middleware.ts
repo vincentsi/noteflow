@@ -79,7 +79,7 @@ export async function registerSecurityMiddlewares(
     }
 
     await app.register(rateLimit, {
-      max: env.NODE_ENV === 'production' ? 30 : 200, // Stricter in production (30 req/15min vs 50)
+      max: env.NODE_ENV === 'production' ? 100 : 200, // 100 requests per 15 minutes in production
       timeWindow: '15 minutes',
       redis: redis, // Distributed rate limiting via Redis (shared across instances)
       skipOnError: true, // If Redis fails, allow requests (graceful degradation)
