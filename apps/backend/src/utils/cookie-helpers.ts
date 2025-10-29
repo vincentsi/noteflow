@@ -39,8 +39,8 @@ export function setAuthCookies(
   // Access Token - JWT for authentication
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true, // Not accessible via JavaScript (XSS protection)
-    secure: isProduction, // HTTPS only in production
-    sameSite: 'strict',
+    secure: true, // Always HTTPS (required for sameSite: none)
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -48,8 +48,8 @@ export function setAuthCookies(
   // Refresh Token - JWT to renew access token
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'strict',
+    secure: true, // Always HTTPS (required for sameSite: none)
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -58,8 +58,8 @@ export function setAuthCookies(
   // IMPORTANT: maxAge synchronized with access token to avoid desynchronization
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: false, // Accessible via JS to be sent in X-CSRF-Token header
-    secure: isProduction,
-    sameSite: 'strict',
+    secure: true, // Always HTTPS (required for sameSite: none)
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN, // Synchronized with access token
     path: '/',
   })
@@ -80,9 +80,23 @@ export function setAuthCookies(
  * ```
  */
 export function clearAuthCookies(reply: FastifyReply): void {
-  reply.clearCookie('accessToken', { path: '/' })
-  reply.clearCookie('refreshToken', { path: '/' })
-  reply.clearCookie('csrfToken', { path: '/' })
+  const isProduction = env.NODE_ENV === 'production'
+
+  reply.clearCookie('accessToken', {
+    path: '/',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: true
+  })
+  reply.clearCookie('refreshToken', {
+    path: '/',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: true
+  })
+  reply.clearCookie('csrfToken', {
+    path: '/',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: true
+  })
 }
 
 /**
@@ -111,8 +125,8 @@ export function refreshSessionCookies(
   // Renew access token
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'strict',
+    secure: true,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -120,8 +134,8 @@ export function refreshSessionCookies(
   // Renew CSRF token (synchronized with access token)
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: false,
-    secure: isProduction,
-    sameSite: 'strict',
+    secure: true,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
@@ -150,8 +164,8 @@ export function setRefreshTokenCookie(
 
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: 'strict',
+    secure: true,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -181,8 +195,8 @@ export function setCsrfTokenCookie(
 
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: false, // Accessible via JS to be sent in X-CSRF-Token header
-    secure: isProduction,
-    sameSite: 'strict',
+    secure: true,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
