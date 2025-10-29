@@ -358,7 +358,8 @@
     "footer": {
       "moneyBack": "All plans include a 14-day money-back guarantee",
       "support": "Questions? Contact support@noteflow.app"
-    }
+    },
+    "billingPortalHint": "Change plan, update card, or cancel subscription"
   },
   "admin": {
     "title": "Administration",

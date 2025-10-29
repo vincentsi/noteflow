@@ -358,7 +358,8 @@
     "footer": {
       "moneyBack": "Tous les plans incluent une garantie satisfait ou remboursé de 14 jours",
       "support": "Des questions ? Contactez support@noteflow.app"
-    }
+    },
+    "billingPortalHint": "Changez de plan, mettez à jour votre carte ou annulez votre abonnement"
   },
   "admin": {
     "title": "Administration",

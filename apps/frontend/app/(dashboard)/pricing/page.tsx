@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -11,6 +12,7 @@ import {
   STRIPE_PRO_PRICE_ID,
 } from '@/lib/constants/stripe'
 import { useI18n } from '@/lib/i18n/provider'
+import { useBillingPortal } from '@/lib/stripe/hooks'
 
 // Lazy load heavy components (reduces initial bundle)
 const StripeCheckout = dynamic(
@@ -25,6 +27,9 @@ export default function PricingPage() {
   const { t } = useI18n()
   const { user } = useAuth()
   const currentPlan = user?.planType || 'FREE'
+  const { openBillingPortal, loading: portalLoading } = useBillingPortal()
+
+  const hasActiveSubscription = currentPlan !== 'FREE'
 
   const PLANS = [
     {
@@ -83,6 +88,23 @@ export default function PricingPage() {
           <p className="text-sm text-muted-foreground mt-2">
             {t('pricing.currentPlan', { plan: currentPlan })}
           </p>
+        )}
+
+        {/* Billing Portal Button for paid users */}
+        {hasActiveSubscription && (
+          <div className="mt-4">
+            <Button
+              onClick={openBillingPortal}
+              disabled={portalLoading}
+              variant="outline"
+              size="lg"
+            >
+              {portalLoading ? t('common.loading') : t('dashboard.subscription.manageSubscription')}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              {t('pricing.billingPortalHint')}
+            </p>
+          </div>
         )}
       </div>
 
