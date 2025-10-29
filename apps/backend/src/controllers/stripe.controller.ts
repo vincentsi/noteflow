@@ -54,11 +54,13 @@ export class StripeController {
       }
 
       // Check if user already has an active subscription
+      // If yes, they should use the billing portal to change plans
       const hasActiveSubscription = await stripeService.hasActiveSubscription(userId)
       if (hasActiveSubscription) {
         return reply.status(400).send({
           success: false,
-          error: 'User already has an active subscription. Please cancel your current subscription before upgrading.',
+          error: 'Please use the billing portal to change your plan.',
+          requiresBillingPortal: true,
         })
       }
 

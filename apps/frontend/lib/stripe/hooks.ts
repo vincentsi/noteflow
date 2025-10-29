@@ -38,7 +38,38 @@ export function useCheckout() {
 
       // Securely redirect to Stripe checkout page
       safeRedirect(url)
-    } catch (err) {
+    } catch (err: unknown) {
+      // Check if error indicates need for billing portal (upgrade/downgrade)
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'requiresBillingPortal' in err.response.data &&
+        err.response.data.requiresBillingPortal === true
+      ) {
+        // User needs to use billing portal for plan changes
+        // Redirect to billing portal
+        try {
+          const portalResponse = await apiClient.post('/api/stripe/create-portal-session')
+          const { url } = portalResponse.data.data
+          safeRedirect(url)
+          return
+        } catch (portalErr) {
+          const portalMessage =
+            portalErr instanceof Error
+              ? portalErr.message
+              : 'Error opening billing portal'
+          setError(portalMessage)
+          setLoading(false)
+          return
+        }
+      }
+
       const message =
         err instanceof Error ? err.message : 'Error creating checkout session'
       setError(message)
