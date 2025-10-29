@@ -205,6 +205,24 @@ export class StripeWebhookHandlers {
       throw new Error('No price ID found in subscription')
     }
 
+    // Validate required fields
+    if (!sub.current_period_start || !sub.current_period_end) {
+      throw new Error(`Missing period dates in subscription ${sub.id}`)
+    }
+
+    // Extract customer ID (can be string or expanded object)
+    const customerId = typeof sub.customer === 'string'
+      ? sub.customer
+      : sub.customer.id
+
+    const periodStart = new Date(sub.current_period_start * 1000)
+    const periodEnd = new Date(sub.current_period_end * 1000)
+
+    // Validate dates are valid
+    if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
+      throw new Error(`Invalid period dates in subscription ${sub.id}`)
+    }
+
     await prisma.$transaction(async tx => {
       await tx.subscription.upsert({
         where: {
@@ -214,18 +232,18 @@ export class StripeWebhookHandlers {
           userId,
           stripeSubscriptionId: sub.id,
           stripePriceId: priceId,
-          stripeCustomerId: sub.customer as string,
+          stripeCustomerId: customerId,
           status: this.mapStripeStatus(sub.status),
           planType,
-          currentPeriodStart: new Date(sub.current_period_start * 1000),
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: sub.cancel_at_period_end,
         },
         update: {
           status: this.mapStripeStatus(sub.status),
           planType,
-          currentPeriodStart: new Date(sub.current_period_start * 1000),
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: sub.cancel_at_period_end,
         },
       })
@@ -236,7 +254,7 @@ export class StripeWebhookHandlers {
           subscriptionStatus: this.mapStripeStatus(sub.status),
           subscriptionId: sub.id,
           planType,
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
+          currentPeriodEnd: periodEnd,
         },
       })
     })
@@ -272,6 +290,19 @@ export class StripeWebhookHandlers {
       throw new Error('No price ID found in subscription')
     }
 
+    // Validate required fields
+    if (!subscription.current_period_start || !subscription.current_period_end) {
+      throw new Error(`Missing period dates in subscription ${subscription.id}`)
+    }
+
+    const periodStart = new Date(subscription.current_period_start * 1000)
+    const periodEnd = new Date(subscription.current_period_end * 1000)
+
+    // Validate dates are valid
+    if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
+      throw new Error(`Invalid period dates in subscription ${subscription.id}`)
+    }
+
     await prisma.$transaction(async tx => {
       await tx.subscription.update({
         where: {
@@ -281,8 +312,8 @@ export class StripeWebhookHandlers {
           status: this.mapStripeStatus(subscription.status),
           planType: planType || undefined,
           stripePriceId: priceId,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
           canceledAt: subscription.canceled_at
             ? new Date(subscription.canceled_at * 1000)
@@ -295,7 +326,7 @@ export class StripeWebhookHandlers {
         data: {
           subscriptionStatus: this.mapStripeStatus(subscription.status),
           planType: planType || undefined,
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          currentPeriodEnd: periodEnd,
         },
       })
     })
