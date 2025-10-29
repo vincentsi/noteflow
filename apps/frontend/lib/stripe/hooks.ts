@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '@/lib/api/client'
 import { safeRedirect } from '@/lib/utils/url-validator'
 import { PlanType } from './config'
+import { AxiosError } from 'axios'
 
 /**
  * Type for Stripe subscription
@@ -39,19 +40,8 @@ export function useCheckout() {
       // Securely redirect to Stripe checkout page
       safeRedirect(url)
     } catch (err: unknown) {
-      // Check if error indicates need for billing portal (upgrade/downgrade)
-      if (
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'requiresBillingPortal' in err.response.data &&
-        err.response.data.requiresBillingPortal === true
-      ) {
+      // Check if error is an Axios error with requiresBillingPortal flag
+      if (err instanceof AxiosError && err.response?.data?.requiresBillingPortal === true) {
         // User needs to use billing portal for plan changes
         // Redirect to billing portal
         try {
@@ -70,8 +60,13 @@ export function useCheckout() {
         }
       }
 
+      // Handle regular errors
       const message =
-        err instanceof Error ? err.message : 'Error creating checkout session'
+        err instanceof AxiosError && err.response?.data?.error
+          ? err.response.data.error
+          : err instanceof Error
+            ? err.message
+            : 'Error creating checkout session'
       setError(message)
       setLoading(false)
     }
