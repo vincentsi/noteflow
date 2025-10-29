@@ -19,14 +19,15 @@ const envSchema = z.object({
       'NEXT_PUBLIC_API_URL must start with http:// or https://'
     ),
 
-  // Site URL (REQUIRED for SEO, metadata, sitemaps)
+  // Site URL (OPTIONAL - defaults to localhost for development)
   NEXT_PUBLIC_SITE_URL: z
     .string()
     .url('NEXT_PUBLIC_SITE_URL must be a valid URL')
     .refine(
       url => url.startsWith('http://') || url.startsWith('https://'),
       'NEXT_PUBLIC_SITE_URL must start with http:// or https://'
-    ),
+    )
+    .default('http://localhost:3000'),
 
   // Stripe Publishable Key (OPTIONAL)
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z

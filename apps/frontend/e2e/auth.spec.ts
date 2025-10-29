@@ -16,7 +16,7 @@ baseTest.describe('Authentication Flow', () => {
   })
 
   baseTest('should display home page', async ({ page }) => {
-    await expect(page).toHaveTitle(/Boilerplate/)
+    await expect(page).toHaveTitle(/NoteFlow/)
   })
 
   baseTest('should navigate to login page', async ({ page }) => {

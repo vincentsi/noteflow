@@ -40,25 +40,10 @@ export async function registerSecurityMiddlewares(
   })
 
   // Helmet - Security headers with strict CSP
+  // NOTE: CSP disabled for API servers - CSP is for browser-rendered content, not JSON APIs
+  // The frontend should set its own CSP headers
   await app.register(helmet, {
-    contentSecurityPolicy:
-      env.NODE_ENV === 'production'
-        ? {
-            directives: {
-              defaultSrc: ["'self'"],
-              scriptSrc: ["'self'"],
-              styleSrc: ["'self'"],
-              imgSrc: ["'self'", 'data:', 'https:'],
-              connectSrc: ["'self'"],
-              fontSrc: ["'self'"],
-              objectSrc: ["'none'"],
-              mediaSrc: ["'self'"],
-              frameSrc: ["'none'"],
-              baseUri: ["'self'"],
-              formAction: ["'self'"],
-            },
-          }
-        : false,
+    contentSecurityPolicy: false,
     hsts: {
       maxAge: 31536000,
       includeSubDomains: true,

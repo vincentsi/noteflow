@@ -1,0 +1,13 @@
+[phases.setup]
+nixPkgs = ["nodejs-22_x", "openssl"]
+
+[phases.install]
+dependsOn = ["setup"]
+cmds = ["npm install"]
+
+[phases.build]
+dependsOn = ["install"]
+cmds = ["npx prisma generate", "npm run build"]
+
+[start]
+cmd = "npm run start:prod"

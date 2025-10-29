@@ -8,6 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
+    "start:prod": "npx prisma migrate deploy && node dist/server.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "jest --coverage",
@@ -64,8 +65,6 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@boilerplate/eslint-config": "*",
-    "@boilerplate/tsconfig": "*",
     "@eslint/js": "^9.37.0",
     "@types/jest": "^30.0.0",
     "@types/pdf-parse": "^1.1.5",
