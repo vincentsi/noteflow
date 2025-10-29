@@ -190,69 +190,62 @@ export class StripeWebhookHandlers {
       throw new Error('No subscription in checkout session')
     }
 
-    const stripeSubscription = await this.stripe.subscriptions.retrieve(
-      session.subscription as string
-    )
+    const subscriptionId = typeof session.subscription === 'string'
+      ? session.subscription
+      : session.subscription.id
 
-    if (!isStripeSubscriptionData(stripeSubscription)) {
-      throw new Error('Invalid Stripe subscription structure')
+    // Get customer ID from session
+    const customerId = typeof session.customer === 'string'
+      ? session.customer
+      : session.customer?.id
+
+    if (!customerId) {
+      throw new Error('No customer ID in checkout session')
     }
 
-    const sub = stripeSubscription
-    const priceId = sub.items.data[0]?.price.id
+    // Use current time as period start (subscription just created)
+    const now = new Date()
+    const periodStart = now
+    const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // +30 days
+
+    // Get line item to extract price ID
+    const lineItems = await this.stripe.checkout.sessions.listLineItems(session.id)
+    const priceId = lineItems.data[0]?.price?.id
 
     if (!priceId) {
-      throw new Error('No price ID found in subscription')
-    }
-
-    // Validate required fields
-    if (!sub.current_period_start || !sub.current_period_end) {
-      throw new Error(`Missing period dates in subscription ${sub.id}`)
-    }
-
-    // Extract customer ID (can be string or expanded object)
-    const customerId = typeof sub.customer === 'string'
-      ? sub.customer
-      : sub.customer.id
-
-    const periodStart = new Date(sub.current_period_start * 1000)
-    const periodEnd = new Date(sub.current_period_end * 1000)
-
-    // Validate dates are valid
-    if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
-      throw new Error(`Invalid period dates in subscription ${sub.id}`)
+      throw new Error('No price ID found in checkout session')
     }
 
     await prisma.$transaction(async tx => {
       await tx.subscription.upsert({
         where: {
-          stripeSubscriptionId: sub.id,
+          stripeSubscriptionId: subscriptionId,
         },
         create: {
           userId,
-          stripeSubscriptionId: sub.id,
+          stripeSubscriptionId: subscriptionId,
           stripePriceId: priceId,
           stripeCustomerId: customerId,
-          status: this.mapStripeStatus(sub.status),
+          status: SubscriptionStatus.ACTIVE,
           planType,
           currentPeriodStart: periodStart,
           currentPeriodEnd: periodEnd,
-          cancelAtPeriodEnd: sub.cancel_at_period_end,
+          cancelAtPeriodEnd: false,
         },
         update: {
-          status: this.mapStripeStatus(sub.status),
+          status: SubscriptionStatus.ACTIVE,
           planType,
           currentPeriodStart: periodStart,
           currentPeriodEnd: periodEnd,
-          cancelAtPeriodEnd: sub.cancel_at_period_end,
+          cancelAtPeriodEnd: false,
         },
       })
 
       await tx.user.update({
         where: { id: userId },
         data: {
-          subscriptionStatus: this.mapStripeStatus(sub.status),
-          subscriptionId: sub.id,
+          subscriptionStatus: SubscriptionStatus.ACTIVE,
+          subscriptionId: subscriptionId,
           planType,
           currentPeriodEnd: periodEnd,
         },
