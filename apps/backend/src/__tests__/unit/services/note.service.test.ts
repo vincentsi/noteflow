@@ -1,6 +1,6 @@
 import { prismaMock } from '../../helpers/test-db'
 import { NoteService } from '../../../services/note.service'
-import { PlanType } from '@prisma/client'
+import { Note, PlanType } from '@prisma/client'
 
 describe('NoteService', () => {
   let noteService: NoteService
@@ -45,9 +45,10 @@ describe('NoteService', () => {
         id: 'note-1',
         userId: 'user-123',
         ...noteData,
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as Note)
 
       const result = await noteService.createNote('user-123', noteData)
 
@@ -115,9 +116,10 @@ describe('NoteService', () => {
         title: 'Test',
         content: 'Content',
         tags: [],
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as Note)
 
       const result = await noteService.createNote('user-123', {
         title: 'Test',
@@ -138,6 +140,7 @@ describe('NoteService', () => {
           title: 'Note 1',
           content: 'Content 1',
           tags: ['tag1'],
+          deletedAt: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -147,10 +150,11 @@ describe('NoteService', () => {
           title: 'Note 2',
           content: 'Content 2',
           tags: ['tag2'],
+          deletedAt: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      ]
+      ] as Note[]
 
       prismaMock.note.findMany.mockResolvedValue(mockNotes)
 
@@ -184,9 +188,10 @@ describe('NoteService', () => {
         title: 'Original Title',
         content: 'Original content',
         tags: [],
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      } as Note
 
       const updatedNote = {
         id: 'note-1',
@@ -194,9 +199,10 @@ describe('NoteService', () => {
         title: 'Updated Title',
         content: 'Updated content',
         tags: ['updated'],
+        deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      } as Note
 
       prismaMock.note.findFirst.mockResolvedValue(existingNote)
       prismaMock.note.update.mockResolvedValue(updatedNote)
@@ -244,7 +250,7 @@ describe('NoteService', () => {
         deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as Note)
 
       // Mock update for soft delete
       prismaMock.note.update.mockResolvedValue({
@@ -256,7 +262,7 @@ describe('NoteService', () => {
         deletedAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as Note)
 
       await noteService.deleteNote('note-1', 'user-123')
 
@@ -287,10 +293,11 @@ describe('NoteService', () => {
           title: 'Contains search term',
           content: 'Some content with search term',
           tags: [],
+          deletedAt: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      ])
+      ] as Note[])
 
       const result = await noteService.searchNotes('user-123', 'search term')
 

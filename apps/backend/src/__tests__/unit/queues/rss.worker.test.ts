@@ -2,7 +2,7 @@
 import { prismaMock } from '../../helpers/test-db'
 import { processRSSFeeds } from '../../../queues/rss.worker'
 import { RSSService } from '../../../services/rss.service'
-import type { PrismaClient } from '@prisma/client'
+import type { Article, PrismaClient } from '@prisma/client'
 
 // Mock RSSService
 jest.mock('../../../services/rss.service')
@@ -45,11 +45,12 @@ describe('RSS Worker', () => {
       title: 'New Article',
       url: 'https://example.com/new',
       excerpt: 'Test excerpt',
+      imageUrl: null,
       source: 'TechCrunch',
       tags: ['tech', 'ai'],
       publishedAt: new Date(), // Use current date
       createdAt: new Date(),
-    })
+    } as Article)
 
     prismaMock.rSSFeed.update.mockResolvedValue({
       ...mockFeeds[0],
@@ -163,11 +164,12 @@ describe('RSS Worker', () => {
       title: 'Article from working feed',
       url: 'https://example.com/article',
       excerpt: 'Test',
+      imageUrl: null,
       source: 'Working Feed',
       tags: ['dev'],
       publishedAt: new Date(),
       createdAt: new Date(),
-    })
+    } as Article)
 
     prismaMock.rSSFeed.update.mockResolvedValue({
       ...mockFeeds[1],
