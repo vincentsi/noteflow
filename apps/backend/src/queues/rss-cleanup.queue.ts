@@ -10,7 +10,6 @@ import type { RSSCleanupJobData } from './rss-cleanup.worker'
  */
 function createCleanupQueue(): Queue<RSSCleanupJobData> | null {
   if (!isRedisAvailable() || !env.REDIS_URL) {
-    logger.warn('⚠️  Redis not available, RSS cleanup will not be scheduled')
     return null
   }
 
@@ -28,10 +27,17 @@ function createCleanupQueue(): Queue<RSSCleanupJobData> | null {
 }
 
 /**
- * BullMQ Queue for RSS cleanup
+ * BullMQ Queue for RSS cleanup (lazy initialization)
  * Schedules periodic cleanup of old articles
  */
-export const rssCleanupQueue = createCleanupQueue()
+let rssCleanupQueue: Queue<RSSCleanupJobData> | null = null
+
+function getRSSCleanupQueue(): Queue<RSSCleanupJobData> | null {
+  if (!rssCleanupQueue && isRedisAvailable()) {
+    rssCleanupQueue = createCleanupQueue()
+  }
+  return rssCleanupQueue
+}
 
 /**
  * Schedule RSS cleanup job
@@ -39,12 +45,14 @@ export const rssCleanupQueue = createCleanupQueue()
  * @returns Job instance or null if Redis not available
  */
 export async function scheduleRSSCleanup(data: RSSCleanupJobData = {}) {
-  if (!rssCleanupQueue) {
+  const queue = getRSSCleanupQueue()
+
+  if (!queue) {
     logger.warn('⚠️  Cannot schedule RSS cleanup: Redis not available')
     return null
   }
 
-  const job = await rssCleanupQueue.add('cleanup', data, {
+  const job = await queue.add('cleanup', data, {
     // Run daily at 2 AM
     repeat: {
       pattern: '0 2 * * *', // Cron: every day at 2:00 AM
@@ -62,12 +70,14 @@ export async function scheduleRSSCleanup(data: RSSCleanupJobData = {}) {
  * Run RSS cleanup immediately (for manual triggers or testing)
  */
 export async function runRSSCleanupNow(retentionDays: number = 90) {
-  if (!rssCleanupQueue) {
+  const queue = getRSSCleanupQueue()
+
+  if (!queue) {
     logger.warn('⚠️  Cannot run RSS cleanup: Redis not available')
     return null
   }
 
-  const job = await rssCleanupQueue.add('cleanup-now', { retentionDays })
+  const job = await queue.add('cleanup-now', { retentionDays })
 
   logger.info(`RSS cleanup job queued for immediate execution: ${job.id}`)
 

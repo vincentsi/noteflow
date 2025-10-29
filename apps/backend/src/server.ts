@@ -12,7 +12,7 @@ import { startStripeWebhookWorker } from '@/queues/stripe-webhook.queue'
 import { startRSSWorker, queueRSSFetch, setupRSSCron } from '@/queues/rss.queue'
 import { startSummaryWorker } from '@/queues/summary.queue'
 import { scheduleRSSCleanup } from '@/queues/rss-cleanup.queue'
-import '@/queues/rss-cleanup.worker' // Import worker to register it
+import { startRSSCleanupWorker } from '@/queues/rss-cleanup.worker'
 import { BackupService } from '@/services/backup.service'
 import { CleanupService } from '@/services/cleanup.service'
 import type { FastifyInstance } from 'fastify'
@@ -31,13 +31,21 @@ import { createApp } from './app'
 // Initialize Sentry as early as possible
 initializeSentry()
 
-// Initialize Redis (optional, app works without it)
-initializeRedis()
-
 let app: FastifyInstance | null = null
 
 async function start() {
   try {
+    // Initialize Redis (optional, app works without it)
+    initializeRedis()
+
+    // Wait for Redis to be ready BEFORE creating app
+    const redisReady = await waitForRedis(5000)
+    if (redisReady) {
+      logger.info('✅ Redis ready, starting server with full features')
+    } else {
+      logger.warn('⚠️  Redis not available, starting with limited features')
+    }
+
     // Create app
     app = await createApp()
 
@@ -50,9 +58,6 @@ async function start() {
 
     // Start automated backup job
     BackupService.startBackupJob(app)
-
-    // Wait for Redis to be ready before starting workers
-    await waitForRedis(5000)
 
     // Start Stripe webhook worker (unless explicitly disabled)
     if (process.env.DISABLE_STRIPE_WORKER === 'true') {
@@ -88,6 +93,10 @@ async function start() {
       } catch (error) {
         logger.error({ error }, '❌ Failed to queue initial RSS fetch')
       }
+
+      // Start RSS cleanup worker
+      startRSSCleanupWorker()
+      logger.info('✅ RSS cleanup worker started')
 
       // Schedule RSS cleanup (daily at 2 AM)
       try {

@@ -60,6 +60,7 @@ export function createStripeWebhookQueue(): Queue<StripeWebhookJob> | null {
 
 // Global queue instance
 let queue: Queue<StripeWebhookJob> | null = null
+let worker: Worker<StripeWebhookJob> | null = null
 
 /**
  * Get or create queue instance
@@ -135,6 +136,12 @@ async function processWebhookSync(event: Stripe.Event): Promise<void> {
  * Processes jobs from the queue
  */
 export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
+  // Prevent duplicate workers
+  if (worker) {
+    logger.warn('⚠️  Stripe webhook worker already running')
+    return worker
+  }
+
   if (!isRedisAvailable()) {
     logger.warn('⚠️  Redis not available, webhook worker not started')
     return null
@@ -146,8 +153,18 @@ export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
     return null
   }
 
+  // Get Redis connection URL from environment
+  const { env: envConfig } = require('@/config/env')
+  if (!envConfig.REDIS_URL) {
+    logger.warn('⚠️  Redis URL not configured, webhook worker not started')
+    return null
+  }
+
+  // Parse Redis URL for BullMQ connection options
+  const url = new URL(envConfig.REDIS_URL)
+
   try {
-    const worker = new Worker<StripeWebhookJob>(
+    worker = new Worker<StripeWebhookJob>(
       QUEUE_NAME,
       async (job) => {
         const startTime = Date.now()
@@ -195,7 +212,12 @@ export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
         }
       },
       {
-        connection: redis,
+        connection: {
+          host: url.hostname,
+          port: parseInt(url.port || '6379'),
+          password: url.password || undefined,
+          username: url.username || undefined,
+        },
         concurrency: 5, // Process 5 webhooks simultaneously
       }
     )
@@ -213,11 +235,10 @@ export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
       logger.error({ error: error }, '❌ Worker error:')
     })
 
-    logger.info('✅ Stripe webhook worker started (concurrency: 5)')
-
     return worker
   } catch (error) {
     logger.error({ error }, '❌ Failed to start Stripe webhook worker')
+    worker = null
     return null
   }
 }

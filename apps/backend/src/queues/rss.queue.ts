@@ -63,6 +63,7 @@ export function createRSSQueue(): Queue<RSSFeedJob> | null {
 
 // Global queue instance
 let queue: Queue<RSSFeedJob> | null = null
+let worker: Worker<RSSFeedJob> | null = null
 
 /**
  * Get or create queue instance
@@ -135,6 +136,12 @@ export async function setupRSSCron(): Promise<void> {
  * Processes jobs from the queue
  */
 export function startRSSWorker(): Worker<RSSFeedJob> | null {
+  // Prevent duplicate workers
+  if (worker) {
+    logger.warn('⚠️  RSS worker already running')
+    return worker
+  }
+
   if (!isRedisAvailable() || !env.REDIS_URL) {
     logger.warn('⚠️  Redis not available, RSS worker not started')
     return null
@@ -144,7 +151,7 @@ export function startRSSWorker(): Worker<RSSFeedJob> | null {
   const url = new URL(env.REDIS_URL)
 
   try {
-    const worker = new Worker<RSSFeedJob>(
+    worker = new Worker<RSSFeedJob>(
       QUEUE_NAME,
       async (job) => {
         logger.info(`📰 Processing RSS job: ${job.data.type} (${job.id})`)
@@ -180,11 +187,10 @@ export function startRSSWorker(): Worker<RSSFeedJob> | null {
       logger.error({ error }, '❌ RSS worker error')
     })
 
-    logger.info('✅ RSS feed worker started')
-
     return worker
   } catch (error) {
     logger.error({ error }, '❌ Failed to start RSS worker')
+    worker = null
     return null
   }
 }

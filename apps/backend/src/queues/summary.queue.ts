@@ -68,6 +68,7 @@ export function createSummaryQueue(): Queue<SummaryJob> | null {
 
 // Global queue instance
 let queue: Queue<SummaryJob> | null = null
+let worker: Worker<SummaryJob> | null = null
 
 /**
  * Get or create queue instance
@@ -101,6 +102,12 @@ export async function queueSummary(data: SummaryJob): Promise<{ id: string }> {
  * Processes jobs from the queue
  */
 export function startSummaryWorker(): Worker<SummaryJob> | null {
+  // Prevent duplicate workers
+  if (worker) {
+    logger.warn('⚠️  Summary worker already running')
+    return worker
+  }
+
   if (!isRedisAvailable() || !env.REDIS_URL) {
     logger.warn('⚠️  Redis not available, summary worker not started')
     return null
@@ -110,7 +117,7 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
   const url = new URL(env.REDIS_URL)
 
   try {
-    const worker = new Worker<SummaryJob>(
+    worker = new Worker<SummaryJob>(
       QUEUE_NAME,
       async (job) => {
         logger.info(`🤖 Processing summary job: ${job.id}`)
@@ -150,11 +157,10 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
       logger.error({ error }, '❌ Summary worker error')
     })
 
-    logger.info('✅ Summary worker started')
-
     return worker
   } catch (error) {
     logger.error({ error }, '❌ Failed to start summary worker')
+    worker = null
     return null
   }
 }
