@@ -2,6 +2,7 @@ import { logger } from '@/utils/logger'
 import { Queue, Worker } from 'bullmq'
 import { getRedis, isRedisAvailable } from '@/config/redis'
 import { stripeService } from '@/services/stripe.service'
+import { env } from '@/config/env'
 import type Stripe from 'stripe'
 
 /**
@@ -154,14 +155,13 @@ export function startStripeWebhookWorker(): Worker<StripeWebhookJob> | null {
   }
 
   // Get Redis connection URL from environment
-  const { env: envConfig } = require('@/config/env')
-  if (!envConfig.REDIS_URL) {
+  if (!env.REDIS_URL) {
     logger.warn('⚠️  Redis URL not configured, webhook worker not started')
     return null
   }
 
   // Parse Redis URL for BullMQ connection options
-  const url = new URL(envConfig.REDIS_URL)
+  const url = new URL(env.REDIS_URL)
 
   try {
     worker = new Worker<StripeWebhookJob>(
