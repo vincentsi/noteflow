@@ -318,20 +318,44 @@ async function seedRSSFeeds() {
     },
   ]
 
+  let created = 0
+  let skipped = 0
+  let errors = 0
+
   for (const feed of feeds) {
     try {
-      const created = await prisma.rSSFeed.upsert({
+      const result = await prisma.rSSFeed.upsert({
         where: { name: feed.name },
         update: { url: feed.url, tags: feed.tags, active: feed.active },
         create: feed,
       })
-      console.log(`✅ ${created.name}`)
-    } catch {
-      console.log(`⚠️  Skipped ${feed.name} (already exists with different constraints)`)
+      console.log(`✅ ${result.name}`)
+      created++
+    } catch (error) {
+      // Try to create directly if upsert fails
+      try {
+        await prisma.rSSFeed.create({
+          data: feed,
+        })
+        console.log(`✅ ${feed.name} (created after upsert failed)`)
+        created++
+      } catch (createError: any) {
+        if (createError.code === 'P2002') {
+          console.log(`⚠️  Skipped ${feed.name} (already exists)`)
+          skipped++
+        } else {
+          console.error(`❌ Error with ${feed.name}:`, createError.message)
+          errors++
+        }
+      }
     }
   }
 
-  console.log(`\n🎉 Seeded ${feeds.length} RSS feeds!`)
+  console.log(`\n🎉 Seeding complete!`)
+  console.log(`   Created: ${created}`)
+  console.log(`   Skipped: ${skipped}`)
+  console.log(`   Errors: ${errors}`)
+  console.log(`   Total feeds: ${feeds.length}`)
 }
 
 seedRSSFeeds()
