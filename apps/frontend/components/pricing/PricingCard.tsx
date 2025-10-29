@@ -21,13 +21,7 @@ export function PricingCard({ planType, currentPlan = 'FREE' }: PricingCardProps
     if (!plan.priceId || planType === 'FREE') return
 
     setIsProcessing(true)
-    try {
-      await createCheckoutSession(plan.priceId, planType)
-    } catch (error) {
-      // Reset processing state on error
-      setIsProcessing(false)
-      console.error('Checkout error:', error)
-    }
+    await createCheckoutSession(plan.priceId, planType)
   }
 
   return (
