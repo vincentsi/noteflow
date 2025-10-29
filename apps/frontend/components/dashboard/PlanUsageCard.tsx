@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useI18n } from '@/lib/i18n/provider'
 
 interface UsageStats {
   articles: {
@@ -46,6 +47,7 @@ function ProgressBar({ value, max, isNearLimit }: { value: number; max: number |
 }
 
 export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
+  const { t } = useI18n()
   const isPro = plan === 'PRO'
 
   // Check if any usage is near limit (>= 80%)
@@ -56,23 +58,23 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
     stats.notes.limit && stats.notes.current / stats.notes.limit >= 0.8)
 
   const formatLimit = (limit: number | null) => {
-    if (limit === null) return 'Illimité'
+    if (limit === null) return t('dashboard.planUsage.unlimited')
     return limit.toString()
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Utilisation du plan</CardTitle>
+        <CardTitle>{t('dashboard.planUsage.title')}</CardTitle>
         <CardDescription>
-          Votre utilisation actuelle des ressources
+          {t('dashboard.planUsage.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Articles */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Articles sauvegardés</span>
+            <span className="font-medium">{t('dashboard.planUsage.savedArticles')}</span>
             <span className="text-muted-foreground">
               {stats.articles.current} / {formatLimit(stats.articles.limit)}
             </span>
@@ -85,7 +87,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
           {stats.articles.current > 0 && (
             <Button asChild variant="outline" size="sm" className="w-full mt-2">
               <Link href="/veille?saved=true">
-                Voir mes articles sauvegardés
+                {t('dashboard.planUsage.viewSavedArticles')}
               </Link>
             </Button>
           )}
@@ -94,7 +96,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
         {/* Summaries */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Résumés (ce mois)</span>
+            <span className="font-medium">{t('dashboard.planUsage.summariesThisMonth')}</span>
             <span className="text-muted-foreground">
               {stats.summaries.current} / {formatLimit(stats.summaries.limit)}
             </span>
@@ -107,7 +109,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
           {stats.summaries.current > 0 && (
             <Button asChild variant="outline" size="sm" className="w-full mt-2">
               <Link href="/summaries?my=true">
-                Voir mes résumés
+                {t('dashboard.planUsage.viewSummaries')}
               </Link>
             </Button>
           )}
@@ -116,7 +118,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
         {/* Notes */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Notes</span>
+            <span className="font-medium">{t('dashboard.planUsage.notes')}</span>
             <span className="text-muted-foreground">
               {stats.notes.current} / {formatLimit(stats.notes.limit)}
             </span>
@@ -129,7 +131,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
           {stats.notes.current > 0 && (
             <Button asChild variant="outline" size="sm" className="w-full mt-2">
               <Link href="/notes?my=true">
-                Voir mes notes
+                {t('dashboard.planUsage.viewNotes')}
               </Link>
             </Button>
           )}
@@ -140,14 +142,14 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
           <div className="pt-4 border-t">
             <div className="rounded-lg bg-muted p-4 space-y-2">
               <p className="text-sm font-medium">
-                Vous approchez de vos limites
+                {t('dashboard.planUsage.nearLimit')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Passez à un plan supérieur pour augmenter vos quotas
+                {t('dashboard.planUsage.nearLimitDescription')}
               </p>
               <Button asChild className="w-full">
                 <Link href="/pricing">
-                  Voir les plans
+                  {t('dashboard.planUsage.viewPlans')}
                 </Link>
               </Button>
             </div>
@@ -159,7 +161,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
           <div className="pt-4 border-t">
             <div className="rounded-lg bg-primary/10 p-4 text-center">
               <p className="text-sm font-medium text-primary">
-                ✨ Plan PRO - Utilisation illimitée
+                {t('dashboard.planUsage.proUnlimited')}
               </p>
             </div>
           </div>

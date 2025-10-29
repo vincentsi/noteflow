@@ -67,6 +67,37 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground dark:text-gray-400 mb-4">
               {t('dashboard.subscription.currentPlan', { plan: user?.planType || 'FREE' })}
             </p>
+
+            {/* Display subscription end date and days remaining for paid plans */}
+            {user?.planType !== 'FREE' && user?.currentPeriodEnd && (
+              <div className="mb-4 p-3 bg-muted rounded-lg">
+                <div className="text-sm space-y-1">
+                  {(() => {
+                    const endDate = new Date(user.currentPeriodEnd)
+                    const today = new Date()
+                    const daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+                    return (
+                      <>
+                        <p className="font-medium text-foreground">
+                          {t('dashboard.planUsage.daysRemaining', { count: daysRemaining, days: daysRemaining })}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {t('dashboard.planUsage.renewsOn', {
+                            date: endDate.toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                          })}
+                        </p>
+                      </>
+                    )
+                  })()}
+                </div>
+              </div>
+            )}
+
             <Button
               onClick={() => router.push('/pricing')}
               variant="outline"

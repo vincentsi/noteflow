@@ -127,6 +127,25 @@
   "dashboard": {
     "title": "Tableau de bord",
     "welcome": "Bienvenue {{name}}",
+    "planUsage": {
+      "title": "Utilisation du plan",
+      "description": "Votre utilisation actuelle des ressources",
+      "savedArticles": "Articles sauvegardés",
+      "summariesThisMonth": "Résumés (ce mois)",
+      "notes": "Notes",
+      "unlimited": "Illimité",
+      "viewSavedArticles": "Voir mes articles sauvegardés",
+      "viewSummaries": "Voir mes résumés",
+      "viewNotes": "Voir mes notes",
+      "nearLimit": "Vous approchez de vos limites",
+      "nearLimitDescription": "Passez à un plan supérieur pour augmenter vos quotas",
+      "viewPlans": "Voir les plans",
+      "proUnlimited": "✨ Plan PRO - Utilisation illimitée",
+      "daysRemaining": "{{days}} jour restant",
+      "daysRemaining_plural": "{{days}} jours restants",
+      "expiresOn": "Expire le {{date}}",
+      "renewsOn": "Renouvelle le {{date}}"
+    },
     "userInfo": {
       "title": "Informations utilisateur",
       "email": "Email",

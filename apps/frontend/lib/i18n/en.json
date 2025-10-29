@@ -127,6 +127,25 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome {{name}}",
+    "planUsage": {
+      "title": "Plan Usage",
+      "description": "Your current resource usage",
+      "savedArticles": "Saved articles",
+      "summariesThisMonth": "Summaries (this month)",
+      "notes": "Notes",
+      "unlimited": "Unlimited",
+      "viewSavedArticles": "View my saved articles",
+      "viewSummaries": "View my summaries",
+      "viewNotes": "View my notes",
+      "nearLimit": "You're approaching your limits",
+      "nearLimitDescription": "Upgrade to a higher plan to increase your quotas",
+      "viewPlans": "View plans",
+      "proUnlimited": "✨ PRO Plan - Unlimited usage",
+      "daysRemaining": "{{days}} days remaining",
+      "daysRemaining_plural": "{{days}} days remaining",
+      "expiresOn": "Expires on {{date}}",
+      "renewsOn": "Renews on {{date}}"
+    },
     "userInfo": {
       "title": "User Information",
       "email": "Email",
