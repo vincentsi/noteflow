@@ -48,11 +48,12 @@ export default function GDPRSettingsPage() {
       URL.revokeObjectURL(url)
 
       toast.success('Your data has been exported successfully')
-    } catch (error: any) {
+    } catch (error: unknown) {
       logError(error, 'GDPR Data Export')
 
       // Show specific error message if available
-      const errorMessage = error.response?.data?.error || error.message || 'Failed to export data. Please try again.'
+      const err = error as { response?: { data?: { error?: string } }; message?: string }
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to export data. Please try again.'
       toast.error(errorMessage)
     } finally {
       setIsExporting(false)
