@@ -1,6 +1,6 @@
 import { prisma } from '@/config/prisma'
 import type { Article, SavedArticle, Prisma } from '@prisma/client'
-import { paginateQuery, type PaginatedResult } from '@/utils/generic-pagination'
+import type { PaginatedResult } from '@/utils/generic-pagination'
 
 /**
  * Article Repository
@@ -75,12 +75,33 @@ export class ArticleRepository {
       }
     }
 
-    return paginateQuery<Article>(prisma.article, {
-      where,
-      orderBy: orderBy || { publishedAt: 'desc' },
+    // Calculate skip
+    const skip = (page - 1) * limit
+
+    // Execute query and count in parallel
+    const [data, total] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        orderBy: orderBy || { publishedAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.article.count({ where }),
+    ])
+
+    const totalPages = Math.ceil(total / limit)
+    const hasNext = page < totalPages
+    const hasPrev = page > 1
+
+    return {
+      data,
+      total,
       page,
       limit,
-    })
+      totalPages,
+      hasNext,
+      hasPrev,
+    }
   }
 
   /**
@@ -157,13 +178,34 @@ export class ArticleRepository {
       }
     }
 
-    return paginateQuery<SavedArticle & { article: Article }>(prisma.savedArticle, {
-      where,
-      include: { article: true },
-      orderBy: { createdAt: 'desc' },
+    // Calculate skip
+    const skip = (page - 1) * limit
+
+    // Execute query and count in parallel
+    const [data, total] = await Promise.all([
+      prisma.savedArticle.findMany({
+        where,
+        include: { article: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.savedArticle.count({ where }),
+    ])
+
+    const totalPages = Math.ceil(total / limit)
+    const hasNext = page < totalPages
+    const hasPrev = page > 1
+
+    return {
+      data,
+      total,
       page,
       limit,
-    })
+      totalPages,
+      hasNext,
+      hasPrev,
+    }
   }
 
   /**
