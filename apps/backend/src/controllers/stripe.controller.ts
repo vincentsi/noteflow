@@ -3,6 +3,7 @@ import { stripeService } from '@/services/stripe.service'
 import { PlanType } from '@prisma/client'
 import { z } from 'zod'
 import { requireAuth } from '@/utils/require-auth'
+import { env } from '@/config/env'
 
 /**
  * Controller for Stripe routes
@@ -81,10 +82,14 @@ export class StripeController {
       })
     } catch (error) {
       if (error instanceof z.ZodError) {
+        // SECURITY: Log detailed validation errors but don't expose schema structure to clients
+        request.log.warn({ zodError: error.issues }, 'Validation error in Stripe checkout')
+
         return reply.status(400).send({
           success: false,
           error: 'Invalid request body',
-          details: error.issues,
+          // Only include details in development to help with debugging
+          ...(env.NODE_ENV === 'development' && { details: error.issues }),
         })
       }
 
