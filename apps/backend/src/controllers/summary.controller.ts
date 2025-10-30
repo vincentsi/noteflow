@@ -271,6 +271,7 @@ export class SummaryController {
     userId: string,
     reply: FastifyReply
   ) {
+    // BullMQ uses 'returnvalue' (lowercase) not 'returnValue'
     const returnValue = job.returnvalue
     const summaryId = returnValue?.summaryId
 

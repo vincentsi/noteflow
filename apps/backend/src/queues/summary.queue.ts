@@ -119,11 +119,12 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
   try {
     worker = new Worker<SummaryJob>(
       QUEUE_NAME,
-      async (job) => {
+      async job => {
         logger.info(`🤖 Processing summary job: ${job.id}`)
 
         try {
-          await processSummary(job.data)
+          const result = await processSummary(job.data)
+          return result // Return the summaryId so it's available in job.returnvalue
         } catch (error) {
           logger.error({ error }, 'Failed to process summary')
           throw error // Will trigger retry
@@ -145,7 +146,7 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
     )
 
     // Event listeners
-    worker.on('completed', (job) => {
+    worker.on('completed', job => {
       logger.info(`✅ Summary job ${job.id} completed`)
     })
 
@@ -153,7 +154,7 @@ export function startSummaryWorker(): Worker<SummaryJob> | null {
       logger.error({ error: error.message, jobId: job?.id }, 'Summary job failed')
     })
 
-    worker.on('error', (error) => {
+    worker.on('error', error => {
       logger.error({ error }, '❌ Summary worker error')
     })
 
