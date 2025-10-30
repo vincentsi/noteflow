@@ -172,6 +172,14 @@
       "TOP3": "Top 3",
       "MAIN_POINTS": "Main Points"
     },
+    "styleDescriptions": {
+      "SHORT": "Short summary in 2-3 sentences",
+      "TWEET": "Twitter format (280 characters)",
+      "THREAD": "Twitter thread in multiple tweets",
+      "BULLET_POINT": "Key points as bullet list",
+      "TOP3": "Top 3 essential points",
+      "MAIN_POINTS": "All main points"
+    },
     "planUsage": {
       "title": "Plan Usage",
       "summariesThisMonth": "Summaries this month",
@@ -186,6 +194,19 @@
       "styleLabel": "Summary style",
       "submitButton": "Generate summary",
       "generating": "Generating...",
+      "sourceTitle": "Source",
+      "sourceDescription": "Choose the type of content to summarize",
+      "urlLabel": "URL",
+      "pdfLabel": "PDF",
+      "contentTitle": "Content",
+      "contentDescriptionUrl": "Enter the URL of the article to summarize",
+      "contentDescriptionPdf": "Upload your PDF file",
+      "urlAriaLabel": "URL of article to summarize",
+      "choosePdfFile": "Choose PDF file",
+      "choosePdfAriaLabel": "Choose PDF file",
+      "fileSelected": "File selected: {{filename}}",
+      "styleTitle": "Summary style",
+      "styleDescription": "Choose the format of your summary",
       "errors": {
         "planLimitReached": "Plan limit reached. Please upgrade your plan.",
         "creationFailed": "Error creating summary",
@@ -207,6 +228,7 @@
       "back": "Back",
       "viewDetails": "View details",
       "delete": "Delete",
+      "deleteAriaLabel": "Delete summary",
       "share": "Share"
     },
     "messages": {
@@ -234,12 +256,15 @@
     "title": "PowerNote",
     "subtitle": "Your Markdown notes",
     "myNotes": "My notes",
+    "notesCount": "{{count}} note",
+    "notesCount_plural": "{{count}} notes",
     "createNote": "New note",
     "searchPlaceholder": "Search notes...",
     "filterByTag": "Filter by tag",
     "allTags": "All tags",
     "empty": "No notes",
     "emptySubtitle": "Create your first note to get started",
+    "emptyMessage": "No notes yet. Create your first note above.",
     "editor": {
       "titlePlaceholder": "Note title",
       "contentPlaceholder": "Start writing...",
@@ -458,7 +483,14 @@
     "savedArticlesCount_plural": "{{count}} saved articles",
     "filters": {
       "source": "Source",
-      "allSources": "All sources"
+      "allSources": "All sources",
+      "search": "🔍 Search",
+      "searchPlaceholder": "Search in titles and content...",
+      "dateRange": "📅 Period",
+      "allDates": "All dates",
+      "last24h": "Last 24h",
+      "last7days": "Last 7 days",
+      "last30days": "Last 30 days"
     },
     "planUsage": {
       "title": "Plan Usage",
@@ -498,6 +530,64 @@
       "upgrade": "Upgrade Plan",
       "change": "Change Plan",
       "backToDashboard": "Back to Dashboard"
+    }
+  },
+  "gdpr": {
+    "title": "GDPR & Privacy",
+    "subtitle": "Manage your personal data and privacy settings",
+    "messages": {
+      "exportSuccess": "Your data has been exported successfully",
+      "exportError": "Failed to export data. Please try again.",
+      "emailNotFound": "User email not found",
+      "emailMismatch": "Email does not match your account email",
+      "deleteSuccess": "Your account has been deleted successfully",
+      "rateLimitError": "You can only request account deletion once per day",
+      "deleteError": "Failed to delete account. Please try again."
+    },
+    "export": {
+      "title": "Export Your Data",
+      "description": "Download a copy of all your personal data stored in our system",
+      "explanation": "You have the right to receive a copy of your personal data in a structured, commonly used, and machine-readable format (JSON).",
+      "exporting": "Exporting...",
+      "button": "Export My Data"
+    },
+    "rights": {
+      "title": "Your Rights",
+      "description": "Under GDPR, you have the following rights",
+      "access": "✓ Right to access your personal data",
+      "rectification": "✓ Right to rectification of inaccurate data",
+      "erasure": "✓ Right to erasure (\"right to be forgotten\")",
+      "restriction": "✓ Right to restriction of processing",
+      "portability": "✓ Right to data portability",
+      "objection": "✓ Right to object to processing"
+    },
+    "dataCollection": {
+      "title": "Data We Collect",
+      "description": "Information we store about you",
+      "account": "• Account information (email, name)",
+      "auth": "• Authentication data (hashed passwords, tokens)",
+      "subscription": "• Subscription information",
+      "content": "• Content data (notes, summaries, saved articles)",
+      "usage": "• Usage data and logs",
+      "payment": "• Payment information (processed by Stripe)"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "description": "Permanently delete your account and all associated data",
+      "warning": "Warning: This action cannot be undone. All your data will be permanently deleted from our systems, including your Stripe subscription.",
+      "button": "Delete My Account",
+      "dialogTitle": "Delete Account",
+      "dialogDescription": "This action is IRREVERSIBLE. All your data will be permanently deleted:",
+      "itemAccount": "Your account and profile",
+      "itemNotes": "All your notes and summaries",
+      "itemArticles": "All saved articles",
+      "itemSubscription": "Your Stripe subscription",
+      "confirmEmailLabel": "Confirm your email to continue",
+      "emailPlaceholder": "your@email.com",
+      "reasonLabel": "Reason for deletion (optional)",
+      "reasonPlaceholder": "Help us improve...",
+      "deleting": "Deleting...",
+      "confirmButton": "Delete Account Permanently"
     }
   }
 }

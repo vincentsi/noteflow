@@ -172,6 +172,14 @@
       "TOP3": "Top 3",
       "MAIN_POINTS": "Points principaux"
     },
+    "styleDescriptions": {
+      "SHORT": "Résumé court en 2-3 phrases",
+      "TWEET": "Format Twitter (280 caractères)",
+      "THREAD": "Thread Twitter en plusieurs tweets",
+      "BULLET_POINT": "Points clés à puces",
+      "TOP3": "Top 3 des points essentiels",
+      "MAIN_POINTS": "Tous les points principaux"
+    },
     "planUsage": {
       "title": "Utilisation du plan",
       "summariesThisMonth": "Résumés ce mois",
@@ -186,6 +194,19 @@
       "styleLabel": "Style de résumé",
       "submitButton": "Générer le résumé",
       "generating": "Génération...",
+      "sourceTitle": "Source",
+      "sourceDescription": "Choisissez le type de contenu à résumer",
+      "urlLabel": "URL",
+      "pdfLabel": "PDF",
+      "contentTitle": "Contenu",
+      "contentDescriptionUrl": "Entrez l'URL de l'article à résumer",
+      "contentDescriptionPdf": "Uploadez votre fichier PDF",
+      "urlAriaLabel": "URL de l'article à résumer",
+      "choosePdfFile": "Choisir un fichier PDF",
+      "choosePdfAriaLabel": "Choisir un fichier PDF",
+      "fileSelected": "Fichier sélectionné: {{filename}}",
+      "styleTitle": "Style de résumé",
+      "styleDescription": "Choisissez le format de votre résumé",
       "errors": {
         "planLimitReached": "Limite du plan atteinte. Veuillez mettre à niveau votre plan.",
         "creationFailed": "Erreur lors de la création du résumé",
@@ -207,6 +228,7 @@
       "back": "Retour",
       "viewDetails": "Voir les détails",
       "delete": "Supprimer",
+      "deleteAriaLabel": "Supprimer le résumé",
       "share": "Partager"
     },
     "messages": {
@@ -234,12 +256,15 @@
     "title": "PowerNote",
     "subtitle": "Vos notes en Markdown",
     "myNotes": "Mes notes",
+    "notesCount": "{{count}} note",
+    "notesCount_plural": "{{count}} notes",
     "createNote": "Nouvelle note",
     "searchPlaceholder": "Rechercher des notes...",
     "filterByTag": "Filtrer par tag",
     "allTags": "Tous les tags",
     "empty": "Aucune note",
     "emptySubtitle": "Créez votre première note pour commencer",
+    "emptyMessage": "Aucune note pour le moment. Créez votre première note ci-dessus.",
     "editor": {
       "titlePlaceholder": "Titre de la note",
       "contentPlaceholder": "Commencez à écrire...",
@@ -458,7 +483,14 @@
     "savedArticlesCount_plural": "{{count}} articles sauvegardés",
     "filters": {
       "source": "Source",
-      "allSources": "Toutes les sources"
+      "allSources": "Toutes les sources",
+      "search": "🔍 Rechercher",
+      "searchPlaceholder": "Rechercher dans les titres et contenus...",
+      "dateRange": "📅 Période",
+      "allDates": "Toutes les dates",
+      "last24h": "Dernières 24h",
+      "last7days": "7 derniers jours",
+      "last30days": "30 derniers jours"
     },
     "planUsage": {
       "title": "Utilisation du plan",
@@ -498,6 +530,64 @@
       "upgrade": "Mettre à niveau",
       "change": "Changer de plan",
       "backToDashboard": "Retour au tableau de bord"
+    }
+  },
+  "gdpr": {
+    "title": "RGPD & Confidentialité",
+    "subtitle": "Gérez vos données personnelles et paramètres de confidentialité",
+    "messages": {
+      "exportSuccess": "Vos données ont été exportées avec succès",
+      "exportError": "Échec de l'export des données. Veuillez réessayer.",
+      "emailNotFound": "Email utilisateur introuvable",
+      "emailMismatch": "L'email ne correspond pas à l'email de votre compte",
+      "deleteSuccess": "Votre compte a été supprimé avec succès",
+      "rateLimitError": "Vous ne pouvez demander la suppression de compte qu'une fois par jour",
+      "deleteError": "Échec de la suppression du compte. Veuillez réessayer."
+    },
+    "export": {
+      "title": "Exporter vos données",
+      "description": "Téléchargez une copie de toutes vos données personnelles stockées dans notre système",
+      "explanation": "Vous avez le droit de recevoir une copie de vos données personnelles dans un format structuré, couramment utilisé et lisible par machine (JSON).",
+      "exporting": "Export en cours...",
+      "button": "Exporter mes données"
+    },
+    "rights": {
+      "title": "Vos droits",
+      "description": "Selon le RGPD, vous disposez des droits suivants",
+      "access": "✓ Droit d'accès à vos données personnelles",
+      "rectification": "✓ Droit de rectification des données inexactes",
+      "erasure": "✓ Droit à l'effacement (« droit à l'oubli »)",
+      "restriction": "✓ Droit de limitation du traitement",
+      "portability": "✓ Droit à la portabilité des données",
+      "objection": "✓ Droit d'opposition au traitement"
+    },
+    "dataCollection": {
+      "title": "Données collectées",
+      "description": "Informations que nous stockons sur vous",
+      "account": "• Informations du compte (email, nom)",
+      "auth": "• Données d'authentification (mots de passe hachés, tokens)",
+      "subscription": "• Informations d'abonnement",
+      "content": "• Données de contenu (notes, résumés, articles sauvegardés)",
+      "usage": "• Données d'utilisation et journaux",
+      "payment": "• Informations de paiement (traitées par Stripe)"
+    },
+    "deleteAccount": {
+      "title": "Supprimer le compte",
+      "description": "Supprimer définitivement votre compte et toutes les données associées",
+      "warning": "Attention : Cette action est irréversible. Toutes vos données seront définitivement supprimées de nos systèmes, y compris votre abonnement Stripe.",
+      "button": "Supprimer mon compte",
+      "dialogTitle": "Supprimer le compte",
+      "dialogDescription": "Cette action est IRRÉVERSIBLE. Toutes vos données seront définitivement supprimées :",
+      "itemAccount": "Votre compte et profil",
+      "itemNotes": "Toutes vos notes et résumés",
+      "itemArticles": "Tous les articles sauvegardés",
+      "itemSubscription": "Votre abonnement Stripe",
+      "confirmEmailLabel": "Confirmez votre email pour continuer",
+      "emailPlaceholder": "votre@email.com",
+      "reasonLabel": "Raison de la suppression (optionnel)",
+      "reasonPlaceholder": "Aidez-nous à nous améliorer...",
+      "deleting": "Suppression...",
+      "confirmButton": "Supprimer définitivement le compte"
     }
   }
 }
