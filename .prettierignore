@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Coverage
+coverage
+
+# Prisma
+**/prisma/migrations
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Cache
+.turbo
+.eslintcache
+
+# Markdown (optional - remove if you want to format MD files)
+*.md
