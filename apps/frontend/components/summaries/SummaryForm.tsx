@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Link, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/provider'
 
 type SourceType = 'url' | 'pdf'
 
@@ -26,6 +27,7 @@ export interface SummaryFormProps {
 const MIN_URL_LENGTH = 10
 
 export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: SummaryFormProps) {
+  const { t } = useI18n()
   const [source, setSource] = useState<SourceType>('url')
   const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -71,8 +73,8 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       {/* Source Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>Source</CardTitle>
-          <CardDescription>Choisissez le type de contenu à résumer</CardDescription>
+          <CardTitle>{t('summaries.form.sourceTitle')}</CardTitle>
+          <CardDescription>{t('summaries.form.sourceDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
@@ -89,7 +91,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
             >
               <Link className={cn('h-6 w-6', source === 'url' ? 'text-primary' : 'text-muted-foreground')} />
               <span className={cn('font-medium', source === 'url' ? 'text-primary' : 'text-foreground')}>
-                URL
+                {t('summaries.form.urlLabel')}
               </span>
             </button>
 
@@ -106,7 +108,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
             >
               <Upload className={cn('h-6 w-6', source === 'pdf' ? 'text-primary' : 'text-muted-foreground')} />
               <span className={cn('font-medium', source === 'pdf' ? 'text-primary' : 'text-foreground')}>
-                PDF
+                {t('summaries.form.pdfLabel')}
               </span>
             </button>
           </div>
@@ -116,11 +118,11 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       {/* Content Input */}
       <Card>
         <CardHeader>
-          <CardTitle>Contenu</CardTitle>
+          <CardTitle>{t('summaries.form.contentTitle')}</CardTitle>
           <CardDescription>
             {source === 'url'
-              ? 'Entrez l\'URL de l\'article à résumer'
-              : 'Uploadez votre fichier PDF'}
+              ? t('summaries.form.contentDescriptionUrl')
+              : t('summaries.form.contentDescriptionPdf')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -131,10 +133,10 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/article"
+              placeholder={t('summaries.form.urlPlaceholder')}
               className="w-full h-12 px-4 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               disabled={isLoading}
-              aria-label="URL de l'article à résumer"
+              aria-label={t('summaries.form.urlAriaLabel')}
             />
           ) : (
             <div className="space-y-4">
@@ -144,7 +146,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
                   className="flex items-center gap-2 px-4 py-2 rounded-lg border border-input bg-background cursor-pointer hover:bg-accent transition-colors"
                 >
                   <Upload className="h-4 w-4" />
-                  <span>Choisir un fichier PDF</span>
+                  <span>{t('summaries.form.choosePdfFile')}</span>
                 </Label>
                 <input
                   id="pdf-upload"
@@ -153,12 +155,12 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
                   onChange={handleFileChange}
                   className="sr-only"
                   disabled={isLoading}
-                  aria-label="Choisir un fichier PDF"
+                  aria-label={t('summaries.form.choosePdfAriaLabel')}
                 />
               </div>
               {file && (
                 <p className="text-sm text-muted-foreground">
-                  Fichier sélectionné: {file.name}
+                  {t('summaries.form.fileSelected', { filename: file.name })}
                 </p>
               )}
             </div>
@@ -169,8 +171,8 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       {/* Style Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>Style de résumé</CardTitle>
-          <CardDescription>Choisissez le format de votre résumé</CardDescription>
+          <CardTitle>{t('summaries.form.styleTitle')}</CardTitle>
+          <CardDescription>{t('summaries.form.styleDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <StyleSelector value={style} onChange={setStyle} />
@@ -184,7 +186,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
         className="w-full"
         disabled={!isValid || isLoading}
       >
-        {isLoading ? 'Génération en cours...' : 'Générer le résumé'}
+        {isLoading ? t('summaries.form.generating') : t('summaries.form.submitButton')}
       </Button>
     </form>
   )

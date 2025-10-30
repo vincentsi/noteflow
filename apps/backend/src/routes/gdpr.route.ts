@@ -34,40 +34,21 @@ export const gdprRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
           max: 5,
           timeWindow: '1 hour',
           keyGenerator: req => `gdpr:export:${req.user?.userId || req.ip}`,
-          errorResponseBuilder: () => ({
-            success: false,
-            error: 'Rate limit exceeded. You can export data 5 times per hour.',
-          }),
+          errorResponseBuilder: () => {
+            const error = new Error(
+              'Limite de taux dépassée. Vous pouvez exporter vos données 5 fois par heure. Veuillez réessayer dans quelques minutes.'
+            ) as Error & { statusCode: number }
+            error.statusCode = 429
+            throw error
+          },
         },
       },
       schema: {
         description: 'Export all personal data associated with your account (GDPR Article 20)',
         tags: ['gdpr'],
         security: [{ bearerAuth: [] }],
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              message: { type: 'string' },
-              data: {
-                type: 'object',
-                properties: {
-                  user: { type: 'object' },
-                  metadata: { type: 'object' },
-                  personalData: { type: 'object' },
-                },
-              },
-            },
-          },
-          401: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              error: { type: 'string' },
-            },
-          },
-        },
+        // Response validation disabled for GDPR export to allow all user data
+        // response: { ... }
       },
     },
     gdprController.exportUserData

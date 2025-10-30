@@ -176,13 +176,13 @@ describe('GDPRService', () => {
       prismaMock.subscription.count.mockResolvedValue(1)
 
       // Simulate Stripe API failure
-      jest.spyOn(stripeService, 'deleteCustomer').mockRejectedValue(
-        new Error('Stripe API error: Customer not found')
-      )
+      jest
+        .spyOn(stripeService, 'deleteCustomer')
+        .mockRejectedValue(new Error('Stripe API error: Customer not found'))
 
-      await expect(
-        gdprService.deleteUserData(userId)
-      ).rejects.toThrow('Failed to delete payment data. Aborting user deletion for GDPR compliance.')
+      await expect(gdprService.deleteUserData(userId)).rejects.toThrow(
+        'Failed to delete payment data. Aborting user deletion for GDPR compliance.'
+      )
 
       // Verify user was NOT deleted from database
       expect(prismaMock.user.delete).not.toHaveBeenCalled()
@@ -193,9 +193,7 @@ describe('GDPRService', () => {
 
       prismaMock.user.findUnique.mockResolvedValue(null)
 
-      await expect(
-        gdprService.deleteUserData(userId)
-      ).rejects.toThrow('User not found')
+      await expect(gdprService.deleteUserData(userId)).rejects.toThrow('User not found')
     })
   })
 
@@ -227,6 +225,10 @@ describe('GDPRService', () => {
         resetTokens: [],
         csrfTokens: [],
         subscriptions: [],
+        savedArticles: [],
+        summaries: [],
+        notes: [],
+        posts: [],
       }
 
       prismaMock.user.findUnique.mockResolvedValue(mockUserData)

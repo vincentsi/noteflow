@@ -93,8 +93,7 @@ export async function errorHandler(
 
   // JWT errors (expired, invalid, etc.)
   if (
-    error.message.includes('jwt') ||
-    error.message.includes('token') ||
+    (error.message && (error.message.includes('jwt') || error.message.includes('token'))) ||
     error.name === 'JsonWebTokenError' ||
     error.name === 'TokenExpiredError'
   ) {
@@ -104,11 +103,15 @@ export async function errorHandler(
     })
   }
 
-  // Rate limit errors
-  if (error.statusCode === 429) {
+  // Rate limit errors - detect by message content (GDPR endpoints use French messages)
+  if (
+    error.statusCode === 429 ||
+    (error.message && error.message.includes('Limite de taux dépassée')) ||
+    (error.message && error.message.includes('Rate limit exceeded'))
+  ) {
     return reply.status(429).send({
       success: false,
-      error: 'Too many requests, please try again later',
+      error: error.message || 'Too many requests, please try again later',
     })
   }
 

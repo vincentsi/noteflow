@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { ArticleCard } from './ArticleCard'
-import { useTranslation } from '@/lib/hooks/useTranslation'
+import { useI18n } from '@/lib/i18n/provider'
 import type { Article } from '@/types'
 import { Newspaper } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -14,7 +14,7 @@ export interface ArticleListProps {
 }
 
 export const ArticleList = memo(function ArticleList({ articles, savedArticleIds = new Set(), onSave, onUnsave, isLoading = false }: ArticleListProps) {
-  const { t } = useTranslation()
+  const { t } = useI18n()
 
   // Loading skeleton
   if (isLoading && articles.length === 0) {

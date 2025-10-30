@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/providers/auth.provider'
-import { apiClient } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,7 +34,7 @@ const settingsSchema = z.object({
 type SettingsFormData = z.infer<typeof settingsSchema>
 
 export default function SettingsPage() {
-  const { t } = useI18n()
+  const { t, setLanguage } = useI18n()
   const { user, isLoading } = useAuth()
   const queryClient = useQueryClient()
   const [updateSuccess, setUpdateSuccess] = useState(false)
@@ -49,11 +48,10 @@ export default function SettingsPage() {
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
-      await apiClient.patch('/api/users/me', {
-        language: data.language,
-      })
+      // Update language in i18n provider (syncs with backend and localStorage)
+      await setLanguage(data.language)
 
-      // Invalidate cache to force refetch
+      // Invalidate cache to force refetch user data
       await queryClient.invalidateQueries({ queryKey: ['me'] })
 
       setUpdateSuccess(true)

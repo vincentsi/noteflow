@@ -66,8 +66,10 @@ describe('ArticleService', () => {
       prismaMock.savedArticle.findMany.mockResolvedValue([])
 
       await articleService.getUserSavedArticles(userId, {
-        skip: 10,
-        take: 5,
+        pagination: {
+          page: 3,
+          limit: 5,
+        },
       })
 
       expect(prismaMock.savedArticle.findMany).toHaveBeenCalledWith(
@@ -82,11 +84,11 @@ describe('ArticleService', () => {
   describe('saveArticle', () => {
     beforeEach(() => {
       // Mock executeWithLock to execute the callback immediately
-      jest.spyOn(DistributedLockService, 'executeWithLock').mockImplementation(
-        async (_key, _ttl, fn) => {
+      jest
+        .spyOn(DistributedLockService, 'executeWithLock')
+        .mockImplementation(async (_key, _ttl, fn) => {
           return await fn()
-        }
-      )
+        })
     })
 
     it('should save article for FREE user within limit', async () => {
@@ -161,9 +163,7 @@ describe('ArticleService', () => {
 
       prismaMock.savedArticle.count.mockResolvedValue(10) // At limit
 
-      await expect(
-        articleService.saveArticle(userId, articleId)
-      ).rejects.toThrow(
+      await expect(articleService.saveArticle(userId, articleId)).rejects.toThrow(
         'Article limit reached. Your FREE plan allows 10 saved articles.'
       )
     })
@@ -213,9 +213,9 @@ describe('ArticleService', () => {
       // Mock lock failure (another instance is processing)
       jest.spyOn(DistributedLockService, 'executeWithLock').mockResolvedValue(null)
 
-      await expect(
-        articleService.saveArticle(userId, articleId)
-      ).rejects.toThrow('Unable to save article at this time. Please try again.')
+      await expect(articleService.saveArticle(userId, articleId)).rejects.toThrow(
+        'Unable to save article at this time. Please try again.'
+      )
     })
   })
 

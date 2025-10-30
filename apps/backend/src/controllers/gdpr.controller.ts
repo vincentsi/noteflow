@@ -1,7 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { gdprService } from '@/services/gdpr.service'
 import { asyncHandler } from '@/utils/controller-wrapper'
-import { logUserAction, logSecurityEvent } from '@/utils/logger'
+import { logUserAction } from '@/utils/logger'
 import { securityLogger } from '@/utils/security-logger'
 import { SuccessResponse, ErrorResponse } from '@/utils/response-builders'
 import { requireAuth } from '@/utils/require-auth'
@@ -28,7 +28,6 @@ export class GDPRController {
 
     // Log the export request
     logUserAction(request, 'gdpr_data_export_requested', { userId })
-    logSecurityEvent(request, 'gdpr_data_export', 'medium', { userId })
     securityLogger.gdprDataExport({
       userId,
       ip: request.ip,
@@ -41,12 +40,7 @@ export class GDPRController {
     // Log successful export
     logUserAction(request, 'gdpr_data_export_completed', { userId })
 
-    return reply.status(200).send(
-      SuccessResponse.ok({
-        message: 'Your personal data has been exported successfully',
-        data: userData,
-      })
-    )
+    return reply.status(200).send(SuccessResponse.ok(userData))
   })
 
   /**
@@ -78,10 +72,10 @@ export class GDPRController {
 
       // Require email confirmation to prevent accidental deletion
       if (confirmEmail !== userEmail) {
-        logSecurityEvent(request, 'gdpr_deletion_failed_wrong_email', 'high', {
-          userId,
-          providedEmail: confirmEmail,
-        })
+        request.log.warn(
+          { userId, providedEmail: confirmEmail },
+          'GDPR deletion failed - wrong email'
+        )
         return reply
           .status(400)
           .send(
@@ -93,7 +87,6 @@ export class GDPRController {
 
       // Log the deletion request
       logUserAction(request, 'gdpr_data_deletion_requested', { userId, reason })
-      logSecurityEvent(request, 'gdpr_data_deletion', 'critical', { userId, reason })
       securityLogger.gdprDataDeletion({
         userId,
         ip: request.ip,
@@ -162,7 +155,6 @@ export class GDPRController {
 
       // Log the anonymization request
       logUserAction(request, 'gdpr_data_anonymization_requested', { userId })
-      logSecurityEvent(request, 'gdpr_data_anonymization', 'high', { userId })
       securityLogger.gdprDataAnonymization({
         userId,
         ip: request.ip,
