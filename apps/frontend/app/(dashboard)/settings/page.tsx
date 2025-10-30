@@ -177,10 +177,15 @@ export default function SettingsPage() {
             {t('gdpr.subtitle')}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Link href="/settings/gdpr">
+        <CardContent className="space-y-3">
+          <Link href="/settings/gdpr" className="block">
             <Button variant="outline" className="w-full">
-              {t('gdpr.export.button')} & {t('gdpr.deleteAccount.title')}
+              {t('gdpr.export.button')}
+            </Button>
+          </Link>
+          <Link href="/settings/gdpr" className="block">
+            <Button variant="destructive" className="w-full">
+              {t('gdpr.deleteAccount.title')}
             </Button>
           </Link>
         </CardContent>
