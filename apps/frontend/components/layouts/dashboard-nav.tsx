@@ -36,6 +36,9 @@ export function DashboardNav() {
             <Link href="/pricing" className="text-sm hover:text-primary transition-colors" prefetch>
               {t('common.navigation.pricing')}
             </Link>
+            <Link href="/settings" className="text-sm hover:text-primary transition-colors" prefetch>
+              {t('common.navigation.settings')}
+            </Link>
             {user?.role === 'ADMIN' && (
               <Link
                 href="/admin"

@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useI18n } from '@/lib/i18n/provider'
+import Link from 'next/link'
+import { Shield } from 'lucide-react'
 
 const settingsSchema = z.object({
   language: z.enum(['fr', 'en']),
@@ -162,6 +164,25 @@ export default function SettingsPage() {
               <span className="text-sm">{user.subscriptionStatus}</span>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <CardTitle>{t('gdpr.title')}</CardTitle>
+          </div>
+          <CardDescription>
+            {t('gdpr.subtitle')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/settings/gdpr">
+            <Button variant="outline" className="w-full">
+              {t('gdpr.export.button')} & {t('gdpr.deleteAccount.title')}
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>
