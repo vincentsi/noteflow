@@ -5,6 +5,7 @@ import { prisma as defaultPrisma } from '@/config/prisma'
 import type { PrismaClient } from '@prisma/client'
 import type { SummaryJob } from './summary.queue'
 import { getSummaryUsageCacheKey } from '@/utils/cache-key-helpers'
+import { WorkerRateLimiter } from '@/utils/worker-rate-limiter'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 
@@ -49,7 +50,9 @@ async function extractOGImage(url: string): Promise<string | null> {
 
     return imageUrl || null
   } catch (error) {
-    logger.warn(`Failed to extract OG image from URL: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    logger.warn(
+      `Failed to extract OG image from URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
     return null
   }
 }
@@ -81,7 +84,9 @@ async function fetchURLContent(url: string): Promise<string> {
     // Clean up whitespace
     return article.replace(/\s+/g, ' ').trim()
   } catch (error) {
-    throw new Error(`Failed to fetch URL content: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to fetch URL content: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 }
 
@@ -99,6 +104,12 @@ export async function processSummary(
 
   logger.info(`Generating ${style} summary for user ${userId}`)
 
+  // Check rate limit for OpenAI API calls
+  const allowed = await WorkerRateLimiter.checkRateLimit('openai', userId)
+  if (!allowed) {
+    throw new Error('OpenAI rate limit exceeded. Please try again in a few minutes.')
+  }
+
   // Check if text is a URL and fetch content if needed
   let contentToSummarize = text
   let coverImage: string | null = null
@@ -113,7 +124,7 @@ export async function processSummary(
     coverImage = await extractOGImage(text)
   }
 
-  // Generate summary with AI
+  // Generate summary with AI (rate limited)
   const summaryText = await aiService.generateSummary(contentToSummarize, style, language)
 
   // Generate title from the original content

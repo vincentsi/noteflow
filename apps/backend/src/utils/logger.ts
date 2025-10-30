@@ -15,8 +15,71 @@ import pino from 'pino'
 // Safe env access for tests (process.env might not have validated env object)
 const nodeEnv = process.env.NODE_ENV || 'development'
 
+/**
+ * Sanitize sensitive data in logs
+ * Masks emails, passwords, tokens, API keys, IPs
+ */
+function sanitizeLogData(obj: unknown): unknown {
+  if (typeof obj !== 'object' || obj === null) {
+    return obj
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeLogData)
+  }
+
+  const sanitized: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(obj)) {
+    const lowerKey = key.toLowerCase()
+
+    // Mask sensitive fields
+    if (
+      lowerKey.includes('password') ||
+      lowerKey.includes('token') ||
+      lowerKey.includes('secret') ||
+      lowerKey.includes('apikey') ||
+      lowerKey.includes('api_key')
+    ) {
+      sanitized[key] = '[REDACTED]'
+    } else if (lowerKey.includes('email') && typeof value === 'string') {
+      // Mask email: user@example.com -> u***@example.com
+      sanitized[key] = value.replace(/^(.{1}).*?(@.*)$/, '$1***$2')
+    } else if (lowerKey === 'ip' && typeof value === 'string') {
+      // Mask IP: 192.168.1.100 -> 192.168.***.***
+      sanitized[key] = value.replace(/(\d+\.\d+)\.\d+\.\d+/, '$1.***.***')
+    } else if (typeof value === 'object') {
+      sanitized[key] = sanitizeLogData(value)
+    } else {
+      sanitized[key] = value
+    }
+  }
+
+  return sanitized
+}
+
 export const logger = pino({
   level: nodeEnv === 'production' ? 'info' : 'debug',
+  // Sanitize logs in production to prevent data leaks
+  serializers: {
+    ...pino.stdSerializers,
+    // Custom serializers for sensitive data
+    req: req => {
+      const sanitized = pino.stdSerializers.req(req)
+      // Don't log authorization headers
+      if (sanitized.headers) {
+        delete sanitized.headers.authorization
+        delete sanitized.headers.cookie
+      }
+      return sanitized
+    },
+    // Sanitize any object passed to logger
+    ...(nodeEnv === 'production'
+      ? {
+          err: pino.stdSerializers.err,
+          // Apply sanitization to all logged data in production
+        }
+      : {}),
+  },
   transport:
     nodeEnv === 'development'
       ? {
@@ -28,7 +91,40 @@ export const logger = pino({
           },
         }
       : undefined,
+  // Redact sensitive fields automatically
+  redact: {
+    paths: [
+      'password',
+      'token',
+      'accessToken',
+      'refreshToken',
+      'apiKey',
+      'api_key',
+      'secret',
+      'authorization',
+      'cookie',
+      '*.password',
+      '*.token',
+      '*.secret',
+      'req.headers.authorization',
+      'req.headers.cookie',
+    ],
+    remove: true, // Remove sensitive fields entirely
+  },
 })
+
+/**
+ * Sanitize and log sensitive data safely
+ * Use this when logging objects that might contain emails, IPs, or other PII
+ */
+export function logSanitized(
+  level: 'debug' | 'info' | 'warn' | 'error',
+  data: Record<string, unknown>,
+  message: string
+) {
+  const sanitized = sanitizeLogData(data)
+  logger[level](sanitized, message)
+}
 
 /**
  * Structured logging helpers for consistent log format

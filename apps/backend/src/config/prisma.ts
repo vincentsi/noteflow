@@ -15,6 +15,7 @@ declare global {
 
 /**
  * Create PrismaClient with connection pooling configuration
+ * Pool size: 20 connections for optimal performance
  */
 export const prisma =
   global.prisma ||
@@ -22,7 +23,7 @@ export const prisma =
     log: env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     datasources: {
       db: {
-        url: env.DATABASE_URL,
+        url: `${env.DATABASE_URL}?connection_limit=20&pool_timeout=20`,
       },
     },
   })

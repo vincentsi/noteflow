@@ -19,9 +19,7 @@ import { getRedis, isRedisAvailable } from '@/config/redis'
  * // In app.ts
  * await registerSecurityMiddlewares(app)
  */
-export async function registerSecurityMiddlewares(
-  app: FastifyInstance
-): Promise<void> {
+export async function registerSecurityMiddlewares(app: FastifyInstance): Promise<void> {
   // HTTPS redirect in production
   if (env.NODE_ENV === 'production') {
     app.addHook('onRequest', async (request, reply) => {
@@ -39,19 +37,40 @@ export async function registerSecurityMiddlewares(
     encodings: ['gzip', 'deflate'], // Avoid Brotli (too slow for real-time APIs)
   })
 
-  // Helmet - Security headers with strict CSP
-  // NOTE: CSP disabled for API servers - CSP is for browser-rendered content, not JSON APIs
-  // The frontend should set its own CSP headers
+  // Helmet - Security headers with enhanced configuration
+  // CSP configured for API with minimal directives for webhook endpoints
   await app.register(helmet, {
-    contentSecurityPolicy: false,
+    // Basic CSP for API endpoints (restrictive, only allows same-origin)
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        fontSrc: ["'self'", 'https:', 'data:'],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"], // Prevent iframe embedding
+        imgSrc: ["'self'", 'data:', 'https:'],
+        objectSrc: ["'none'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+        upgradeInsecureRequests: env.NODE_ENV === 'production' ? [] : null,
+      },
+    },
+    // HSTS - Force HTTPS for 1 year
     hsts: {
       maxAge: 31536000,
       includeSubDomains: true,
       preload: true,
     },
+    // Prevent MIME type sniffing
+    noSniff: true,
+    // Disable X-Powered-By header (hide tech stack)
+    hidePoweredBy: true,
+    // Cross-origin policies (stricter in production)
     crossOriginEmbedderPolicy: env.NODE_ENV === 'production',
     crossOriginOpenerPolicy: env.NODE_ENV === 'production' ? { policy: 'same-origin' } : false,
     crossOriginResourcePolicy: env.NODE_ENV === 'production' ? { policy: 'same-origin' } : false,
+    // Referrer policy - only send origin on cross-origin requests
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   })
 
   // CORS - Cross-origin configuration
