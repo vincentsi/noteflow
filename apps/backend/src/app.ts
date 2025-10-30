@@ -193,12 +193,12 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
   await app.register(noteRoutes, { prefix: '/api/notes' })
 
-  // SECURITY: Only register test routes in test mode (NOT development or production)
+  // SECURITY: Only register test routes in test mode OR development with explicit flag
   // Test routes provide dangerous operations (data seeding, cleanup) that must NEVER be exposed in production
-  // Removed ENABLE_TEST_ROUTES flag to prevent accidental exposure in production
-  if (env.NODE_ENV === 'test') {
+  // In CI, we use development mode with ENABLE_TEST_ROUTES=true for E2E tests
+  if (env.NODE_ENV === 'test' || (env.NODE_ENV === 'development' && env.ENABLE_TEST_ROUTES)) {
     await app.register(testSetupRoutes, { prefix: '/api/test-setup' })
-    app.log.info('Test routes enabled for test environment')
+    app.log.info(`Test routes enabled for ${env.NODE_ENV} environment`)
   }
 
   return app
