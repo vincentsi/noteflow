@@ -25,8 +25,7 @@
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "clean": "rm -rf dist coverage tsconfig.tsbuildinfo .turbo",
-    "prepare": "husky"
+    "clean": "rm -rf dist coverage tsconfig.tsbuildinfo .turbo"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.908.0",

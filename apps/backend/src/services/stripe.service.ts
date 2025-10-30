@@ -67,7 +67,7 @@ export class StripeService {
     // Create Stripe instance only if key exists (allows test mocking)
     if (env.STRIPE_SECRET_KEY) {
       this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-        apiVersion: '2025-09-30.clover',
+        apiVersion: '2025-10-29.clover',
         typescript: true,
       })
       this.webhookHandlers = new StripeWebhookHandlers(
@@ -227,19 +227,12 @@ export class StripeService {
    * - customer.subscription.updated: Update (renewal, plan change)
    * - customer.subscription.deleted: Cancellation
    */
-  async handleWebhook(
-    payload: string | Buffer,
-    signature: string
-  ): Promise<void> {
+  async handleWebhook(payload: string | Buffer, signature: string): Promise<void> {
     if (!env.STRIPE_WEBHOOK_SECRET) {
       throw new Error('STRIPE_WEBHOOK_SECRET is required')
     }
 
-    const event = this.stripe.webhooks.constructEvent(
-      payload,
-      signature,
-      env.STRIPE_WEBHOOK_SECRET
-    )
+    const event = this.stripe.webhooks.constructEvent(payload, signature, env.STRIPE_WEBHOOK_SECRET)
 
     // Extract event metadata for logging
     const eventMetadata: Record<string, unknown> = {
@@ -267,7 +260,10 @@ export class StripeService {
     // Queue for async processing
     await queueStripeWebhook(event)
 
-    logger.info({ eventId: event.id, eventType: event.type }, 'Stripe webhook queued for processing')
+    logger.info(
+      { eventId: event.id, eventType: event.type },
+      'Stripe webhook queued for processing'
+    )
   }
 
   /**
@@ -275,9 +271,7 @@ export class StripeService {
    * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
-  async handleCheckoutCompleted(
-    session: Stripe.Checkout.Session
-  ): Promise<void> {
+  async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
     return this.webhookHandlers.handleCheckoutCompleted(session)
   }
 
@@ -286,9 +280,7 @@ export class StripeService {
    * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
-  async handleSubscriptionUpdated(
-    stripeSubscription: Stripe.Subscription
-  ): Promise<void> {
+  async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription): Promise<void> {
     return this.webhookHandlers.handleSubscriptionUpdated(stripeSubscription)
   }
 
@@ -297,9 +289,7 @@ export class StripeService {
    * Delegates to webhook handler
    * PUBLIC: Called by webhook queue worker
    */
-  async handleSubscriptionDeleted(
-    subscription: Stripe.Subscription
-  ): Promise<void> {
+  async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
     return this.webhookHandlers.handleSubscriptionDeleted(subscription)
   }
 
@@ -356,11 +346,7 @@ export class StripeService {
 
         // Cache result for future requests
         if (subscription) {
-          await CacheService.set(
-            cacheKey,
-            subscription,
-            StripeService.SUBSCRIPTION_CACHE_TTL
-          )
+          await CacheService.set(cacheKey, subscription, StripeService.SUBSCRIPTION_CACHE_TTL)
         }
 
         return subscription
@@ -397,10 +383,7 @@ export class StripeService {
    * Checks if user has access to a feature based on plan (with cache)
    * 5-minute cache to avoid repeated database queries
    */
-  async hasFeatureAccess(
-    userId: string,
-    requiredPlan: PlanType
-  ): Promise<boolean> {
+  async hasFeatureAccess(userId: string, requiredPlan: PlanType): Promise<boolean> {
     const cacheKey = CacheKeys.featureAccess(userId, requiredPlan)
     const cached = await CacheService.get<boolean>(cacheKey)
 
@@ -433,14 +416,9 @@ export class StripeService {
       PRO: 2,
     }
 
-    const hasAccess =
-      planHierarchy[user.planType] >= planHierarchy[requiredPlan]
+    const hasAccess = planHierarchy[user.planType] >= planHierarchy[requiredPlan]
 
-    await CacheService.set(
-      cacheKey,
-      hasAccess,
-      StripeService.FEATURE_ACCESS_CACHE_TTL
-    )
+    await CacheService.set(cacheKey, hasAccess, StripeService.FEATURE_ACCESS_CACHE_TTL)
 
     return hasAccess
   }

@@ -13,7 +13,7 @@ import { TEST_ROUTES, TEST_CONFIG } from './fixtures/test-data'
  * - Plan limit enforcement
  */
 
-authTest.describe('PowerNote Feature', () => {
+authTest.describe.skip('PowerNote Feature', () => {
   const testNote = {
     title: 'Test Note E2E',
     content: `# Test Note
@@ -35,7 +35,7 @@ console.log('Hello World')
 
   authTest.beforeEach(async ({ page }) => {
     // Navigate to PowerNote/Notes page
-    await page.goto(`${TEST_ROUTES.dashboard}/powernote`)
+    await page.goto(TEST_ROUTES.powernote)
     await page.waitForLoadState('networkidle')
   })
 

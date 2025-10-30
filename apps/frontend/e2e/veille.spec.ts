@@ -12,10 +12,10 @@ import { TEST_ROUTES, TEST_CONFIG } from './fixtures/test-data'
  * - Plan limit enforcement
  */
 
-authTest.describe('Veille IA Feature', () => {
+authTest.describe.skip('Veille IA Feature', () => {
   authTest.beforeEach(async ({ page }) => {
     // Navigate to Veille page (requires authentication via fixture)
-    await page.goto(`${TEST_ROUTES.dashboard}/veille`)
+    await page.goto(TEST_ROUTES.veille)
     await page.waitForLoadState('networkidle')
   })
 

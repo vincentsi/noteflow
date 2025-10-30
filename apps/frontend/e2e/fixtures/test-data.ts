@@ -97,4 +97,7 @@ export const TEST_ROUTES = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   gdpr: '/settings/gdpr',
+  veille: '/veille',
+  powerpost: '/summaries',
+  powernote: '/notes',
 } as const
