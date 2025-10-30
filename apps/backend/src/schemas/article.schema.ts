@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { searchQuerySchema, legacyPaginationSchema, dateRangeSchema } from './common.schema'
 
 /**
  * Schema for getting all articles with filters
@@ -6,14 +7,9 @@ import { z } from 'zod'
 export const getArticlesSchema = z.object({
   source: z.string().optional(),
   tags: z.string().optional(), // comma-separated tags
-  search: z
-    .string()
-    .max(200, 'Search query must not exceed 200 characters')
-    .regex(/^[a-zA-Z0-9\s\-_.,!?'"]*$/, 'Search query contains invalid characters')
-    .optional(),
-  dateRange: z.enum(['24h', '7d', '30d', 'all']).optional(), // Date filter
-  skip: z.coerce.number().int().min(0).optional(),
-  take: z.coerce.number().int().min(1).max(100).optional(),
+  search: searchQuerySchema.optional(),
+  dateRange: dateRangeSchema.optional(), // Date filter
+  ...legacyPaginationSchema,
 })
 
 export type GetArticlesDTO = z.infer<typeof getArticlesSchema>

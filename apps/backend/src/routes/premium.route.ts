@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify'
-import { authMiddleware } from '../middlewares/auth.middleware'
 import { requireSubscription } from '../middlewares/subscription.middleware'
 import { PlanType } from '@prisma/client'
 import { proFeatureSchema, businessFeatureSchema } from '@/schemas/openapi.schema'
+import { createProtectedRoutes } from '@/utils/protected-routes'
 
 /**
  * Premium Routes (example)
@@ -10,10 +10,9 @@ import { proFeatureSchema, businessFeatureSchema } from '@/schemas/openapi.schem
  *
  * These routes demonstrate how to protect features by plan
  */
-export async function premiumRoutes(fastify: FastifyInstance) {
+export const premiumRoutes = createProtectedRoutes(async (fastify: FastifyInstance) => {
   // ===== PRO Features (accessible to PRO and STARTER) =====
   fastify.register(async function (fastify) {
-    fastify.addHook('preHandler', authMiddleware)
     fastify.addHook('preHandler', requireSubscription(PlanType.PRO))
 
     /**
@@ -54,7 +53,6 @@ export async function premiumRoutes(fastify: FastifyInstance) {
 
   // ===== STARTER Features (accessible to STARTER only) =====
   fastify.register(async function (fastify) {
-    fastify.addHook('preHandler', authMiddleware)
     fastify.addHook('preHandler', requireSubscription(PlanType.STARTER))
 
     /**
@@ -89,4 +87,4 @@ export async function premiumRoutes(fastify: FastifyInstance) {
       })
     })
   })
-}
+})

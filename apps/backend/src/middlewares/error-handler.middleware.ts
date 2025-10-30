@@ -132,6 +132,31 @@ export async function errorHandler(
   return reply.status(statusCode).send({
     success: false,
     error: error.message || 'Internal server error',
-    ...(env.NODE_ENV === 'development' && { stack: error.stack }),
+    ...(env.NODE_ENV === 'development' && { stack: sanitizeStackTrace(error.stack) }),
   })
+}
+
+/**
+ * Sanitize stack traces to prevent information disclosure (SEC-007)
+ *
+ * Security Benefits:
+ * - Removes absolute file paths that expose server directory structure
+ * - Limits stack trace depth to prevent excessive information leakage
+ * - Keeps first 5 lines for debugging while hiding sensitive details
+ *
+ * @param stack - Raw stack trace from Error object
+ * @returns Sanitized stack trace with relative paths
+ */
+function sanitizeStackTrace(stack?: string): string | undefined {
+  if (!stack) return undefined
+
+  return stack
+    .split('\n')
+    .slice(0, 5) // Only first 5 lines (error + 4 stack frames)
+    .map(line => {
+      // Replace absolute paths with relative paths
+      // Example: /home/user/project/apps/backend/src/foo.ts → apps/backend/src/foo.ts
+      return line.replace(/\/.*\/(apps\/backend\/src)/g, '$1')
+    })
+    .join('\n')
 }

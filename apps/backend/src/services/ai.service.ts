@@ -68,11 +68,7 @@ export class AIService {
     return response.choices[0]?.message?.content?.trim() || 'Sans titre'
   }
 
-  async generateSummary(
-    text: string,
-    style: SummaryStyle,
-    language: 'fr' | 'en'
-  ): Promise<string> {
+  async generateSummary(text: string, style: SummaryStyle, language: 'fr' | 'en'): Promise<string> {
     const systemPrompt = PROMPTS[style][language]
 
     const response = await this.openai.chat.completions.create({
@@ -106,7 +102,7 @@ export class AIService {
         .join(',')
 
       // Use Unsplash API (gratuit avec limite de 50 requêtes/heure)
-      const unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY
+      const unsplashAccessKey = env.UNSPLASH_ACCESS_KEY
 
       if (!unsplashAccessKey) {
         // Fallback: return Picsum Photos placeholder (800x400, random image based on seed)

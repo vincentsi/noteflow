@@ -1,24 +1,22 @@
 import { prisma } from '@/config/prisma'
 import { Prisma } from '@prisma/client'
 import { CacheService, CacheKeys } from './cache.service'
-import { PAGINATION_CONFIG } from '@/constants/pagination'
 import { CACHE_TTL } from '@/constants/performance'
 import { PlanLimiter } from '@/utils/plan-limiter'
 import { DistributedLockService } from './distributed-lock.service'
+import { buildCacheKey, buildDateRange, buildTagsFilter } from '@/utils/query-builders'
 import {
-  buildCacheKey,
-  buildDateRange,
-  buildTagsFilter,
-  buildPagination,
-} from '@/utils/query-builders'
+  paginationToSkipTake,
+  calculatePagination,
+  type PaginationParams,
+} from '@/types/pagination'
 
 export interface GetArticlesFilters {
   source?: string
   tags?: string
   search?: string
   dateRange?: '24h' | '7d' | '30d' | 'all'
-  skip?: number
-  take?: number
+  pagination?: PaginationParams
 }
 
 export interface CreateArticleData {
@@ -36,15 +34,10 @@ export class ArticleService {
    * Get all articles with optional filters (for Veille page)
    */
   async getArticles(filters: GetArticlesFilters = {}) {
-    const { source, tags, search, dateRange, skip = 0, take } = filters
+    const { source, tags, search, dateRange } = filters
 
     // Build pagination options
-    const pagination = buildPagination(
-      skip,
-      take,
-      PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
-      PAGINATION_CONFIG.MAX_PAGE_SIZE
-    )
+    const { skip, take } = paginationToSkipTake(filters.pagination)
 
     // Generate cache key based on filters
     const cacheKey = buildCacheKey('articles:list', {
@@ -52,13 +45,14 @@ export class ArticleService {
       tags,
       search,
       dateRange,
-      ...pagination,
+      skip,
+      take,
     })
 
     // Try cache first with version check (PERF-004)
     const { data: cached, version } = await CacheService.getWithVersion<{
       articles: unknown[]
-      total: number
+      pagination: ReturnType<typeof calculatePagination>
     }>(cacheKey)
     if (cached) {
       return cached
@@ -105,12 +99,16 @@ export class ArticleService {
         orderBy: {
           publishedAt: 'desc',
         },
-        ...pagination,
+        skip,
+        take,
       }),
       prisma.article.count({ where }),
     ])
 
-    const result = { articles, total }
+    const result = {
+      articles,
+      pagination: calculatePagination(total, filters.pagination ?? {}),
+    }
 
     // Cache for 5 minutes with version check (PERF-004)
     // Only cache if version hasn't changed (prevents stale data)
@@ -122,19 +120,11 @@ export class ArticleService {
   /**
    * Get user's saved articles with optional filters
    */
-  async getUserSavedArticles(
-    userId: string,
-    filters: GetArticlesFilters = {}
-  ) {
-    const { source, skip = 0, take } = filters
+  async getUserSavedArticles(userId: string, filters: GetArticlesFilters = {}) {
+    const { source } = filters
 
     // Build pagination options
-    const pagination = buildPagination(
-      skip,
-      take,
-      PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
-      PAGINATION_CONFIG.MAX_PAGE_SIZE
-    )
+    const { skip, take } = paginationToSkipTake(filters.pagination)
 
     const where: Prisma.SavedArticleWhereInput = {
       userId,
@@ -160,7 +150,8 @@ export class ArticleService {
       orderBy: {
         createdAt: 'desc',
       },
-      ...pagination,
+      skip,
+      take,
     })
   }
 
@@ -252,7 +243,7 @@ export class ArticleService {
       },
     })
 
-    return sources.map((s) => s.source)
+    return sources.map(s => s.source)
   }
 }
 

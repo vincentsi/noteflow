@@ -8,6 +8,7 @@ import {
   noteIdSchema,
 } from '@/schemas/note.schema'
 import { handleControllerError } from '@/utils/error-response'
+import { requireAuth } from '@/utils/require-auth'
 
 /**
  * Note controller
@@ -20,15 +21,7 @@ export class NoteController {
    */
   async createNote(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate request body
       const body = createNoteSchema.parse(request.body)
@@ -59,15 +52,7 @@ export class NoteController {
    */
   async getUserNotes(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate query params
       const query = getNotesSchema.parse(request.query)
@@ -92,15 +77,7 @@ export class NoteController {
    */
   async updateNote(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate params
       const params = noteIdSchema.parse(request.params)
@@ -140,15 +117,7 @@ export class NoteController {
    */
   async deleteNote(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate params
       const params = noteIdSchema.parse(request.params)
@@ -181,15 +150,7 @@ export class NoteController {
    */
   async searchNotes(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate query params
       const query = searchNotesSchema.parse(request.query)

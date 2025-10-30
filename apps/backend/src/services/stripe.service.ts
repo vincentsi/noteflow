@@ -54,8 +54,8 @@ import { StripeWebhookHandlers } from './stripe-webhook-handlers'
  */
 export class StripeService {
   private stripe!: Stripe // Definite assignment - initialized in constructor or mocked in tests
-  private static readonly SUBSCRIPTION_CACHE_TTL = 5 * 60 // 5 minutes
-  private static readonly FEATURE_ACCESS_CACHE_TTL = 5 * 60 // 5 minutes
+  private static readonly SUBSCRIPTION_CACHE_TTL = 2 * 60 // 2 minutes (reduced for security - prevents stale data after webhook updates)
+  private static readonly FEATURE_ACCESS_CACHE_TTL = 2 * 60 // 2 minutes
   private webhookHandlers!: StripeWebhookHandlers
 
   constructor() {

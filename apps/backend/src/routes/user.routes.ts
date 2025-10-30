@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { authMiddleware } from '@/middlewares/auth.middleware'
+import { createProtectedRoutes } from '@/utils/protected-routes'
 import { prisma } from '@/config/prisma'
 import { SuccessResponse, ErrorResponse } from '@/utils/response-builders'
 import { ARTICLE_LIMITS, SUMMARY_LIMITS, NOTE_LIMITS } from '@/constants/plan-limits'
@@ -16,10 +16,7 @@ interface UpdateProfileBody {
  * User routes
  * @param fastify - Fastify instance
  */
-export async function userRoutes(fastify: FastifyInstance): Promise<void> {
-  // Add authentication middleware to all routes
-  fastify.addHook('preHandler', authMiddleware)
-
+export const userRoutes = createProtectedRoutes(async (fastify: FastifyInstance): Promise<void> => {
   /**
    * Update current user profile
    * @route PATCH /api/users/me
@@ -96,7 +93,9 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
 
         // Validate language if provided
         if (language && !['fr', 'en'].includes(language)) {
-          return reply.status(400).send(ErrorResponse.badRequest('Invalid language. Must be "fr" or "en"'))
+          return reply
+            .status(400)
+            .send(ErrorResponse.badRequest('Invalid language. Must be "fr" or "en"'))
         }
 
         // Build update object (only include fields that are provided)
@@ -250,4 +249,4 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
       }
     }
   )
-}
+})

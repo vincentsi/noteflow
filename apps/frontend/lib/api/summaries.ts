@@ -1,6 +1,19 @@
 import { apiClient } from './client'
+import type { ApiResponse } from './types'
 
 export type SummaryStyle = 'SHORT' | 'TWEET' | 'THREAD' | 'BULLET_POINT' | 'TOP3' | 'MAIN_POINTS'
+
+export type Summary = {
+  id: string
+  title: string | null
+  coverImage: string | null
+  originalText: string
+  summaryText: string
+  style: SummaryStyle
+  source: string | null
+  language: string
+  createdAt: string
+}
 
 export type CreateSummaryParams = {
   text?: string
@@ -9,73 +22,31 @@ export type CreateSummaryParams = {
   language?: 'fr' | 'en'
 }
 
-export type CreateSummaryResponse = {
-  success: boolean
-  data: {
-    jobId: string
-    message?: string
-  }
-}
+export type CreateSummaryResponse = ApiResponse<{
+  jobId: string
+  message?: string
+}>
 
-export type SummaryStatusResponse = {
-  success: boolean
-  data: {
-    status: 'waiting' | 'active' | 'completed' | 'failed'
-    jobId?: string
-    summary?: {
-      id: string
-      title: string | null
-      coverImage: string | null
-      originalText: string
-      summaryText: string
-      style: SummaryStyle
-      source: string | null
-      language: string
-      createdAt: string
-    }
-  }
-}
+export type SummaryStatusResponse = ApiResponse<{
+  status: 'waiting' | 'active' | 'completed' | 'failed'
+  jobId?: string
+  summary?: Summary
+}>
 
-export type GetSummariesResponse = {
-  success: boolean
-  data: {
-    summaries: Array<{
-      id: string
-      title: string | null
-      coverImage: string | null
-      originalText: string
-      summaryText: string
-      style: SummaryStyle
-      source: string | null
-      language: string
-      createdAt: string
-    }>
-    pagination: {
-      page: number
-      limit: number
-      total: number
-      totalPages: number
-      totalThisMonth: number
-    }
+export type GetSummariesResponse = ApiResponse<{
+  summaries: Summary[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    totalThisMonth: number
   }
-}
+}>
 
-export type GetSummaryByIdResponse = {
-  success: boolean
-  data: {
-    summary: {
-      id: string
-      title: string | null
-      coverImage: string | null
-      originalText: string
-      summaryText: string
-      style: SummaryStyle
-      source: string | null
-      language: string
-      createdAt: string
-    }
-  }
-}
+export type GetSummaryByIdResponse = ApiResponse<{
+  summary: Summary
+}>
 
 /**
  * Summaries API client
@@ -141,8 +112,8 @@ export const summariesApi = {
   /**
    * Delete a summary by ID
    */
-  deleteSummary: async (id: string): Promise<{ success: boolean; message: string }> => {
-    const response = await apiClient.delete<{ success: boolean; message: string }>(`/api/summaries/${id}`)
+  deleteSummary: async (id: string): Promise<ApiResponse<{ message: string }>> => {
+    const response = await apiClient.delete<ApiResponse<{ message: string }>>(`/api/summaries/${id}`)
     return response.data
   },
 }

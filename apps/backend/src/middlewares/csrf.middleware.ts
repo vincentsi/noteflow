@@ -38,10 +38,7 @@ import { CsrfService } from '../services/csrf.service'
  * })
  * ```
  */
-export async function csrfMiddleware(
-  request: FastifyRequest,
-  reply: FastifyReply
-): Promise<void> {
+export async function csrfMiddleware(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Ignore safe methods (read-only)
   const safeMethods = ['GET', 'HEAD', 'OPTIONS']
   if (safeMethods.includes(request.method)) {
@@ -56,8 +53,13 @@ export async function csrfMiddleware(
   // SECURITY: /api/stripe/webhook must be exempt from CSRF validation
   // - Stripe webhooks use signature verification (more secure than CSRF)
   // - Webhooks come from Stripe servers, not browsers (no CSRF risk)
-  const publicRoutes = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/stripe/webhook']
-  if (publicRoutes.some((route) => request.url.startsWith(route))) {
+  const publicRoutes = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/refresh',
+    '/api/stripe/webhook',
+  ]
+  if (publicRoutes.some(route => request.url.startsWith(route))) {
     return
   }
 
@@ -68,32 +70,20 @@ export async function csrfMiddleware(
     return
   }
 
-  // Get CSRF token from cookie
-  const csrfCookie = request.cookies.csrfToken
-
-  // Get CSRF token from header
+  // Get CSRF token from header (server-side validation pattern)
   const csrfHeader = request.headers['x-csrf-token'] as string | undefined
 
-  // Verify both are present
-  if (!csrfCookie || !csrfHeader) {
+  // Verify token is present in header
+  if (!csrfHeader) {
     return reply.status(403).send({
       success: false,
       error: 'CSRF token missing',
-      message: 'CSRF token required in cookie and X-CSRF-Token header',
+      message: 'CSRF token required in X-CSRF-Token header',
     })
   }
 
-  // Verify cookie and header match
-  if (csrfCookie !== csrfHeader) {
-    return reply.status(403).send({
-      success: false,
-      error: 'CSRF token mismatch',
-      message: 'CSRF token in cookie does not match header',
-    })
-  }
-
-  // Verify token is valid in DB
-  const isValid = await CsrfService.verifyToken(csrfCookie, userId)
+  // Verify token is valid against Redis storage
+  const isValid = await CsrfService.verifyToken(csrfHeader, userId)
 
   if (!isValid) {
     return reply.status(403).send({

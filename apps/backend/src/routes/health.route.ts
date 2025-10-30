@@ -37,7 +37,11 @@ export async function healthRoutes(app: FastifyInstance): Promise<void> {
 
     // Check database connection
     try {
-      await prisma.$queryRaw`SELECT 1`
+      // Use Prisma's native method instead of raw SQL to prevent injection patterns
+      await prisma.user.findFirst({
+        select: { id: true },
+        take: 1,
+      })
       checks.database = true
     } catch (error) {
       request.log.error({ error }, 'Database health check failed')
@@ -78,7 +82,11 @@ export async function healthRoutes(app: FastifyInstance): Promise<void> {
     // Check database
     try {
       const start = Date.now()
-      await prisma.$queryRaw`SELECT 1`
+      // Use Prisma's native method instead of raw SQL to prevent injection patterns
+      await prisma.user.findFirst({
+        select: { id: true },
+        take: 1,
+      })
       checks.database = { status: 'ok', latency: Date.now() - start }
     } catch (error) {
       request.log.error({ error }, 'Database health check failed')
@@ -153,11 +161,7 @@ export async function healthRoutes(app: FastifyInstance): Promise<void> {
       checks.stripe.status === 'error' ||
       checks.resend.status === 'error'
 
-    const status = !isCriticalHealthy
-      ? 'unhealthy'
-      : hasWarnings
-        ? 'degraded'
-        : 'ok'
+    const status = !isCriticalHealthy ? 'unhealthy' : hasWarnings ? 'degraded' : 'ok'
 
     if (!isCriticalHealthy) {
       return reply.status(503).send({

@@ -48,6 +48,40 @@ export class GDPRService {
         currentPeriodEnd: Date
         createdAt: Date
       }>
+      savedArticles: Array<{
+        articleId: string
+        createdAt: Date
+        article: {
+          title: string
+          url: string
+          source: string
+          publishedAt: Date | null
+        }
+      }>
+      summaries: Array<{
+        id: string
+        summaryText: string
+        originalText: string
+        style: string
+        title: string | null
+        createdAt: Date
+      }>
+      notes: Array<{
+        id: string
+        title: string
+        content: string
+        tags: string[]
+        createdAt: Date
+        updatedAt: Date
+      }>
+      posts: Array<{
+        id: string
+        title: string
+        content: string
+        slug: string
+        isPublic: boolean
+        createdAt: Date
+      }>
     }
   }> {
     // Fetch user with all related data
@@ -96,6 +130,54 @@ export class GDPRService {
           },
           orderBy: { createdAt: 'desc' },
         },
+        savedArticles: {
+          select: {
+            articleId: true,
+            createdAt: true,
+            article: {
+              select: {
+                title: true,
+                url: true,
+                source: true,
+                publishedAt: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        summaries: {
+          select: {
+            id: true,
+            summaryText: true,
+            originalText: true,
+            style: true,
+            title: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        notes: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            tags: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        posts: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            slug: true,
+            isPublic: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
 
@@ -115,28 +197,62 @@ export class GDPRService {
           'You have the right to request deletion of this data at any time.',
       },
       personalData: {
-        refreshTokens: user.refreshTokens.map((t) => ({
+        refreshTokens: user.refreshTokens.map(t => ({
           createdAt: t.createdAt,
           expiresAt: t.expiresAt,
         })),
-        verificationTokens: user.verificationTokens.map((t) => ({
+        verificationTokens: user.verificationTokens.map(t => ({
           createdAt: t.createdAt,
           expiresAt: t.expiresAt,
         })),
-        resetTokens: user.resetTokens.map((t) => ({
+        resetTokens: user.resetTokens.map(t => ({
           createdAt: t.createdAt,
           expiresAt: t.expiresAt,
         })),
-        csrfTokens: user.csrfTokens.map((t) => ({
+        csrfTokens: user.csrfTokens.map(t => ({
           createdAt: t.createdAt,
           expiresAt: t.expiresAt,
         })),
-        subscriptions: user.subscriptions.map((s) => ({
+        subscriptions: user.subscriptions.map(s => ({
           status: s.status,
           planType: s.planType,
           currentPeriodStart: s.currentPeriodStart,
           currentPeriodEnd: s.currentPeriodEnd,
           createdAt: s.createdAt,
+        })),
+        savedArticles: user.savedArticles.map(sa => ({
+          articleId: sa.articleId,
+          createdAt: sa.createdAt,
+          article: {
+            title: sa.article.title,
+            url: sa.article.url,
+            source: sa.article.source,
+            publishedAt: sa.article.publishedAt,
+          },
+        })),
+        summaries: user.summaries.map(s => ({
+          id: s.id,
+          summaryText: s.summaryText,
+          originalText: s.originalText,
+          style: s.style,
+          title: s.title,
+          createdAt: s.createdAt,
+        })),
+        notes: user.notes.map(n => ({
+          id: n.id,
+          title: n.title,
+          content: n.content,
+          tags: n.tags,
+          createdAt: n.createdAt,
+          updatedAt: n.updatedAt,
+        })),
+        posts: user.posts.map(p => ({
+          id: p.id,
+          title: p.title,
+          content: p.content,
+          slug: p.slug,
+          isPublic: p.isPublic,
+          createdAt: p.createdAt,
         })),
       },
     }
@@ -206,7 +322,13 @@ export class GDPRService {
       prisma.subscription.count({ where: { userId } }),
     ])
 
-    const [refreshTokenCount, verificationTokenCount, resetTokenCount, csrfTokenCount, subscriptionCount] = counts
+    const [
+      refreshTokenCount,
+      verificationTokenCount,
+      resetTokenCount,
+      csrfTokenCount,
+      subscriptionCount,
+    ] = counts
 
     // Delete Stripe customer BEFORE deleting user (GDPR compliance)
     let stripeCustomerDeleted = false
@@ -216,8 +338,13 @@ export class GDPRService {
         stripeCustomerDeleted = true
         logger.info({ stripeCustomerId: user.stripeCustomerId, userId }, 'Stripe customer deleted')
       } catch (error) {
-        logger.error({ error, stripeCustomerId: user.stripeCustomerId, userId }, 'Failed to delete Stripe customer')
-        throw new Error('Failed to delete payment data. Aborting user deletion for GDPR compliance.')
+        logger.error(
+          { error, stripeCustomerId: user.stripeCustomerId, userId },
+          'Failed to delete Stripe customer'
+        )
+        throw new Error(
+          'Failed to delete payment data. Aborting user deletion for GDPR compliance.'
+        )
       }
     }
 

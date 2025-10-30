@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { searchQuerySchema, paginationSchema, idParamSchema } from './common.schema'
 
 // Zod schemas
 export const createNoteSchema = z.object({
@@ -18,23 +19,15 @@ export const getNotesSchema = z.object({
     .string()
     .optional()
     .transform(val => (val ? val.split(',') : undefined)),
-  page: z.coerce.number().int().min(1).max(1000).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  ...paginationSchema,
 })
 
 export const searchNotesSchema = z.object({
-  q: z
-    .string()
-    .min(1)
-    .max(100, 'Search query must not exceed 100 characters')
-    .regex(/^[a-zA-Z0-9\s\-_.]*$/, 'Search query contains invalid characters'),
-  page: z.coerce.number().int().min(1).max(1000).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  q: searchQuerySchema.min(1, 'Search query is required'),
+  ...paginationSchema,
 })
 
-export const noteIdSchema = z.object({
-  id: z.string().min(1),
-})
+export const noteIdSchema = idParamSchema
 
 // TypeScript types
 export type CreateNoteDTO = z.infer<typeof createNoteSchema>

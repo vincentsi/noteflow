@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { VerificationService } from './verification.service'
 import { AUTH_CONFIG } from '@/constants/performance'
+import { addAuthDelay } from '@/utils/timing-safe'
 
 /**
  * Authentication Service
@@ -56,14 +57,36 @@ import { AUTH_CONFIG } from '@/constants/performance'
  */
 export class AuthService {
   /**
-   * Dummy hash for timing attack protection
+   * Dummy password hash for timing attack protection (SEC-012)
    * Used when user doesn't exist to ensure constant-time response
    * Valid bcrypt hash of "dummy-password-for-timing-attack-protection"
    *
-   * SECURITY NOTE: This hash is intentionally public and poses NO security risk.
-   * It's a placeholder hash to ensure bcrypt.compare() runs in constant time
-   * even when the user doesn't exist, preventing timing attacks that could
-   * enumerate valid email addresses. The dummy password is public and known.
+   * ⚠️ SECURITY NOTE: This hash is intentionally public and poses NO security risk.
+   *
+   * **Why this is safe:**
+   * - This is NOT a real user's password hash
+   * - It's a placeholder hash used only for timing attack protection
+   * - The dummy password "dummy-password-for-timing-attack-protection" is public and known
+   * - Even if an attacker knows this hash, it provides no advantage
+   *
+   * **Purpose:**
+   * When a user tries to login with a non-existent email, we still run bcrypt.compare()
+   * against this dummy hash. This ensures constant-time execution regardless of whether
+   * the email exists or not, preventing timing attacks that could enumerate valid emails.
+   *
+   * **Attack Scenario Prevented:**
+   * 1. Attacker tries login with email@example.com (doesn't exist)
+   * 2. Without dummy hash: Response time = 10ms (no bcrypt comparison)
+   * 3. Attacker tries login with real@example.com (exists)
+   * 4. Without dummy hash: Response time = 100ms (bcrypt comparison runs)
+   * 5. Attacker can enumerate valid emails by measuring response times
+   *
+   * **With dummy hash:**
+   * - Both scenarios run bcrypt.compare() → constant ~100ms response time
+   * - Attacker cannot distinguish between existing and non-existing users
+   *
+   * @see https://cwe.mitre.org/data/definitions/208.html (CWE-208: Observable Timing Discrepancy)
+   * @see https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/03-Identity_Management_Testing/04-Testing_for_Account_Enumeration_and_Guessable_User_Account
    */
   private static readonly DUMMY_HASH =
     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'
@@ -83,10 +106,7 @@ export class AuthService {
    * @param hashedPassword - Hashed password
    * @returns true if match, false otherwise
    */
-  private async comparePassword(
-    password: string,
-    hashedPassword: string
-  ): Promise<boolean> {
+  private async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword)
   }
 
@@ -97,11 +117,7 @@ export class AuthService {
    * @param email - User email (for Stripe without DB query)
    * @returns Access token (expires in 15 minutes)
    */
-  private generateAccessToken(
-    userId: string,
-    role: string,
-    email: string
-  ): string {
+  private generateAccessToken(userId: string, role: string, email: string): string {
     return jwt.sign({ userId, role, email }, env.JWT_SECRET, {
       expiresIn: '15m',
     })
@@ -126,10 +142,7 @@ export class AuthService {
    * @param token - Refresh token to store (plain text)
    * @param userId - User ID
    */
-  private async storeRefreshToken(
-    token: string,
-    userId: string
-  ): Promise<void> {
+  private async storeRefreshToken(token: string, userId: string): Promise<void> {
     const hashedToken = TokenHasher.hash(token)
 
     await prisma.refreshToken.create({
@@ -217,6 +230,10 @@ export class AuthService {
     accessToken: string
     refreshToken: string
   }> {
+    // Add random delay (200-300ms) to prevent timing attacks
+    // This prevents attackers from determining if an email exists by measuring response time
+    await addAuthDelay()
+
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email },
     })
@@ -224,10 +241,7 @@ export class AuthService {
     if (existingUser) {
       // Generic error to prevent email enumeration
       // Log for monitoring but don't reveal email exists to client
-      logger.warn(
-        { email: data.email },
-        'Registration attempt with existing email'
-      )
+      logger.warn({ email: data.email }, 'Registration attempt with existing email')
       throw new Error('Registration failed. Please check your information.')
     }
 
@@ -290,6 +304,10 @@ export class AuthService {
     accessToken: string
     refreshToken: string
   }> {
+    // 🔒 SECURITY: Add random delay (200-300ms) to prevent timing attacks
+    // This prevents attackers from determining if an email exists by measuring response time
+    await addAuthDelay()
+
     // Check for account lockout (SEC-015, SEC-020)
     const { AccountLockoutService } = await import('./account-lockout.service')
     await AccountLockoutService.checkLockout(data.email, ipAddress || 'unknown')
@@ -301,17 +319,11 @@ export class AuthService {
     // Timing attack protection: always run bcrypt.compare even if user doesn't exist
     // Ensures constant-time response regardless of email validity
     const passwordToCompare = user?.password || AuthService.DUMMY_HASH
-    const isPasswordValid = await this.comparePassword(
-      data.password,
-      passwordToCompare
-    )
+    const isPasswordValid = await this.comparePassword(data.password, passwordToCompare)
 
     if (!user || !isPasswordValid) {
       // Record failed attempt (SEC-015, SEC-020)
-      await AccountLockoutService.recordFailedAttempt(
-        data.email,
-        ipAddress || 'unknown'
-      )
+      await AccountLockoutService.recordFailedAttempt(data.email, ipAddress || 'unknown')
       throw new Error('Invalid credentials')
     }
 
@@ -374,11 +386,7 @@ export class AuthService {
       include: { user: true },
     })
 
-    if (
-      !storedToken ||
-      storedToken.revoked ||
-      storedToken.expiresAt < new Date()
-    ) {
+    if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
       throw new Error('Invalid or expired refresh token')
     }
 

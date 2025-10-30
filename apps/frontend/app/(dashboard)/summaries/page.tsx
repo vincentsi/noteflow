@@ -66,6 +66,8 @@ export default function SummariesPage() {
         const errorResponse = error as Error & { response?: { status?: number } }
         if (errorResponse?.response?.status === 403) {
           toast.error(t('summaries.form.errors.planLimitReached'))
+        } else if (errorResponse?.response?.status === 429) {
+          toast.error(t('summaries.form.errors.rateLimitReached'))
         } else {
           toast.error(t('summaries.form.errors.creationFailed'))
         }

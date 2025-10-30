@@ -188,7 +188,8 @@
       "generating": "Generating...",
       "errors": {
         "planLimitReached": "Plan limit reached. Please upgrade your plan.",
-        "creationFailed": "Error creating summary"
+        "creationFailed": "Error creating summary",
+        "rateLimitReached": "You have reached the limit of 10 summaries. Please wait 15 minutes from your first request."
       }
     },
     "history": {
@@ -347,8 +348,7 @@
           "Unlimited articles",
           "Unlimited summaries",
           "Unlimited notes",
-          "Priority support",
-          "PDF export"
+          "Priority support"
         ]
       }
     },
@@ -356,8 +356,8 @@
     "selectPlan": "Select",
     "currentPlanButton": "Current plan",
     "footer": {
-      "moneyBack": "All plans include a 14-day money-back guarantee",
-      "support": "Questions? Contact support@noteflow.app"
+      "moneyBack": "",
+      "support": "Questions? Contact vincent.si.dev@gmail.com"
     }
   },
   "admin": {

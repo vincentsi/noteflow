@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { stripeService } from '@/services/stripe.service'
 import { PlanType } from '@prisma/client'
 import { z } from 'zod'
+import { requireAuth } from '@/utils/require-auth'
 
 /**
  * Controller for Stripe routes
@@ -27,10 +28,10 @@ export class StripeController {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const userId = request.user?.userId
+      const userId = requireAuth(request)
       const userEmail = request.user?.email
 
-      if (!userId || !userEmail) {
+      if (!userEmail) {
         return reply.status(401).send({
           success: false,
           error: 'Not authenticated',
@@ -58,7 +59,8 @@ export class StripeController {
       if (hasActiveSubscription) {
         return reply.status(400).send({
           success: false,
-          error: 'User already has an active subscription. Please cancel your current subscription before upgrading.',
+          error:
+            'User already has an active subscription. Please cancel your current subscription before upgrading.',
         })
       }
 
@@ -107,19 +109,9 @@ export class StripeController {
    *
    * Allows user to manage subscription (plan change, cancellation)
    */
-  async createPortalSession(
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async createPortalSession(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const session = await stripeService.createBillingPortalSession(userId)
 
@@ -152,10 +144,7 @@ export class StripeController {
    * Processes Stripe events (checkout completed, subscription updated, etc.)
    * IMPORTANT: This route must NOT have auth middleware
    */
-  async handleWebhook(
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async handleWebhook(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const signature = request.headers['stripe-signature']
 
@@ -212,19 +201,9 @@ export class StripeController {
    * Get user's current subscription
    * GET /api/stripe/subscription
    */
-  async getSubscription(
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async getSubscription(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const subscription = await stripeService.getUserSubscription(userId)
 

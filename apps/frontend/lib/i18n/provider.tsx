@@ -21,17 +21,28 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // Initialize language from localStorage only
   // User language sync happens in AuthProvider
   useEffect(() => {
-    const savedLang = localStorage.getItem('language') as Language | null
-    if (savedLang === 'fr' || savedLang === 'en') {
-      setLanguageState(savedLang)
+    // SEC-011: Validate localStorage language with whitelist
+    const VALID_LANGUAGES: readonly Language[] = ['fr', 'en'] as const
+    const savedLang = localStorage.getItem('language')
+
+    if (savedLang && VALID_LANGUAGES.includes(savedLang as Language)) {
+      setLanguageState(savedLang as Language)
+    } else if (savedLang) {
+      // Invalid language detected - reset to default and clean up
+      console.warn(`Invalid language "${savedLang}" in localStorage, resetting to "fr"`)
+      localStorage.setItem('language', 'fr')
+      setLanguageState('fr')
     }
     setIsInitialized(true)
 
     // Listen for storage changes (from AuthProvider or other tabs)
     const handleStorageChange = () => {
-      const updatedLang = localStorage.getItem('language') as Language | null
-      if (updatedLang === 'fr' || updatedLang === 'en') {
-        setLanguageState(updatedLang)
+      const updatedLang = localStorage.getItem('language')
+      if (updatedLang && VALID_LANGUAGES.includes(updatedLang as Language)) {
+        setLanguageState(updatedLang as Language)
+      } else if (updatedLang) {
+        // Invalid language detected - ignore and log
+        console.warn(`Invalid language "${updatedLang}" received, ignoring`)
       }
     }
 

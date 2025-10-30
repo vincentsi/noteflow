@@ -188,7 +188,8 @@
       "generating": "Génération...",
       "errors": {
         "planLimitReached": "Limite du plan atteinte. Veuillez mettre à niveau votre plan.",
-        "creationFailed": "Erreur lors de la création du résumé"
+        "creationFailed": "Erreur lors de la création du résumé",
+        "rateLimitReached": "Vous avez atteint la limite de 10 résumés. Veuillez attendre 15 minutes depuis votre première requête."
       }
     },
     "history": {
@@ -347,8 +348,7 @@
           "Articles illimités",
           "Résumés illimités",
           "Notes illimitées",
-          "Support prioritaire",
-          "Export PDF"
+          "Support prioritaire"
         ]
       }
     },
@@ -356,8 +356,8 @@
     "selectPlan": "Sélectionner",
     "currentPlanButton": "Plan actuel",
     "footer": {
-      "moneyBack": "Tous les plans incluent une garantie satisfait ou remboursé de 14 jours",
-      "support": "Des questions ? Contactez support@noteflow.app"
+      "moneyBack": "",
+      "support": "Des questions ? Contactez vincent.si.dev@gmail.com"
     }
   },
   "admin": {

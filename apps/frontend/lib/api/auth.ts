@@ -1,5 +1,6 @@
 import { apiClient, clearCsrfTokenCache } from './client'
 import type { User } from '@/types'
+import type { ApiResponse } from './types'
 
 export type RegisterDTO = {
   email: string
@@ -34,7 +35,7 @@ export const authApi = {
    * Create a new account
    */
   register: async (data: RegisterDTO): Promise<AuthResponse> => {
-    const response = await apiClient.post<{ success: boolean; data: AuthResponse }>(
+    const response = await apiClient.post<ApiResponse<AuthResponse>>(
       '/api/auth/register',
       data
     )
@@ -45,7 +46,7 @@ export const authApi = {
    * Login
    */
   login: async (data: LoginDTO): Promise<AuthResponse> => {
-    const response = await apiClient.post<{ success: boolean; data: AuthResponse }>(
+    const response = await apiClient.post<ApiResponse<AuthResponse>>(
       '/api/auth/login',
       data
     )
@@ -56,7 +57,7 @@ export const authApi = {
    * Get current user
    */
   me: async (): Promise<{ user: User }> => {
-    const response = await apiClient.get<{ success: boolean; data: { user: User } }>(
+    const response = await apiClient.get<ApiResponse<{ user: User }>>(
       '/api/auth/me'
     )
     return response.data.data
@@ -81,8 +82,8 @@ export const authApi = {
   /**
    * Request password reset email
    */
-  forgotPassword: async (data: ForgotPasswordDTO): Promise<{ success: boolean; message: string }> => {
-    const response = await apiClient.post<{ success: boolean; message: string }>(
+  forgotPassword: async (data: ForgotPasswordDTO): Promise<ApiResponse<{ message: string }>> => {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(
       '/api/auth/forgot-password',
       data
     )
@@ -92,8 +93,8 @@ export const authApi = {
   /**
    * Reset password with token
    */
-  resetPassword: async (data: ResetPasswordDTO): Promise<{ success: boolean; message: string }> => {
-    const response = await apiClient.post<{ success: boolean; message: string }>(
+  resetPassword: async (data: ResetPasswordDTO): Promise<ApiResponse<{ message: string }>> => {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(
       '/api/auth/reset-password',
       data
     )

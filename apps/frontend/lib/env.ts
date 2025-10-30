@@ -8,6 +8,29 @@ import { z } from 'zod'
  *
  * IMPORTANT: This validation runs during build, not at runtime
  * If env vars are invalid, build will fail (fail-fast)
+ *
+ * ⚠️ SECURITY WARNING: Environment Variables
+ * ========================================================
+ * All NEXT_PUBLIC_* variables are PUBLIC and embedded in client-side JavaScript.
+ * Anyone can view them by inspecting the browser's network tab or page source.
+ *
+ * ✅ SAFE to use NEXT_PUBLIC_ prefix for:
+ *    - API URLs (NEXT_PUBLIC_API_URL)
+ *    - Stripe PUBLISHABLE keys (pk_*)
+ *    - Sentry DSN (public project identifier)
+ *    - Public feature flags
+ *    - Analytics IDs (Google Analytics, etc.)
+ *    - Public CDN URLs
+ *
+ * ❌ NEVER use NEXT_PUBLIC_ prefix for:
+ *    - API SECRET keys
+ *    - Stripe SECRET keys (sk_*)
+ *    - Database URLs
+ *    - JWT secrets
+ *    - OAuth client secrets
+ *    - Any private API keys
+ *
+ * Rule of thumb: If it's sensitive, it should ONLY exist on the backend.
  */
 const envSchema = z.object({
   // API URL (REQUIRED)
@@ -54,8 +77,7 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
-    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID,
   NEXT_PUBLIC_STRIPE_PRO_PRICE_ID: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,

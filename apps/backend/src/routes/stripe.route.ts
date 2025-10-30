@@ -2,12 +2,9 @@ import { FastifyInstance } from 'fastify'
 import rawBody from 'fastify-raw-body'
 import { env } from '@/config/env'
 import { StripeController } from '../controllers/stripe.controller'
-import { authMiddleware } from '../middlewares/auth.middleware'
 import { requireStripeIPWhitelist } from '../middlewares/stripe-ip-whitelist.middleware'
-import {
-  createCheckoutSessionSchema,
-  getSubscriptionSchema,
-} from '@/schemas/openapi.schema'
+import { createProtectedRoutes } from '@/utils/protected-routes'
+import { createCheckoutSessionSchema, getSubscriptionSchema } from '@/schemas/openapi.schema'
 
 /**
  * Stripe Routes
@@ -25,10 +22,7 @@ export async function stripeRoutes(fastify: FastifyInstance) {
   const controller = new StripeController()
 
   // ===== Protected routes (with auth) =====
-  fastify.register(async function (fastify) {
-    // Auth middleware on all routes in this group
-    fastify.addHook('preHandler', authMiddleware)
-
+  const protectedStripeRoutes = createProtectedRoutes(async fastify => {
     /**
      * Create checkout session
      * POST /api/stripe/create-checkout-session
@@ -57,10 +51,7 @@ export async function stripeRoutes(fastify: FastifyInstance) {
      *   url: "https://billing.stripe.com/..."
      * }
      */
-    fastify.post(
-      '/create-portal-session',
-      controller.createPortalSession.bind(controller)
-    )
+    fastify.post('/create-portal-session', controller.createPortalSession.bind(controller))
 
     /**
      * Get current subscription
@@ -76,6 +67,8 @@ export async function stripeRoutes(fastify: FastifyInstance) {
       controller.getSubscription.bind(controller)
     )
   })
+
+  await fastify.register(protectedStripeRoutes)
 
   // ===== Webhook (WITHOUT auth but WITH IP whitelist) =====
   /**

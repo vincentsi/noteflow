@@ -99,7 +99,10 @@ export async function createApp(): Promise<FastifyInstance> {
         { name: 'auth', description: 'Authentication endpoints' },
         { name: 'verification', description: 'Email verification endpoints' },
         { name: 'password-reset', description: 'Password reset endpoints' },
-        { name: 'gdpr', description: 'GDPR compliance endpoints (data export, deletion, anonymization)' },
+        {
+          name: 'gdpr',
+          description: 'GDPR compliance endpoints (data export, deletion, anonymization)',
+        },
         { name: 'admin', description: 'Admin-only endpoints (requires ADMIN role)' },
         { name: 'stripe', description: 'Stripe subscription endpoints' },
         { name: 'premium', description: 'Premium feature endpoints (requires subscription)' },
@@ -190,11 +193,12 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
   await app.register(noteRoutes, { prefix: '/api/notes' })
 
-  // SECURITY: Only register test routes in development/test mode
+  // SECURITY: Only register test routes in test mode (NOT development or production)
   // Test routes provide dangerous operations (data seeding, cleanup) that must NEVER be exposed in production
-  if ((env.NODE_ENV === 'development' || env.NODE_ENV === 'test') && env.ENABLE_TEST_ROUTES) {
+  // Removed ENABLE_TEST_ROUTES flag to prevent accidental exposure in production
+  if (env.NODE_ENV === 'test') {
     await app.register(testSetupRoutes, { prefix: '/api/test-setup' })
-    app.log.warn('⚠️  Test routes enabled - DO NOT USE IN PRODUCTION')
+    app.log.info('Test routes enabled for test environment')
   }
 
   return app

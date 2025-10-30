@@ -1,14 +1,14 @@
 import { prisma } from '@/config/prisma'
-import { SummaryStyle } from '@prisma/client'
+import { SummaryStyle, type Summary } from '@prisma/client'
 import { queueSummary } from '@/queues/summary.queue'
 import { CacheService } from './cache.service'
 import { PlanLimiter } from '@/utils/plan-limiter'
-import {
-  buildSoftDeleteFilter,
-  buildMonthRange,
-} from '@/utils/query-builders'
+import { buildSoftDeleteFilter, buildMonthRange } from '@/utils/query-builders'
+import { BaseCrudService } from './base-crud.service'
 
-export class SummaryService {
+export class SummaryService extends BaseCrudService<Summary> {
+  protected modelName = 'Summary'
+  protected prismaModel = prisma.summary
   /**
    * Create a summary generation job
    * Checks plan limits before queueing
@@ -123,26 +123,8 @@ export class SummaryService {
    * Note: Uses soft delete to preserve monthly usage count
    */
   async deleteSummary(summaryId: string, userId: string): Promise<void> {
-    // Check if summary exists and belongs to user (only active summaries)
-    const where = {
-      id: summaryId,
-      userId,
-      ...buildSoftDeleteFilter(),
-    }
-
-    const summary = await prisma.summary.findFirst({
-      where,
-    })
-
-    if (!summary) {
-      throw new Error('Summary not found or you do not have permission to delete it')
-    }
-
-    // Soft delete the summary (set deletedAt timestamp)
-    await prisma.summary.update({
-      where: { id: summaryId },
-      data: { deletedAt: new Date() },
-    })
+    // Use base class method for soft delete with ownership verification
+    await this.softDelete(summaryId, userId)
 
     // Invalidate cache for this summary
     await CacheService.delete(`summary:${summaryId}`)

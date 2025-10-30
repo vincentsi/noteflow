@@ -1,15 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import { authMiddleware } from '@/middlewares/auth.middleware'
+import { createProtectedRoutes } from '@/utils/protected-routes'
 import { noteController } from '@/controllers/note.controller'
 
 /**
  * Note routes
  * @param fastify - Fastify instance
  */
-export async function noteRoutes(fastify: FastifyInstance): Promise<void> {
-  // Add authentication middleware to all routes
-  fastify.addHook('preHandler', authMiddleware)
-
+export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance): Promise<void> => {
   /**
    * Create a note
    * @route POST /api/notes
@@ -230,4 +227,4 @@ export async function noteRoutes(fastify: FastifyInstance): Promise<void> {
     },
     noteController.deleteNote.bind(noteController)
   )
-}
+})

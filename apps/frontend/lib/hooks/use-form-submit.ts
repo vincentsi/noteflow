@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { UseFormSetError, FieldValues, Path } from 'react-hook-form'
+import { getApiErrorMessage } from '@/lib/api/types'
 
 /**
  * Reusable hook for form submission with error handling
@@ -54,10 +55,8 @@ export function useFormSubmit<TFormData extends FieldValues>({
       // Call user's error handler if provided
       onError?.(error, data)
 
-      // Extract error message from API response
-      const errorData = (error as { response?: { data?: { error?: string; message?: string } } })
-        ?.response?.data
-      const errorMessage = errorData?.error || errorData?.message || defaultErrorMessage
+      // Extract error message from API response using type-safe helper
+      const errorMessage = getApiErrorMessage(error, defaultErrorMessage)
 
       // Set form error
       setError('root' as Path<TFormData>, {

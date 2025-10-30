@@ -13,12 +13,14 @@ import { prisma } from '@/config/prisma'
 import { getSummaryQueue } from '@/queues/summary.queue'
 import { logger } from '@/utils/logger'
 import { CACHE_TTL } from '@/constants/performance'
+import { buildCacheKey } from '@/utils/query-builders'
 import {
   streamFileToDisk,
   cleanupTempFile,
   getFileSizeLimitForPlan,
 } from '@/utils/streaming-upload'
 import { PlanType } from '@prisma/client'
+import { requireAuth } from '@/utils/require-auth'
 
 /**
  * Summary controller
@@ -31,15 +33,7 @@ export class SummaryController {
    */
   async createSummary(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Check if request is multipart (file upload)
       const contentType = request.headers['content-type']
@@ -123,12 +117,7 @@ export class SummaryController {
       }
 
       // Create summary job
-      const result = await summaryService.createSummary(
-        userId,
-        text,
-        style,
-        language
-      )
+      const result = await summaryService.createSummary(userId, text, style, language)
 
       return reply.status(202).send({
         success: true,
@@ -156,15 +145,7 @@ export class SummaryController {
    */
   async getSummaryStatus(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const { jobId } = request.params as { jobId: string }
 
@@ -230,9 +211,7 @@ export class SummaryController {
    * Extracts summaryId from completed job ID format: "completed-{summaryId}"
    */
   private extractSummaryIdFromJobId(jobId: string): string | null {
-    return jobId.startsWith('completed-')
-      ? jobId.replace('completed-', '')
-      : null
+    return jobId.startsWith('completed-') ? jobId.replace('completed-', '') : null
   }
 
   /**
@@ -256,7 +235,7 @@ export class SummaryController {
    * Fetches summary from cache or database and caches it
    */
   private async fetchAndCacheSummary(summaryId: string, userId: string) {
-    const cacheKey = `summary:${summaryId}`
+    const cacheKey = buildCacheKey('summary', { id: summaryId })
 
     // Try cache first
     const cached = await CacheService.get(cacheKey)
@@ -301,7 +280,8 @@ export class SummaryController {
       )
       return reply.status(500).send({
         success: false,
-        error: 'Summary generation completed but result not found. Please try creating a new summary.',
+        error:
+          'Summary generation completed but result not found. Please try creating a new summary.',
       })
     }
 
@@ -313,7 +293,8 @@ export class SummaryController {
       )
       return reply.status(500).send({
         success: false,
-        error: 'Summary generation completed but result not found. Please try creating a new summary.',
+        error:
+          'Summary generation completed but result not found. Please try creating a new summary.',
       })
     }
 
@@ -356,20 +337,12 @@ export class SummaryController {
    */
   async getSummaryById(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const { id } = request.params as { id: string }
 
       // Try cache first
-      const cacheKey = `summary:${id}`
+      const cacheKey = buildCacheKey('summary', { id })
       const cached = await CacheService.get(cacheKey)
 
       if (cached) {
@@ -425,15 +398,7 @@ export class SummaryController {
    */
   async getUserSummaries(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate and parse query parameters
       const { page, limit } = getSummariesSchema.parse(request.query)
@@ -456,15 +421,7 @@ export class SummaryController {
    */
   async deleteSummary(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const { id } = request.params as { id: string }
 

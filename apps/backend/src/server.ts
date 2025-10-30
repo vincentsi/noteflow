@@ -1,12 +1,7 @@
 import { logger } from '@/utils/logger'
 import { env } from '@/config/env'
 import { disconnectPrisma } from '@/config/prisma'
-import {
-  disconnectRedis,
-  initializeRedis,
-  isRedisAvailable,
-  waitForRedis,
-} from '@/config/redis'
+import { disconnectRedis, initializeRedis, isRedisAvailable, waitForRedis } from '@/config/redis'
 import { captureException, initializeSentry } from '@/config/sentry'
 import { startStripeWebhookWorker } from '@/queues/stripe-webhook.queue'
 import { startRSSWorker, queueRSSFetch, setupRSSCron } from '@/queues/rss.queue'
@@ -15,6 +10,7 @@ import { scheduleRSSCleanup } from '@/queues/rss-cleanup.queue'
 import { startRSSCleanupWorker } from '@/queues/rss-cleanup.worker'
 import { BackupService } from '@/services/backup.service'
 import { CleanupService } from '@/services/cleanup.service'
+import { cleanupOldTempFiles } from '@/utils/streaming-upload'
 import type { FastifyInstance } from 'fastify'
 import { createApp } from './app'
 
@@ -66,9 +62,7 @@ async function start() {
       startStripeWebhookWorker()
       logger.info('✅ Stripe webhook worker started')
     } else {
-      logger.warn(
-        '⚠️  Redis not available, webhooks will be processed synchronously'
-      )
+      logger.warn('⚠️  Redis not available, webhooks will be processed synchronously')
     }
 
     // Start RSS feed worker (unless explicitly disabled)
@@ -119,9 +113,23 @@ async function start() {
       logger.warn('⚠️  Redis not available, summaries will not be processed')
     }
 
+    // Setup periodic temp file cleanup (every 30 minutes)
+    setInterval(
+      async () => {
+        try {
+          await cleanupOldTempFiles(60 * 60 * 1000) // Clean files older than 1 hour
+          logger.debug('🧹 Periodic temp file cleanup completed')
+        } catch (error) {
+          logger.error({ error }, '❌ Periodic temp file cleanup failed')
+        }
+      },
+      30 * 60 * 1000
+    ) // Run every 30 minutes
+
     logger.info(`🚀 Server ready at http://localhost:${port}`)
     logger.info(`📊 Health check: http://localhost:${port}/api/health`)
     logger.info(`📚 API Docs: http://localhost:${port}/docs`)
+    logger.info('🧹 Temp file cleanup scheduled (every 30 minutes)')
   } catch (error) {
     logger.error({ error: error }, '❌ Error starting server:')
     captureException(error as Error, { context: 'server-startup' })

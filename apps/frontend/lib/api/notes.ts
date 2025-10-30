@@ -1,4 +1,5 @@
 import { apiClient } from './client'
+import type { ApiResponse } from './types'
 
 export type Note = {
   id: string
@@ -26,17 +27,9 @@ export type GetNotesParams = {
   tags?: string
 }
 
-export type NotesResponse = {
-  success: boolean
-  data: {
-    notes: Note[]
-  }
-}
+export type NotesResponse = ApiResponse<{ notes: Note[] }>
 
-export type NoteResponse = {
-  success: boolean
-  data: Note
-}
+export type NoteResponse = ApiResponse<Note>
 
 /**
  * Notes API client

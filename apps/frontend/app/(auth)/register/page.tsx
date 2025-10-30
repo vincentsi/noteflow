@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useAuth } from '@/providers/auth.provider'
 import { useI18n } from '@/lib/i18n/provider'
 import { registerSchema, type RegisterFormData } from '@/lib/validators/auth'
+import { useFormSubmit } from '@/lib/hooks/use-form-submit'
+import { ERROR_MESSAGES } from '@/lib/constants/errors'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -38,21 +40,11 @@ export default function RegisterPage() {
     },
   })
 
-  const onSubmit = async (data: RegisterFormData) => {
-    try {
-      await registerUser(data)
-    } catch (error: unknown) {
-      // Extract error message from API response
-      // Backend returns { success: false, error: "message" }
-      const errorData = (error as { response?: { data?: { error?: string; message?: string } } })
-        ?.response?.data
-      const errorMessage = errorData?.error || errorData?.message || 'Registration failed'
-
-      form.setError('root', {
-        message: errorMessage,
-      })
-    }
-  }
+  const { handleSubmit: handleFormSubmit, isSubmitting } = useFormSubmit({
+    onSubmit: registerUser,
+    setError: form.setError,
+    defaultErrorMessage: ERROR_MESSAGES.AUTH.REGISTRATION_FAILED,
+  })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
@@ -66,7 +58,7 @@ export default function RegisterPage() {
 
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
               {form.formState.errors.root && (
                 <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
                   {form.formState.errors.root.message}
@@ -125,9 +117,9 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                disabled={isSubmitting}
               >
-                {form.formState.isSubmitting ? t('auth.register.creatingAccount') : t('auth.register.signUpButton')}
+                {isSubmitting ? t('auth.register.creatingAccount') : t('auth.register.signUpButton')}
               </Button>
             </form>
           </Form>

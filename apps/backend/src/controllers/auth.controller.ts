@@ -1,11 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { authService } from '@/services/auth.service'
-import {
-  registerSchema,
-  loginSchema,
-  type RegisterDTO,
-  type LoginDTO,
-} from '@/schemas/auth.schema'
+import { registerSchema, loginSchema, type RegisterDTO, type LoginDTO } from '@/schemas/auth.schema'
 import { CsrfService } from '@/services/csrf.service'
 import {
   setAuthCookies,
@@ -15,6 +10,7 @@ import {
 } from '@/utils/cookie-helpers'
 import { handleControllerError } from '@/utils/error-response'
 import { securityLogger } from '@/utils/security-logger'
+import { requireAuth } from '@/utils/require-auth'
 
 /**
  * Authentication controller
@@ -25,10 +21,7 @@ export class AuthController {
    * POST /api/auth/register
    * Register a new user
    */
-  async register(
-    request: FastifyRequest<{ Body: RegisterDTO }>,
-    reply: FastifyReply
-  ) {
+  async register(request: FastifyRequest<{ Body: RegisterDTO }>, reply: FastifyReply) {
     try {
       // Validate request data
       const data = registerSchema.parse(request.body)
@@ -49,7 +42,7 @@ export class AuthController {
         success: true,
         data: {
           user: result.user,
-          // Tokens stored in httpOnly cookies - no need to expose in response
+          csrfToken, // Return CSRF token for frontend storage (httpOnly cookie prevents JS access)
         },
       })
     } catch (error) {
@@ -70,10 +63,7 @@ export class AuthController {
    * POST /api/auth/login
    * Authenticate a user
    */
-  async login(
-    request: FastifyRequest<{ Body: LoginDTO }>,
-    reply: FastifyReply
-  ) {
+  async login(request: FastifyRequest<{ Body: LoginDTO }>, reply: FastifyReply) {
     try {
       // Validate request data
       const data = loginSchema.parse(request.body)
@@ -101,7 +91,7 @@ export class AuthController {
         success: true,
         data: {
           user: result.user,
-          // Tokens stored in httpOnly cookies - no need to expose in response
+          csrfToken, // Return CSRF token for frontend storage (httpOnly cookie prevents JS access)
         },
       })
     } catch (error) {
@@ -121,10 +111,7 @@ export class AuthController {
         },
         'Account has been deleted': (err, reply, req) => {
           // Log without email for GDPR compliance (only IP address)
-          req.log.warn(
-            { ip: req.ip },
-            'Login attempt for deleted account'
-          )
+          req.log.warn({ ip: req.ip }, 'Login attempt for deleted account')
           return reply.status(403).send({
             success: false,
             error: err.message,
@@ -172,7 +159,9 @@ export class AuthController {
       return reply.status(200).send({
         success: true,
         message: 'Tokens refreshed successfully',
-        // Tokens stored in httpOnly cookies - no need to expose in response
+        data: {
+          csrfToken: newCsrfToken, // Return CSRF token for frontend storage
+        },
       })
     } catch (error) {
       return handleControllerError(error, request, reply, {
@@ -224,14 +213,7 @@ export class AuthController {
   async me(request: FastifyRequest, reply: FastifyReply) {
     try {
       // userId will be injected by auth middleware
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Get user
       const user = await authService.getCurrentUser(userId)
@@ -261,14 +243,7 @@ export class AuthController {
     reply: FastifyReply
   ) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Update profile
       const user = await authService.updateProfile(userId, request.body)

@@ -9,9 +9,7 @@ config()
  */
 const envSchema = z.object({
   // Node environment
-  NODE_ENV: z
-    .enum(['development', 'production', 'test', 'staging'])
-    .default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test', 'staging']).default('development'),
 
   // Server port
   PORT: z.string().default('3001'),
@@ -21,9 +19,7 @@ const envSchema = z.object({
 
   // JWT Secrets
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_REFRESH_SECRET: z
-    .string()
-    .min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
 
   // Frontend URL for CORS (supports comma-separated list)
   FRONTEND_URL: z
@@ -62,13 +58,16 @@ const envSchema = z.object({
     .string()
     .default('test-key-for-unit-tests-default-value')
     .refine(
-      (val) => {
+      val => {
         // Just check it's at least 20 chars (includes test key which is 37 chars)
         // In real production, set a real OpenAI key
         return val.length >= 20
       },
       { message: 'OPENAI_API_KEY must be at least 20 characters' }
     ),
+
+  // Unsplash API (optional - for cover image generation)
+  UNSPLASH_ACCESS_KEY: z.string().min(20).optional(),
 
   // Redis (optional but validated if provided)
   REDIS_URL: z.string().url().optional().or(z.literal('')),
@@ -106,7 +105,10 @@ const envSchema = z.object({
     .default('')
     .transform(val => {
       if (!val || val.trim() === '') return []
-      return val.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0)
+      return val
+        .split(',')
+        .map(ip => ip.trim())
+        .filter(ip => ip.length > 0)
     }),
 
   // Stripe Webhook Security
@@ -116,7 +118,10 @@ const envSchema = z.object({
     .default('')
     .transform(val => {
       if (!val || val.trim() === '') return []
-      return val.split(',').map(ip => ip.trim()).filter(ip => ip.length > 0)
+      return val
+        .split(',')
+        .map(ip => ip.trim())
+        .filter(ip => ip.length > 0)
     }),
 
   // Test Routes Security (development only)

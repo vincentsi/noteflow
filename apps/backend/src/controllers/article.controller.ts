@@ -7,6 +7,7 @@ import {
   unsaveArticleSchema,
 } from '@/schemas/article.schema'
 import { handleControllerError } from '@/utils/error-response'
+import { requireAuth } from '@/utils/require-auth'
 
 /**
  * Article controller
@@ -22,13 +23,13 @@ export class ArticleController {
       // Validate query parameters
       const filters = getArticlesSchema.parse(request.query)
 
-      // Get articles with total count
-      const { articles, total } = await articleService.getArticles(filters)
+      // Get articles with pagination
+      const { articles, pagination } = await articleService.getArticles(filters)
 
       return reply.status(200).send({
         success: true,
         data: articles,
-        total,
+        pagination,
       })
     } catch (error) {
       return handleControllerError(error, request, reply)
@@ -58,24 +59,13 @@ export class ArticleController {
    */
   async getSavedArticles(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       // Validate query parameters
       const filters = getSavedArticlesSchema.parse(request.query)
 
       // Get saved articles
-      const savedArticles = await articleService.getUserSavedArticles(
-        userId,
-        filters
-      )
+      const savedArticles = await articleService.getUserSavedArticles(userId, filters)
 
       return reply.status(200).send({
         success: true,
@@ -92,15 +82,7 @@ export class ArticleController {
    */
   async saveArticle(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const { articleId } = request.params as { articleId: string }
 
@@ -133,15 +115,7 @@ export class ArticleController {
    */
   async unsaveArticle(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const userId = request.user?.userId
-
-      if (!userId) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-        })
-      }
+      const userId = requireAuth(request)
 
       const { articleId } = request.params as { articleId: string }
 

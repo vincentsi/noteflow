@@ -1,5 +1,6 @@
 import { apiClient } from './client'
 import type { SavedArticle, Article } from '@/types'
+import type { ApiResponse, ApiListResponse } from './types'
 
 export type GetArticlesParams = {
   source?: string
@@ -16,21 +17,11 @@ export type GetSavedArticlesParams = {
   take?: number
 }
 
-export type ArticlesResponse = {
-  success: boolean
-  data: Article[]
-  total: number
-}
+export type ArticlesResponse = ApiListResponse<Article[]>
 
-export type SavedArticlesResponse = {
-  success: boolean
-  data: SavedArticle[]
-}
+export type SavedArticlesResponse = ApiResponse<SavedArticle[]>
 
-export type SaveArticleResponse = {
-  success: boolean
-  message: string
-}
+export type SaveArticleResponse = ApiResponse<{ message: string }>
 
 export type ArticlesWithTotal = {
   articles: Article[]
@@ -51,7 +42,7 @@ export const articlesApi = {
     })
     return {
       articles: response.data.data,
-      total: response.data.total,
+      total: response.data.total ?? 0,
     }
   },
 
@@ -59,7 +50,7 @@ export const articlesApi = {
    * Get list of article sources
    */
   getSources: async (): Promise<string[]> => {
-    const response = await apiClient.get<{ success: boolean; data: string[] }>('/api/articles/sources')
+    const response = await apiClient.get<ApiResponse<string[]>>('/api/articles/sources')
     return response.data.data
   },
 

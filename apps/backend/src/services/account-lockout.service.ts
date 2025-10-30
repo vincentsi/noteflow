@@ -50,8 +50,9 @@ export class AccountLockoutService {
         ip,
         reason: `Too many failed attempts from this account. Locked until ${emailLockout.unlockAt?.toISOString()}`,
       })
+      //Do not expose exact unlock time to prevent timing attacks
       throw new Error(
-        `Account temporarily locked. Too many failed login attempts. Try again at ${emailLockout.unlockAt?.toISOString()}`
+        'Too many failed login attempts. Your account is temporarily locked. Please try again later or reset your password.'
       )
     }
 
@@ -63,8 +64,9 @@ export class AccountLockoutService {
         ip,
         reason: `Too many failed attempts from this IP. Locked until ${ipLockout.unlockAt?.toISOString()}`,
       })
+      //Do not expose exact unlock time to prevent timing attacks
       throw new Error(
-        `Too many failed login attempts from your IP. Try again at ${ipLockout.unlockAt?.toISOString()}`
+        'Too many failed login attempts from your IP address. Please try again later.'
       )
     }
   }
@@ -139,11 +141,7 @@ export class AccountLockoutService {
     const attempts = (data?.attempts || 0) + 1
 
     // Store attempts with 24h TTL (resets after 1 day of inactivity)
-    await CacheService.set(
-      key,
-      { attempts, lockedUntil: data?.lockedUntil },
-      24 * 60 * 60
-    )
+    await CacheService.set(key, { attempts, lockedUntil: data?.lockedUntil }, 24 * 60 * 60)
 
     return attempts
   }
@@ -159,13 +157,13 @@ export class AccountLockoutService {
   ): Promise<void> {
     // Permanent lockout after too many attempts
     if (attempts >= this.MAX_ATTEMPTS_BEFORE_PERMANENT) {
-      const unlockAt = new Date(
-        Date.now() + this.PERMANENT_LOCKOUT_HOURS * 60 * 60 * 1000
-      )
+      // SEC-009: Add jitter to prevent timing analysis attacks
+      const jitter = Math.random() * 5 * 60 * 1000 // 0-5 minutes random jitter
+      const unlockAt = new Date(Date.now() + this.PERMANENT_LOCKOUT_HOURS * 60 * 60 * 1000 + jitter)
       await CacheService.set(
         key,
         { attempts, lockedUntil: unlockAt.toISOString() },
-        this.PERMANENT_LOCKOUT_HOURS * 60 * 60
+        this.PERMANENT_LOCKOUT_HOURS * 60 * 60 + Math.ceil(jitter / 1000)
       )
 
       securityLogger.accountLocked({
@@ -177,22 +175,25 @@ export class AccountLockoutService {
     }
 
     // Find appropriate lockout threshold
-    const threshold = this.LOCKOUT_THRESHOLDS.find(
-      (t) => attempts <= t.attempts
-    )
+    const threshold = this.LOCKOUT_THRESHOLDS.find(t => attempts <= t.attempts)
 
     if (!threshold || threshold.lockoutMinutes === 0) {
       return // No lockout yet
     }
 
-    // Calculate unlock time
-    const unlockAt = new Date(Date.now() + threshold.lockoutMinutes * 60 * 1000)
+    // SEC-009: Add jitter (0-60 seconds) to prevent timing analysis attacks
+    // Prevents attackers from determining exact lockout thresholds
+    const jitterSeconds = Math.floor(Math.random() * 60) // 0-60 seconds
+    const jitterMs = jitterSeconds * 1000
+
+    // Calculate unlock time with jitter
+    const unlockAt = new Date(Date.now() + threshold.lockoutMinutes * 60 * 1000 + jitterMs)
 
     // Store lockout
     await CacheService.set(
       key,
       { attempts, lockedUntil: unlockAt.toISOString() },
-      threshold.lockoutMinutes * 60
+      threshold.lockoutMinutes * 60 + jitterSeconds
     )
 
     securityLogger.accountLocked({
@@ -214,9 +215,7 @@ export class AccountLockoutService {
     }
 
     // Find next threshold
-    const nextThreshold = this.LOCKOUT_THRESHOLDS.find(
-      (t) => status.attempts < t.attempts
-    )
+    const nextThreshold = this.LOCKOUT_THRESHOLDS.find(t => status.attempts < t.attempts)
 
     if (!nextThreshold) {
       return 0
@@ -228,11 +227,7 @@ export class AccountLockoutService {
   /**
    * Admin function: Manually unlock an account
    */
-  static async unlockAccount(
-    email: string,
-    adminId: string,
-    reason: string
-  ): Promise<void> {
+  static async unlockAccount(email: string, adminId: string, reason: string): Promise<void> {
     await CacheService.delete(`lockout:email:${email}`)
 
     securityLogger.adminAction({

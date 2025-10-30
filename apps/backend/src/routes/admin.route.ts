@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify'
-import { authMiddleware } from '../middlewares/auth.middleware'
 import { requireRole } from '../middlewares/rbac.middleware'
 import { prisma } from '../config/prisma'
 import { CleanupService } from '../services/cleanup.service'
@@ -19,17 +18,16 @@ import {
   type PaginationQuery,
 } from '@/utils/pagination.util'
 import { logSecurityEvent } from '@/utils/logger'
+import { createProtectedRoutes } from '@/utils/protected-routes'
 
 /**
  * Administration routes
  * Prefix: /api/admin
  * All routes require authentication + appropriate role
  */
-export async function adminRoutes(fastify: FastifyInstance) {
+export const adminRoutes = createProtectedRoutes(async (fastify: FastifyInstance) => {
   // Routes reserved for ADMIN only
   fastify.register(async function (fastify) {
-    // Authentication middleware
-    fastify.addHook('preHandler', authMiddleware)
     // Role verification middleware
     fastify.addHook('preHandler', requireRole('ADMIN'))
 
@@ -304,7 +302,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
           totalUsers,
           verifiedUsers,
           unverifiedUsers: totalUsers - verifiedUsers,
-          byRole: stats.map((stat) => ({
+          byRole: stats.map(stat => ({
             role: stat.role,
             _count: stat._count._all,
           })),
@@ -362,4 +360,4 @@ export async function adminRoutes(fastify: FastifyInstance) {
       })
     })
   })
-}
+})

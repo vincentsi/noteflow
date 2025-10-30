@@ -20,10 +20,7 @@ export async function securityHeadersMiddleware(
 
   // Force HTTPS in production (31536000 = 1 year)
   if (isProduction) {
-    reply.header(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains; preload'
-    )
+    reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
   }
 
   // Prevent MIME type sniffing
@@ -39,10 +36,7 @@ export async function securityHeadersMiddleware(
   reply.header('Referrer-Policy', 'strict-origin-when-cross-origin')
 
   // Restrict browser features
-  reply.header(
-    'Permissions-Policy',
-    'geolocation=(), microphone=(), camera=(), payment=()'
-  )
+  reply.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()')
 
   // Remove X-Powered-By header to hide technology stack
   reply.removeHeader('X-Powered-By')
@@ -73,7 +67,7 @@ export async function contentSecurityPolicyMiddleware(
 
   // Add report-uri in production for CSP violations
   if (isProduction && env.SENTRY_DSN) {
-    cspDirectives.push("report-uri /api/csp-report")
+    cspDirectives.push('report-uri /api/csp-report')
   }
 
   reply.header('Content-Security-Policy', cspDirectives.join('; '))
@@ -90,17 +84,19 @@ export function getCorsOptions() {
 
   // In production, only allow specific origins
   const allowedOrigins = isProduction
-    ? [
-        env.FRONTEND_URL || 'https://noteflow.com',
-        'https://www.noteflow.com',
-      ]
+    ? [env.FRONTEND_URL || 'https://noteflow.com', 'https://www.noteflow.com']
     : ['http://localhost:3000', 'http://localhost:3002'] // Dev: frontend + landing
 
   return {
     origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
+      // Allows requests without Origin only in development (for testing tools like Postman, curl)
       if (!origin) {
-        callback(null, true)
+        if (env.NODE_ENV === 'production') {
+          callback(new Error('Origin header required'), false)
+        } else {
+          // Allow in dev/test for local testing tools
+          callback(null, true)
+        }
         return
       }
 
@@ -113,17 +109,8 @@ export function getCorsOptions() {
     },
     credentials: true, // Allow cookies
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-CSRF-Token',
-      'X-Requested-With',
-    ],
-    exposedHeaders: [
-      'X-RateLimit-Limit',
-      'X-RateLimit-Remaining',
-      'X-RateLimit-Reset',
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Requested-With'],
+    exposedHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
     maxAge: 86400, // Cache preflight for 24 hours
   }
 }

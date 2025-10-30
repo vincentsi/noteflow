@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { gdprController } from '@/controllers/gdpr.controller'
-import { authMiddleware } from '@/middlewares/auth.middleware'
+import { createProtectedRoutes } from '@/utils/protected-routes'
 
 /**
  * GDPR Compliance Routes
@@ -14,28 +14,29 @@ import { authMiddleware } from '@/middlewares/auth.middleware'
  *
  * @see https://gdpr.eu/
  */
-export async function gdprRoutes(fastify: FastifyInstance) {
-  // All GDPR routes require authentication
-  fastify.addHook('preHandler', authMiddleware)
-
+export const gdprRoutes = createProtectedRoutes(async (fastify: FastifyInstance) => {
   /**
    * Export user data (GDPR Article 20 - Right to data portability)
    *
    * GET /api/gdpr/export-data
    *
-   * Rate limited to 3 exports per hour to prevent DoS attacks
+   * Security (SEC-010): Rate limited to 5 exports per hour
+   * - Prevents DoS attacks via expensive database queries
+   * - Mitigates data exfiltration attempts
+   * - Allows legitimate use (multiple checks/verifications)
+   * - Matches audit recommendation (5 per hour)
    */
   fastify.get(
     '/export-data',
     {
       config: {
         rateLimit: {
-          max: 3,
+          max: 5,
           timeWindow: '1 hour',
-          keyGenerator: (req) => `gdpr:export:${req.user?.userId || req.ip}`,
+          keyGenerator: req => `gdpr:export:${req.user?.userId || req.ip}`,
           errorResponseBuilder: () => ({
             success: false,
-            error: 'Rate limit exceeded. You can export data 3 times per hour.',
+            error: 'Rate limit exceeded. You can export data 5 times per hour.',
           }),
         },
       },
@@ -86,7 +87,7 @@ export async function gdprRoutes(fastify: FastifyInstance) {
         rateLimit: {
           max: 1,
           timeWindow: '24 hours',
-          keyGenerator: (req) => `gdpr:delete:${req.user?.userId || req.ip}`,
+          keyGenerator: req => `gdpr:delete:${req.user?.userId || req.ip}`,
           errorResponseBuilder: () => ({
             success: false,
             error: 'Rate limit exceeded. You can request account deletion once per day.',
@@ -94,7 +95,8 @@ export async function gdprRoutes(fastify: FastifyInstance) {
         },
       },
       schema: {
-        description: 'Permanently delete your account and all associated data (GDPR Article 17). ⚠️ This action is IRREVERSIBLE.',
+        description:
+          'Permanently delete your account and all associated data (GDPR Article 17). ⚠️ This action is IRREVERSIBLE.',
         tags: ['gdpr'],
         security: [{ bearerAuth: [] }],
         body: {
@@ -161,7 +163,7 @@ export async function gdprRoutes(fastify: FastifyInstance) {
         rateLimit: {
           max: 1,
           timeWindow: '24 hours',
-          keyGenerator: (req) => `gdpr:anonymize:${req.user?.userId || req.ip}`,
+          keyGenerator: req => `gdpr:anonymize:${req.user?.userId || req.ip}`,
           errorResponseBuilder: () => ({
             success: false,
             error: 'Rate limit exceeded. You can request anonymization once per day.',
@@ -216,4 +218,4 @@ export async function gdprRoutes(fastify: FastifyInstance) {
     },
     gdprController.anonymizeUserData
   )
-}
+})

@@ -1,7 +1,8 @@
 import { prisma } from '@/config/prisma'
 import { PlanLimiter } from '@/utils/plan-limiter'
 import { buildTagsFilter, buildSoftDeleteFilter } from '@/utils/query-builders'
-import { Prisma } from '@prisma/client'
+import { BaseCrudService } from './base-crud.service'
+import { Prisma, type Note } from '@prisma/client'
 
 export interface CreateNoteData {
   title: string
@@ -19,7 +20,9 @@ export interface GetNotesFilters {
   tags?: string[]
 }
 
-export class NoteService {
+export class NoteService extends BaseCrudService<Note> {
+  protected modelName = 'Note'
+  protected prismaModel = prisma.note
   /**
    * Create a new note for user
    * Checks plan limits before creating
@@ -73,23 +76,11 @@ export class NoteService {
    * Only the note owner can update it
    */
   async updateNote(noteId: string, userId: string, data: UpdateNoteData) {
-    // Check if note exists and belongs to user (only active notes)
-    const existingNote = await prisma.note.findFirst({
-      where: {
-        id: noteId,
-        userId,
-        ...buildSoftDeleteFilter(),
-      },
-    })
-
-    if (!existingNote) {
-      throw new Error('Note not found')
-    }
+    // Use base class method for ownership verification
+    await this.findByIdWithOwnership(noteId, userId)
 
     const note = await prisma.note.update({
-      where: {
-        id: noteId,
-      },
+      where: { id: noteId },
       data,
     })
 
@@ -102,24 +93,8 @@ export class NoteService {
    * Note: Uses soft delete to allow recovery
    */
   async deleteNote(noteId: string, userId: string) {
-    // Check if note exists and belongs to user (only active notes)
-    const note = await prisma.note.findFirst({
-      where: {
-        id: noteId,
-        userId,
-        ...buildSoftDeleteFilter(),
-      },
-    })
-
-    if (!note) {
-      throw new Error('Note not found')
-    }
-
-    // Soft delete the note (set deletedAt timestamp)
-    await prisma.note.update({
-      where: { id: noteId },
-      data: { deletedAt: new Date() },
-    })
+    // Use base class method for soft delete with ownership verification
+    await this.softDelete(noteId, userId)
   }
 
   /**
