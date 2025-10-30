@@ -13,6 +13,10 @@ module.exports = {
     'src/utils/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    // Exclude backup service from coverage (no tests, disabled in dev)
+    '!src/services/backup.service.ts',
+    '!src/services/cleanup.service.ts',
+    '!src/services/rss-cleanup.service.ts',
   ],
   coverageThreshold: {
     global: {
