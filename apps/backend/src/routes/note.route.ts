@@ -15,6 +15,8 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
   fastify.post(
     '/',
     {
+      // SECURITY: Limit body size to 100KB for markdown notes
+      bodyLimit: 1024 * 100, // 100KB
       schema: {
         tags: ['Notes'],
         description: 'Create a new note',
@@ -148,6 +150,8 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
   fastify.patch(
     '/:id',
     {
+      // SECURITY: Limit body size to 100KB for markdown notes
+      bodyLimit: 1024 * 100, // 100KB
       schema: {
         tags: ['Notes'],
         description: 'Update a note',

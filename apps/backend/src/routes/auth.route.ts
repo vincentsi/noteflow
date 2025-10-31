@@ -1,12 +1,7 @@
 import { env } from '@/config/env'
 import { authController } from '@/controllers/auth.controller'
 import { authMiddleware } from '@/middlewares/auth.middleware'
-import {
-  loginSchema,
-  meSchema,
-  refreshTokenSchema,
-  registerSchema,
-} from '@/schemas/openapi.schema'
+import { loginSchema, meSchema, refreshTokenSchema, registerSchema } from '@/schemas/openapi.schema'
 import type { FastifyInstance } from 'fastify'
 
 /**
@@ -60,6 +55,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     '/register',
     {
+      // SECURITY: Limit body size to 1KB (email + password + name)
+      bodyLimit: 1024, // 1KB
       schema: registerSchema,
       config:
         env.NODE_ENV !== 'test'
@@ -94,6 +91,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     '/login',
     {
+      // SECURITY: Limit body size to 1KB (email + password)
+      bodyLimit: 1024, // 1KB
       schema: loginSchema,
       config:
         env.NODE_ENV !== 'test'
@@ -128,6 +127,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     '/refresh',
     {
+      // SECURITY: Limit body size to 500 bytes (refresh token in cookie, minimal body)
+      bodyLimit: 500, // 500 bytes
       schema: refreshTokenSchema,
       config:
         env.NODE_ENV !== 'test'

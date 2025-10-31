@@ -18,6 +18,8 @@ export const summaryRoutes = createProtectedRoutes(
     fastify.post(
       '/',
       {
+        // SECURITY: Limit body size to 10MB for PDF uploads
+        bodyLimit: 1024 * 1024 * 10, // 10MB
         config:
           env.NODE_ENV !== 'test'
             ? {
