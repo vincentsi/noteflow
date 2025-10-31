@@ -58,6 +58,8 @@ model User {
   @@index([role, deletedAt]) // Performance: admin stats (active users by role)
   @@index([emailVerified, deletedAt]) // Performance: admin stats queries (verified + active users)
   @@index([stripeCustomerId]) // Performance: Stripe customer lookups (getOrCreateCustomer)
+  @@index([lastLoginAt, role]) // Performance: admin analytics - recent logins by role
+  @@index([loginCount(sort: Desc)]) // Performance: admin analytics - most active users
   @@map("users")
 }
 

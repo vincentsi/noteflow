@@ -6,6 +6,7 @@ import type { PrismaClient } from '@prisma/client'
 import type { SummaryJob } from './summary.queue'
 import { getSummaryUsageCacheKey } from '@/utils/cache-key-helpers'
 import { WorkerRateLimiter } from '@/utils/worker-rate-limiter'
+import { validateUrlForFetch } from '@/utils/url-validator'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 
@@ -23,14 +24,19 @@ function isURL(text: string): boolean {
 
 /**
  * Extract Open Graph image from URL
+ * SECURITY: Validates URL to prevent SSRF attacks
  */
 async function extractOGImage(url: string): Promise<string | null> {
   try {
+    // SECURITY: Validate URL before fetching to prevent SSRF
+    validateUrlForFetch(url)
+
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {
         'User-Agent': 'NoteFlow/1.0',
       },
+      maxRedirects: 0, // SECURITY: Prevent redirect-based SSRF
     })
 
     const $ = cheerio.load(response.data)
@@ -59,14 +65,19 @@ async function extractOGImage(url: string): Promise<string | null> {
 
 /**
  * Fetch and extract text content from URL
+ * SECURITY: Validates URL to prevent SSRF attacks
  */
 async function fetchURLContent(url: string): Promise<string> {
   try {
+    // SECURITY: Validate URL before fetching to prevent SSRF
+    validateUrlForFetch(url)
+
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {
         'User-Agent': 'NoteFlow/1.0',
       },
+      maxRedirects: 0, // SECURITY: Prevent redirect-based SSRF
     })
 
     const $ = cheerio.load(response.data)

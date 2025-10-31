@@ -36,16 +36,20 @@ describe('ArticleService', () => {
       ]
 
       prismaMock.savedArticle.findMany.mockResolvedValue(mockArticles)
+      prismaMock.savedArticle.count.mockResolvedValue(1)
 
       const result = await articleService.getUserSavedArticles(userId)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].article.title).toBe('Test Article')
+      expect(result.savedArticles).toHaveLength(1)
+      expect(result.savedArticles[0].article.title).toBe('Test Article')
+      expect(result.pagination.total).toBe(1)
+      expect(result.pagination.totalPages).toBe(1)
     })
 
     it('should apply source filter', async () => {
       const userId = 'user-123'
       prismaMock.savedArticle.findMany.mockResolvedValue([])
+      prismaMock.savedArticle.count.mockResolvedValue(0)
 
       await articleService.getUserSavedArticles(userId, {
         source: 'TechCrunch',
@@ -64,6 +68,7 @@ describe('ArticleService', () => {
     it('should apply pagination', async () => {
       const userId = 'user-123'
       prismaMock.savedArticle.findMany.mockResolvedValue([])
+      prismaMock.savedArticle.count.mockResolvedValue(0)
 
       await articleService.getUserSavedArticles(userId, {
         pagination: {

@@ -64,12 +64,13 @@ export class ArticleController {
       // Validate query parameters
       const filters = getSavedArticlesSchema.parse(request.query)
 
-      // Get saved articles
-      const savedArticles = await articleService.getUserSavedArticles(userId, filters)
+      // Get saved articles with pagination
+      const result = await articleService.getUserSavedArticles(userId, filters)
 
       return reply.status(200).send({
         success: true,
-        data: savedArticles,
+        data: result.savedArticles,
+        pagination: result.pagination,
       })
     } catch (error) {
       return handleControllerError(error, request, reply)

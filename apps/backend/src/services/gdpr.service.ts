@@ -15,11 +15,38 @@ import { logger } from '@/utils/logger'
  */
 export class GDPRService {
   /**
+   * Helper method to fetch data in batches to prevent OOM for power users
+   * @param fetchFn - Function that fetches data with skip parameter
+   * @param batchSize - Size of each batch
+   * @returns All fetched data
+   */
+  private async fetchInBatches<T>(
+    fetchFn: (skip: number) => Promise<T[]>,
+    batchSize: number
+  ): Promise<T[]> {
+    const allData: T[] = []
+    let skip = 0
+
+    while (true) {
+      const batch = await fetchFn(skip)
+      if (batch.length === 0) break
+      allData.push(...batch)
+      skip += batchSize
+      // If we got less than batchSize, we've reached the end
+      if (batch.length < batchSize) break
+    }
+
+    return allData
+  }
+
+  /**
    * Export all user data in machine-readable format (JSON)
    *
    * GDPR Article 20: Right to data portability
    * Users have the right to receive their personal data in a structured,
    * commonly used and machine-readable format.
+   *
+   * PERFORMANCE: Uses batching for large collections to prevent OOM
    *
    * @param userId - ID of user requesting data export
    * @returns Complete user data package
@@ -84,106 +111,143 @@ export class GDPRService {
       }>
     }
   }> {
-    // Fetch user with all related data
-    // Note: No pagination limits to ensure complete GDPR data export compliance
-    // Most users have <10 tokens, but we must export ALL data
+    // PERFORMANCE: Fetch user and relations separately with batching
+    // GDPR compliance: Must export ALL data, but can do it in chunks for memory efficiency
+    const BATCH_SIZE = 100
+
+    // Fetch user basic data first
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        refreshTokens: {
-          select: {
-            createdAt: true,
-            expiresAt: true,
-            revoked: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        verificationTokens: {
-          select: {
-            createdAt: true,
-            expiresAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        resetTokens: {
-          select: {
-            createdAt: true,
-            expiresAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        csrfTokens: {
-          select: {
-            createdAt: true,
-            expiresAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        subscriptions: {
-          select: {
-            status: true,
-            planType: true,
-            currentPeriodStart: true,
-            currentPeriodEnd: true,
-            cancelAtPeriodEnd: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        savedArticles: {
-          select: {
-            articleId: true,
-            createdAt: true,
-            article: {
-              select: {
-                title: true,
-                url: true,
-                source: true,
-                publishedAt: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        summaries: {
-          select: {
-            id: true,
-            summaryText: true,
-            originalText: true,
-            style: true,
-            title: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        notes: {
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            tags: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        posts: {
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            slug: true,
-            isPublic: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
     })
 
     if (!user) {
       throw new Error('User not found')
     }
+
+    // Fetch all relations in parallel using Promise.all for speed
+    // Small relations fetched all at once, large relations use batching
+    const [
+      refreshTokens,
+      verificationTokens,
+      resetTokens,
+      csrfTokens,
+      subscriptions,
+      savedArticles,
+      summaries,
+      notes,
+      posts,
+    ] = await Promise.all([
+      // Small relations - fetch all at once (users typically have <10)
+      prisma.refreshToken.findMany({
+        where: { userId },
+        select: { createdAt: true, expiresAt: true, revoked: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.verificationToken.findMany({
+        where: { userId },
+        select: { createdAt: true, expiresAt: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.passwordResetToken.findMany({
+        where: { userId },
+        select: { createdAt: true, expiresAt: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.csrfToken.findMany({
+        where: { userId },
+        select: { createdAt: true, expiresAt: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.subscription.findMany({
+        where: { userId },
+        select: {
+          status: true,
+          planType: true,
+          currentPeriodStart: true,
+          currentPeriodEnd: true,
+          cancelAtPeriodEnd: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      // Large relations - batch fetch to prevent OOM for power users
+      this.fetchInBatches(
+        (skip: number) =>
+          prisma.savedArticle.findMany({
+            where: { userId },
+            select: {
+              articleId: true,
+              createdAt: true,
+              article: {
+                select: {
+                  title: true,
+                  url: true,
+                  source: true,
+                  publishedAt: true,
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: BATCH_SIZE,
+            skip,
+          }),
+        BATCH_SIZE
+      ),
+      this.fetchInBatches(
+        (skip: number) =>
+          prisma.summary.findMany({
+            where: { userId },
+            select: {
+              id: true,
+              summaryText: true,
+              originalText: true,
+              style: true,
+              title: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: BATCH_SIZE,
+            skip,
+          }),
+        BATCH_SIZE
+      ),
+      this.fetchInBatches(
+        (skip: number) =>
+          prisma.note.findMany({
+            where: { userId },
+            select: {
+              id: true,
+              title: true,
+              content: true,
+              tags: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: BATCH_SIZE,
+            skip,
+          }),
+        BATCH_SIZE
+      ),
+      this.fetchInBatches(
+        (skip: number) =>
+          prisma.post.findMany({
+            where: { userId },
+            select: {
+              id: true,
+              title: true,
+              content: true,
+              slug: true,
+              isPublic: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: BATCH_SIZE,
+            skip,
+          }),
+        BATCH_SIZE
+      ),
+    ])
 
     // Remove password from export
     const { password: _password, ...userWithoutPassword } = user
@@ -197,63 +261,15 @@ export class GDPRService {
           'You have the right to request deletion of this data at any time.',
       },
       personalData: {
-        refreshTokens: user.refreshTokens.map(t => ({
-          createdAt: t.createdAt,
-          expiresAt: t.expiresAt,
-        })),
-        verificationTokens: user.verificationTokens.map(t => ({
-          createdAt: t.createdAt,
-          expiresAt: t.expiresAt,
-        })),
-        resetTokens: user.resetTokens.map(t => ({
-          createdAt: t.createdAt,
-          expiresAt: t.expiresAt,
-        })),
-        csrfTokens: user.csrfTokens.map(t => ({
-          createdAt: t.createdAt,
-          expiresAt: t.expiresAt,
-        })),
-        subscriptions: user.subscriptions.map(s => ({
-          status: s.status,
-          planType: s.planType,
-          currentPeriodStart: s.currentPeriodStart,
-          currentPeriodEnd: s.currentPeriodEnd,
-          createdAt: s.createdAt,
-        })),
-        savedArticles: user.savedArticles.map(sa => ({
-          articleId: sa.articleId,
-          createdAt: sa.createdAt,
-          article: {
-            title: sa.article.title,
-            url: sa.article.url,
-            source: sa.article.source,
-            publishedAt: sa.article.publishedAt,
-          },
-        })),
-        summaries: user.summaries.map(s => ({
-          id: s.id,
-          summaryText: s.summaryText,
-          originalText: s.originalText,
-          style: s.style,
-          title: s.title,
-          createdAt: s.createdAt,
-        })),
-        notes: user.notes.map(n => ({
-          id: n.id,
-          title: n.title,
-          content: n.content,
-          tags: n.tags,
-          createdAt: n.createdAt,
-          updatedAt: n.updatedAt,
-        })),
-        posts: user.posts.map(p => ({
-          id: p.id,
-          title: p.title,
-          content: p.content,
-          slug: p.slug,
-          isPublic: p.isPublic,
-          createdAt: p.createdAt,
-        })),
+        refreshTokens,
+        verificationTokens,
+        resetTokens,
+        csrfTokens,
+        subscriptions,
+        savedArticles,
+        summaries,
+        notes,
+        posts,
       },
     }
   }
