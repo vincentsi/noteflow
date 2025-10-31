@@ -365,6 +365,11 @@ export class AuthService {
    * @returns New access token and refresh token
    * @throws Error if refresh token invalid or user deleted
    *
+   * Security: Implements token replay detection
+   * - Marks token as used before deletion
+   * - Detects if token was already used (possible theft)
+   * - Revokes all user tokens if replay detected
+   *
    * @example
    * ```typescript
    * const tokens = await authService.refresh('eyJhbGc...')
@@ -398,6 +403,47 @@ export class AuthService {
     if (storedToken.user.deletedAt) {
       throw new Error('Account has been deleted')
     }
+
+    // 🔒 SECURITY: Token replay detection (HIGH-001)
+    // If token was already used more than 5 seconds ago, it's a potential theft
+    const REPLAY_DETECTION_WINDOW_MS = 5000 // 5 seconds grace period for race conditions
+    if (storedToken.usedAt) {
+      const timeSinceUse = Date.now() - storedToken.usedAt.getTime()
+
+      if (timeSinceUse > REPLAY_DETECTION_WINDOW_MS) {
+        // Token was used more than 5s ago - this is a replay attack
+        logger.error(
+          {
+            userId: storedToken.userId,
+            tokenId: storedToken.id,
+            usedAt: storedToken.usedAt,
+            timeSinceUse,
+          },
+          '🚨 SECURITY: Token replay detected - revoking all user tokens'
+        )
+
+        // Revoke ALL user tokens as a security measure
+        await this.logout(storedToken.userId)
+
+        throw new Error('Token reuse detected - all sessions revoked for security')
+      }
+
+      // Within grace period - likely a race condition between two requests
+      logger.warn(
+        {
+          userId: storedToken.userId,
+          tokenId: storedToken.id,
+          timeSinceUse,
+        },
+        'Token used within grace period - possible race condition'
+      )
+    }
+
+    // Mark token as used BEFORE deleting (for replay detection)
+    await prisma.refreshToken.update({
+      where: { id: storedToken.id },
+      data: { usedAt: new Date() },
+    })
 
     // Delete old token to prevent database bloat
     await prisma.refreshToken.delete({

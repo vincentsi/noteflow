@@ -62,13 +62,14 @@ model User {
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
+  id        String    @id @default(cuid())
+  token     String    @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-  revoked   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  revoked   Boolean   @default(false)
+  usedAt    DateTime? // Token replay detection: timestamp when token was used for refresh
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([token, revoked])
@@ -78,6 +79,7 @@ model RefreshToken {
   @@index([userId, token])
   @@index([createdAt]) // Performance: sort by creation date
   @@index([expiresAt, revoked]) // Performance: cleanup job composite (expired + revoked filter)
+  @@index([token, usedAt]) // Performance: token replay detection queries
   @@map("refresh_tokens")
 }
 

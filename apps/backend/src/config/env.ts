@@ -17,9 +17,11 @@ const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().url(),
 
-  // JWT Secrets
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+  // JWT Secrets (512 bits minimum for cryptographic strength)
+  JWT_SECRET: z.string().min(64, 'JWT_SECRET must be at least 64 characters (512 bits)'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(64, 'JWT_REFRESH_SECRET must be at least 64 characters (512 bits)'),
 
   // Frontend URL for CORS (supports comma-separated list)
   FRONTEND_URL: z
@@ -122,7 +124,16 @@ const envSchema = z.object({
         .split(',')
         .map(ip => ip.trim())
         .filter(ip => ip.length > 0)
-    }),
+    })
+    .refine(
+      val => {
+        if (process.env.NODE_ENV === 'production' && val.length === 0) {
+          return false
+        }
+        return true
+      },
+      { message: 'STRIPE_WEBHOOK_ALLOWED_IPS is required in production for security' }
+    ),
 
   // Test Routes Security (development only)
   ENABLE_TEST_ROUTES: z

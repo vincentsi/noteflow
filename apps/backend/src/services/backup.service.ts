@@ -199,22 +199,24 @@ export class BackupService {
       }
 
       // SECURITY: Use spawn with explicit arguments (not shell) to prevent command injection
-      // Set environment variables for PostgreSQL connection
-      const env = {
-        ...process.env,
-        PGHOST: dbParams.host,
-        PGPORT: dbParams.port,
-        PGDATABASE: dbParams.database,
-        PGUSER: dbParams.user,
-        PGPASSWORD: dbParams.password,
-      }
+      // Pass connection string via --dbname to avoid exposing password in process environment
+      // Connection string format: postgresql://user:password@host:port/database
+      const connectionString = `postgresql://${encodeURIComponent(dbParams.user)}:${encodeURIComponent(dbParams.password)}@${dbParams.host}:${dbParams.port}/${dbParams.database}`
 
       // Execute pg_dump and pipe to gzip safely using spawn (no shell)
       const pgDump = spawn(
         'pg_dump',
-        ['--format=plain', '--no-owner', '--no-acl', '--clean', '--if-exists'],
+        [
+          '--dbname',
+          connectionString,
+          '--format=plain',
+          '--no-owner',
+          '--no-acl',
+          '--clean',
+          '--if-exists',
+        ],
         {
-          env,
+          env: process.env,
         }
       )
 
