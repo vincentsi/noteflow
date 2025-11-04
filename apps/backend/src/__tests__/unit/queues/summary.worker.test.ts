@@ -20,15 +20,9 @@ describe('Summary Worker', () => {
       }
 
       const mockAIService = {
-        generateSummary: jest
-          .fn()
-          .mockResolvedValue('This is a short summary.'),
-        generateTitle: jest
-          .fn()
-          .mockResolvedValue('Generated Title'),
-        generateCoverImage: jest
-          .fn()
-          .mockResolvedValue('https://example.com/image.jpg'),
+        generateSummary: jest.fn().mockResolvedValue('This is a short summary.'),
+        generateTitle: jest.fn().mockResolvedValue('Generated Title'),
+        generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
       }
 
       ;(AIService as jest.MockedClass<typeof AIService>).mockImplementation(
@@ -64,6 +58,7 @@ describe('Summary Worker', () => {
           summaryText: 'This is a short summary.',
           style: SummaryStyle.SHORT,
           language: 'en',
+          source: null,
         },
       })
     })
@@ -118,9 +113,7 @@ describe('Summary Worker', () => {
       }
 
       const mockAIService = {
-        generateSummary: jest
-          .fn()
-          .mockRejectedValue(new Error('OpenAI API error')),
+        generateSummary: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
         generateTitle: jest.fn().mockResolvedValue('Generated Title'),
         generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
       }
@@ -129,9 +122,7 @@ describe('Summary Worker', () => {
         () => mockAIService as unknown as AIService
       )
 
-      await expect(processSummary(jobData, prismaMock)).rejects.toThrow(
-        'OpenAI API error'
-      )
+      await expect(processSummary(jobData, prismaMock)).rejects.toThrow('OpenAI API error')
 
       expect(prismaMock.summary.create).not.toHaveBeenCalled()
     })
@@ -154,13 +145,9 @@ describe('Summary Worker', () => {
         () => mockAIService as unknown as AIService
       )
 
-      prismaMock.summary.create.mockRejectedValue(
-        new Error('Database error')
-      )
+      prismaMock.summary.create.mockRejectedValue(new Error('Database error'))
 
-      await expect(processSummary(jobData, prismaMock)).rejects.toThrow(
-        'Database error'
-      )
+      await expect(processSummary(jobData, prismaMock)).rejects.toThrow('Database error')
 
       expect(mockAIService.generateSummary).toHaveBeenCalled()
     })
@@ -207,11 +194,7 @@ describe('Summary Worker', () => {
 
         await processSummary(jobData, prismaMock)
 
-        expect(mockAIService.generateSummary).toHaveBeenCalledWith(
-          'Test text',
-          style,
-          'en'
-        )
+        expect(mockAIService.generateSummary).toHaveBeenCalledWith('Test text', style, 'en')
       }
     })
   })

@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     queryClient.setQueryData(['me'], null)
     queryClient.clear()
-    router.push('/login')
+    router.push('/')
   }
 
   const value: AuthContextType = {

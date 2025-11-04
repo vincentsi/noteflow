@@ -42,8 +42,13 @@ export default function GDPRSettingsPage() {
       const a = document.createElement('a')
       a.href = url
       a.download = `noteflow-data-export-${new Date().toISOString().split('T')[0]}.json`
+      a.style.display = 'none'
       document.body.appendChild(a)
       a.click()
+
+      // Small delay to ensure download starts
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 

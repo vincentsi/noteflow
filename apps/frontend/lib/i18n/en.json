@@ -51,6 +51,10 @@
       "logout": "Logout",
       "login": "Login",
       "signup": "Sign up"
+    },
+    "auth": {
+      "loginRequired": "Login Required",
+      "loginRequiredDescription": "You need to be logged in to perform this action. Please log in or create a free account."
     }
   },
   "auth": {
@@ -110,7 +114,7 @@
       "invalidLinkMessage": "This password reset link is invalid or has expired.",
       "requestNewLink": "Request New Link",
       "passwordMismatch": "Passwords don't match",
-      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordMinLength": "Password must be at least 12 characters",
       "passwordUppercase": "Password must contain at least one uppercase letter",
       "passwordLowercase": "Password must contain at least one lowercase letter",
       "passwordNumber": "Password must contain at least one number",

@@ -51,6 +51,10 @@
       "logout": "Déconnexion",
       "login": "Connexion",
       "signup": "Inscription"
+    },
+    "auth": {
+      "loginRequired": "Connexion requise",
+      "loginRequiredDescription": "Vous devez être connecté pour effectuer cette action. Connectez-vous ou créez un compte gratuitement."
     }
   },
   "auth": {
@@ -110,7 +114,7 @@
       "invalidLinkMessage": "Ce lien de réinitialisation est invalide ou a expiré.",
       "requestNewLink": "Demander un nouveau lien",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
-      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 12 caractères",
       "passwordUppercase": "Le mot de passe doit contenir au moins une majuscule",
       "passwordLowercase": "Le mot de passe doit contenir au moins une minuscule",
       "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",

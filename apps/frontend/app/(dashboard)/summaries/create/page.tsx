@@ -7,12 +7,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react'
 
 const CREATION_STEPS = [
-  { id: 'fetching', label: 'Fetching post', duration: 1000 },
-  { id: 'analyzing', label: 'Analyzing post', duration: 1500 },
-  { id: 'creating', label: 'Creating Power Post', duration: 4000 },
-  { id: 'finding', label: 'Finding title', duration: 2000 },
-  { id: 'generating', label: 'Generating cover', duration: 2000 },
-  { id: 'publishing', label: 'Publishing post', duration: 10000 },
+  { id: 'fetching', label: 'Fetching post', duration: 1500 },
+  { id: 'analyzing', label: 'Analyzing post', duration: 2000 },
+  { id: 'creating', label: 'Creating Power Post', duration: 7000 },
+  { id: 'finding', label: 'Finding title', duration: 2500 },
+  { id: 'generating', label: 'Generating cover', duration: 3000 },
+  { id: 'publishing', label: 'Publishing post', duration: 20000 },
 ]
 
 export default function SummaryCreatePage() {
@@ -28,44 +28,43 @@ export default function SummaryCreatePage() {
 
   // Auto-progress through steps with smooth animation
   useEffect(() => {
+    // If backend completed, skip to final step immediately
     if (status === 'completed') {
       setCurrentStep(CREATION_STEPS.length)
       return
     }
 
-    if (status !== 'waiting' && status !== 'active') {
-      return
-    }
+    // If still processing, progress through steps normally
+    if (status === 'waiting' || status === 'active') {
+      let totalDuration = 0
+      const intervals: NodeJS.Timeout[] = []
 
-    let totalDuration = 0
-    const intervals: NodeJS.Timeout[] = []
+      CREATION_STEPS.forEach((step, index) => {
+        totalDuration += step.duration
+        const timer = setTimeout(() => {
+          setCurrentStep(index + 1)
+        }, totalDuration)
+        intervals.push(timer)
+      })
 
-    CREATION_STEPS.forEach((step, index) => {
-      totalDuration += step.duration
-      const timer = setTimeout(() => {
-        setCurrentStep(index + 1)
-      }, totalDuration)
-      intervals.push(timer)
-    })
-
-    return () => {
-      intervals.forEach(clearTimeout)
+      return () => {
+        intervals.forEach(clearTimeout)
+      }
     }
   }, [status])
 
   // Redirect to summary page when completed
   useEffect(() => {
     if (status === 'completed') {
-      // Small delay to ensure the summary is in the database
+      // Small delay to show completion state
       const timer = setTimeout(() => {
         if (summary?.id) {
           router.push(`/summaries/${summary.id}`)
         } else {
-          // If no summary ID, try using the jobId as a fallback
-          // The summary page will handle fetching by ID
+          // If no summary ID, redirect to summaries list
           router.push(`/summaries?my=true`)
         }
-      }, 500)
+      }, 1000)
 
       return () => clearTimeout(timer)
     }
@@ -97,24 +96,16 @@ export default function SummaryCreatePage() {
             {CREATION_STEPS.map((step, index) => {
               const isCompleted = index < currentStep
               const isCurrent = index === currentStep
-              const Icon = isCompleted
-                ? CheckCircle2
-                : isCurrent
-                  ? Loader2
-                  : Circle
+              const Icon = isCompleted ? CheckCircle2 : isCurrent ? Loader2 : Circle
 
               return (
                 <div
                   key={step.id}
                   className="flex items-center gap-4 p-4 rounded-lg border transition-all"
                   style={{
-                    backgroundColor: isCompleted
-                      ? 'hsl(var(--primary) / 0.05)'
-                      : 'transparent',
+                    backgroundColor: isCompleted ? 'hsl(var(--primary) / 0.05)' : 'transparent',
                     borderColor:
-                      isCompleted || isCurrent
-                        ? 'hsl(var(--primary))'
-                        : 'hsl(var(--border))',
+                      isCompleted || isCurrent ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                   }}
                 >
                   <div className="flex-shrink-0">
@@ -130,9 +121,7 @@ export default function SummaryCreatePage() {
                   </div>
                   <span
                     className={`text-sm font-medium ${
-                      isCompleted || isCurrent
-                        ? 'text-foreground'
-                        : 'text-muted-foreground'
+                      isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     {step.label}

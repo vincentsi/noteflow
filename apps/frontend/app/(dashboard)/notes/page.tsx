@@ -9,6 +9,7 @@ import { NoteList } from '@/components/notes/NoteList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
 import { Plus, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
@@ -32,6 +33,7 @@ export default function NotesPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [tags, setTags] = useState('')
+  const [showAuthDialog, setShowAuthDialog] = useState(false)
 
   const { data: notes = [], isLoading } = useNotes()
   const createNote = useCreateNote()
@@ -39,12 +41,7 @@ export default function NotesPage() {
 
   const handleCreate = async () => {
     if (!isAuthenticated) {
-      toast.error(t('common.messages.loginRequired'), {
-        action: {
-          label: t('common.navigation.login'),
-          onClick: () => router.push('/login'),
-        },
-      })
+      setShowAuthDialog(true)
       return
     }
 
@@ -70,12 +67,7 @@ export default function NotesPage() {
 
   const handleDelete = async (id: string) => {
     if (!isAuthenticated) {
-      toast.error(t('common.messages.loginRequired'), {
-        action: {
-          label: t('common.navigation.login'),
-          onClick: () => router.push('/login'),
-        },
-      })
+      setShowAuthDialog(true)
       return
     }
 
@@ -179,6 +171,9 @@ export default function NotesPage() {
           />
         )}
       </div>
+
+      {/* Auth Required Dialog */}
+      <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </div>
   )
 }

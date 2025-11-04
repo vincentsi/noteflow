@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Protected routes that require authentication
+const protectedRoutes = [
+  '/dashboard',
+  '/notes',
+  '/veille',
+  '/summaries',
+  '/profile',
+  '/settings',
+]
+
 /**
  * Generate a cryptographically secure random nonce using Web Crypto API
  * Compatible with Edge Runtime (no Node.js crypto module needed)
@@ -23,6 +33,22 @@ export function middleware(request: NextRequest) {
       status: 403,
       headers: { 'Content-Type': 'application/json' },
     })
+  }
+
+  // Check if route is protected
+  const isProtectedRoute = protectedRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  )
+
+  // Check for access token cookie
+  const accessToken = request.cookies.get('accessToken')
+
+  // Redirect to login if accessing protected route without token
+  if (isProtectedRoute && !accessToken) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirect', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
   }
 
   // Generate a cryptographically secure random nonce

@@ -45,22 +45,12 @@ export class SummaryController {
 
       if (isMultipart) {
         // Handle multipart file upload with streaming
-        const data = await request.file()
+        // IMPORTANT: Must process file immediately when encountered
+        const parts = request.parts()
+        let tempFilePath: string | null = null
+        const formFields: Record<string, string> = {}
 
-        if (!data) {
-          return reply.status(400).send({
-            success: false,
-            error: 'Bad Request',
-            message: 'No file provided',
-          })
-        }
-
-        // Get form fields
-        const fields = data.fields as Record<string, { value: string }>
-        style = (fields.style?.value || 'SHORT') as SummaryStyle
-        language = fields.language?.value as 'fr' | 'en' | undefined
-
-        // Get user's plan to determine file size limit
+        // Get user's plan to determine file size limit early
         const user = await prisma.user.findUnique({
           where: { id: userId },
           select: { planType: true },
@@ -68,11 +58,30 @@ export class SummaryController {
         const planType = (user?.planType || PlanType.FREE) as PlanType
         const maxFileSize = getFileSizeLimitForPlan(planType)
 
-        let tempFilePath: string | null = null
-
         try {
-          // Stream file to disk instead of loading to memory
-          tempFilePath = await streamFileToDisk(data, maxFileSize)
+          // Iterate through all multipart parts
+          for await (const part of parts) {
+            if (part.type === 'file') {
+              // CRITICAL: Stream file to disk immediately
+              // If we don't consume the stream, the iteration blocks
+              tempFilePath = await streamFileToDisk(part, maxFileSize)
+            } else {
+              // Text field
+              formFields[part.fieldname] = part.value as string
+            }
+          }
+
+          if (!tempFilePath) {
+            return reply.status(400).send({
+              success: false,
+              error: 'Bad Request',
+              message: 'No file provided',
+            })
+          }
+
+          // Get form fields
+          style = (formFields.style || 'SHORT') as SummaryStyle
+          language = formFields.language as 'fr' | 'en' | undefined
 
           // Extract text from PDF file
           text = await aiService.extractTextFromPDFFile(tempFilePath)

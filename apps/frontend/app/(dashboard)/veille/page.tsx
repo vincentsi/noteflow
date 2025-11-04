@@ -10,6 +10,7 @@ import { ArticleList } from '@/components/veille/ArticleList'
 import { Pagination } from '@/components/ui/pagination'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
 import { ArrowLeft } from 'lucide-react'
 import type { GetArticlesParams } from '@/lib/api/articles'
 import { toast } from 'sonner'
@@ -33,6 +34,7 @@ export default function VeillePage() {
 
   const [filters, setFilters] = useState<GetArticlesParams>({})
   const [currentPage, setCurrentPage] = useState(1)
+  const [showAuthDialog, setShowAuthDialog] = useState(false)
 
   // Fetch all articles from RSS feeds with pagination
   const { data, isLoading, error } = useAllArticles({
@@ -76,25 +78,15 @@ export default function VeillePage() {
 
   const handleSave = useCallback((articleId: string) => {
     if (!isAuthenticated) {
-      toast.error(t('common.messages.loginRequired'), {
-        action: {
-          label: t('common.navigation.login'),
-          onClick: () => router.push('/login'),
-        },
-      })
+      setShowAuthDialog(true)
       return
     }
     saveArticle.mutate(articleId)
-  }, [saveArticle, isAuthenticated, t, router])
+  }, [saveArticle, isAuthenticated])
 
   const handleUnsave = useCallback((articleId: string) => {
     if (!isAuthenticated) {
-      toast.error(t('common.messages.loginRequired'), {
-        action: {
-          label: t('common.navigation.login'),
-          onClick: () => router.push('/login'),
-        },
-      })
+      setShowAuthDialog(true)
       return
     }
     unsaveArticle.mutate(articleId)
@@ -194,6 +186,9 @@ export default function VeillePage() {
           />
         )}
       </div>
+
+      {/* Auth Required Dialog */}
+      <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </div>
   )
 }

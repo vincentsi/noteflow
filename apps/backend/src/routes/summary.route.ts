@@ -43,26 +43,8 @@ export const summaryRoutes = createProtectedRoutes(
           tags: ['Summaries'],
           description:
             'Create a new summary generation job (supports JSON or multipart/form-data for PDF uploads)',
-          body: {
-            type: 'object',
-            properties: {
-              text: {
-                type: 'string',
-                minLength: 10,
-                maxLength: 50000,
-              },
-              style: {
-                type: 'string',
-                enum: ['SHORT', 'TWEET', 'THREAD', 'BULLET_POINT', 'TOP3', 'MAIN_POINTS'],
-              },
-              language: {
-                type: 'string',
-                enum: ['fr', 'en'],
-              },
-            },
-            // Allow additional properties for multipart/form-data PDF uploads
-            additionalProperties: true,
-          },
+          // Skip body validation - controller handles both JSON and multipart
+          // Fastify's schema validation doesn't work well with multipart/form-data
           response: {
             202: {
               type: 'object',

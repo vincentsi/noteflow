@@ -9,6 +9,7 @@ import { useCreateSummary, useSummaries } from '@/lib/hooks/useSummaries'
 import { SummaryForm } from '@/components/summaries/SummaryForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
 import { ArrowLeft, ChevronLeft, ChevronRight, FileText, MessageSquare, List, Trophy, Lightbulb, Hash } from 'lucide-react'
@@ -35,6 +36,7 @@ export default function SummariesPage() {
   const showMyOnly = searchParams.get('my') === 'true'
   const [initialUrl, setInitialUrl] = useState<string | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
+  const [showAuthDialog, setShowAuthDialog] = useState(false)
 
   // Get URL from query params
   useEffect(() => {
@@ -56,12 +58,7 @@ export default function SummariesPage() {
 
   const handleSubmit = async (params: CreateSummaryParams) => {
     if (!isAuthenticated) {
-      toast.error(t('common.messages.loginRequired'), {
-        action: {
-          label: t('common.navigation.login'),
-          onClick: () => router.push('/login'),
-        },
-      })
+      setShowAuthDialog(true)
       return
     }
 
@@ -73,13 +70,14 @@ export default function SummariesPage() {
         }
       },
       onError: (error: Error) => {
-        const errorResponse = error as Error & { response?: { status?: number } }
+        const errorResponse = error as Error & { response?: { status?: number; data?: { message?: string } } }
         if (errorResponse?.response?.status === 403) {
           toast.error(t('summaries.form.errors.planLimitReached'))
         } else if (errorResponse?.response?.status === 429) {
           toast.error(t('summaries.form.errors.rateLimitReached'))
         } else {
-          toast.error(t('summaries.form.errors.creationFailed'))
+          const errorMessage = errorResponse?.response?.data?.message || error.message || t('summaries.form.errors.creationFailed')
+          toast.error(errorMessage)
         }
       },
     })
@@ -287,6 +285,9 @@ export default function SummariesPage() {
           </Card>
         </div>
       </div>
+
+      {/* Auth Required Dialog */}
+      <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </div>
   )
 }

@@ -70,6 +70,7 @@ export const summariesApi = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 60000, // 60 seconds for PDF uploads
       })
       return response.data
     }

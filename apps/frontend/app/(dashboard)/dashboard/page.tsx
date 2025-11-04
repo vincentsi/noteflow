@@ -28,7 +28,7 @@ export default function DashboardPage() {
       title: 'PowerPost',
       description: 'Generate AI summaries in 6 styles',
       icon: Sparkles,
-      href: '/summaries/create',
+      href: '/summaries',
       color: 'text-foreground'
     },
     {

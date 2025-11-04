@@ -154,10 +154,11 @@ export async function processSummary(
       userId,
       title,
       coverImage,
-      originalText: text,
+      originalText: contentToSummarize, // Store the full content, not the URL
       summaryText,
       style,
       language,
+      source: isUrl ? text : null, // Store the URL separately if it was a URL
     },
   })
 
