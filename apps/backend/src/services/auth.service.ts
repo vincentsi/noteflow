@@ -119,7 +119,10 @@ export class AuthService {
    */
   private generateAccessToken(userId: string, role: string, email: string): string {
     return jwt.sign({ userId, role, email }, env.JWT_SECRET, {
+      algorithm: 'HS256', // Explicit algorithm (SEC-JWT-001)
       expiresIn: '15m',
+      issuer: 'noteflow', // Token issuer
+      audience: 'noteflow-api', // Token audience
     })
   }
 
@@ -133,17 +136,50 @@ export class AuthService {
     // This prevents hash collisions when storing in DB with unique constraint
     const jti = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
     return jwt.sign({ userId, jti }, env.JWT_REFRESH_SECRET, {
+      algorithm: 'HS256', // Explicit algorithm (SEC-JWT-001)
       expiresIn: '7d',
+      issuer: 'noteflow',
+      audience: 'noteflow-api',
     })
   }
 
   /**
    * Store a refresh token in DB (hashed for security)
+   * Limits max refresh tokens per user to 10 to prevent DoS attacks
    * @param token - Refresh token to store (plain text)
    * @param userId - User ID
    */
   private async storeRefreshToken(token: string, userId: string): Promise<void> {
     const hashedToken = TokenHasher.hash(token)
+
+    const MAX_TOKENS_PER_USER = 10
+
+    const existingTokens = await prisma.refreshToken.findMany({
+      where: {
+        userId,
+        revoked: false,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    // If limit reached, delete oldest tokens
+    if (existingTokens.length >= MAX_TOKENS_PER_USER) {
+      const tokensToDelete = existingTokens.slice(
+        0,
+        existingTokens.length - MAX_TOKENS_PER_USER + 1
+      )
+      await prisma.refreshToken.deleteMany({
+        where: {
+          id: { in: tokensToDelete.map(t => t.id) },
+        },
+      })
+
+      logger.info(
+        { userId, deletedCount: tokensToDelete.length },
+        'Deleted old refresh tokens (limit enforcement)'
+      )
+    }
 
     await prisma.refreshToken.create({
       data: {
@@ -178,7 +214,12 @@ export class AuthService {
     email: string
   } {
     try {
-      const payload = jwt.verify(token, env.JWT_SECRET) as {
+      const payload = jwt.verify(token, env.JWT_SECRET, {
+        algorithms: ['HS256'], // Explicit allowlist prevents alg:none attack (SEC-JWT-001)
+        issuer: 'noteflow', // Validate token issuer
+        audience: 'noteflow-api', // Validate token audience
+        maxAge: '15m', // Enforce expiration check
+      }) as {
         userId: string
         role: string
         email: string
@@ -197,7 +238,12 @@ export class AuthService {
    */
   verifyRefreshToken(token: string): { userId: string } {
     try {
-      const payload = jwt.verify(token, env.JWT_REFRESH_SECRET) as {
+      const payload = jwt.verify(token, env.JWT_REFRESH_SECRET, {
+        algorithms: ['HS256'], // Explicit allowlist prevents alg:none attack (SEC-JWT-001)
+        issuer: 'noteflow',
+        audience: 'noteflow-api',
+        maxAge: '7d',
+      }) as {
         userId: string
       }
       return payload
@@ -239,9 +285,7 @@ export class AuthService {
     })
 
     if (existingUser) {
-      // Generic error to prevent email enumeration
-      // Log for monitoring but don't reveal email exists to client
-      logger.warn({ email: data.email }, 'Registration attempt with existing email')
+      logger.warn({ timestamp: Date.now() }, 'Registration attempt with existing email')
       throw new Error('Registration failed. Please check your information.')
     }
 
@@ -365,6 +409,11 @@ export class AuthService {
    * @returns New access token and refresh token
    * @throws Error if refresh token invalid or user deleted
    *
+   * Security: Implements token replay detection
+   * - Marks token as used before deletion
+   * - Detects if token was already used (possible theft)
+   * - Revokes all user tokens if replay detected
+   *
    * @example
    * ```typescript
    * const tokens = await authService.refresh('eyJhbGc...')
@@ -398,6 +447,47 @@ export class AuthService {
     if (storedToken.user.deletedAt) {
       throw new Error('Account has been deleted')
     }
+
+    // 🔒 SECURITY: Token replay detection (HIGH-001)
+    // If token was already used more than 1 second ago, it's a potential theft
+    const REPLAY_DETECTION_WINDOW_MS = 1000 // 1 second grace period for race conditions
+    if (storedToken.usedAt) {
+      const timeSinceUse = Date.now() - storedToken.usedAt.getTime()
+
+      if (timeSinceUse > REPLAY_DETECTION_WINDOW_MS) {
+        // Token was used more than 1s ago - this is a replay attack
+        logger.error(
+          {
+            userId: storedToken.userId,
+            tokenId: storedToken.id,
+            usedAt: storedToken.usedAt,
+            timeSinceUse,
+          },
+          '🚨 SECURITY: Token replay detected - revoking all user tokens'
+        )
+
+        // Revoke ALL user tokens as a security measure
+        await this.logout(storedToken.userId)
+
+        throw new Error('Token reuse detected - all sessions revoked for security')
+      }
+
+      // Within grace period - likely a race condition between two requests
+      logger.warn(
+        {
+          userId: storedToken.userId,
+          tokenId: storedToken.id,
+          timeSinceUse,
+        },
+        'Token used within grace period - possible race condition'
+      )
+    }
+
+    // Mark token as used BEFORE deleting (for replay detection)
+    await prisma.refreshToken.update({
+      where: { id: storedToken.id },
+      data: { usedAt: new Date() },
+    })
 
     // Delete old token to prevent database bloat
     await prisma.refreshToken.delete({
@@ -505,11 +595,7 @@ export class AuthService {
       })
 
       if (existingUser) {
-        // Generic error to prevent email enumeration
-        logger.warn(
-          { userId, requestedEmail: data.email },
-          'Profile update attempt with existing email'
-        )
+        logger.warn({ userId, timestamp: Date.now() }, 'Profile update attempt with existing email')
         throw new Error('Profile update failed. Please check your information.')
       }
     }

@@ -101,10 +101,7 @@ describe('PasswordResetService', () => {
           expiresAt: expect.any(Date),
         },
       })
-      expect(EmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
-        mockUser.email,
-        mockToken
-      )
+      expect(EmailService.sendPasswordResetEmail).toHaveBeenCalledWith(mockUser.email, mockToken)
     })
 
     it('should return success without sending email if user does not exist', async () => {
@@ -208,12 +205,14 @@ describe('PasswordResetService', () => {
         where: { userId: mockUser.id },
       })
       // Verify deleteMany was called before create by checking call order
-      const deleteManyOrder = (prisma.passwordResetToken.deleteMany as jest.Mock).mock.invocationCallOrder[0]
-      const createOrder = (prisma.passwordResetToken.create as jest.Mock).mock.invocationCallOrder[0]
+      const deleteManyOrder = (prisma.passwordResetToken.deleteMany as jest.Mock).mock
+        .invocationCallOrder[0]
+      const createOrder = (prisma.passwordResetToken.create as jest.Mock).mock
+        .invocationCallOrder[0]
       expect(deleteManyOrder).toBeLessThan(createOrder)
     })
 
-    it('should set token expiration to 1 hour from now', async () => {
+    it('should set token expiration to 30 minutes from now', async () => {
       const mockToken = 'a'.repeat(64)
       const mockHashedToken = 'hashed-token'
 
@@ -243,9 +242,9 @@ describe('PasswordResetService', () => {
       const createCall = (prisma.passwordResetToken.create as jest.Mock).mock.calls[0][0]
       const actualExpiration = createCall.data.expiresAt.getTime()
 
-      // Verify expiration is approximately 1 hour from now (allow 1 second tolerance)
-      const expectedMin = beforeCall + (60 * 60 * 1000) - 1000
-      const expectedMax = afterCall + (60 * 60 * 1000) + 1000
+      // Verify expiration is approximately 30 minutes from now (allow 1 second tolerance)
+      const expectedMin = beforeCall + 30 * 60 * 1000 - 1000
+      const expectedMax = afterCall + 30 * 60 * 1000 + 1000
       expect(actualExpiration).toBeGreaterThanOrEqual(expectedMin)
       expect(actualExpiration).toBeLessThanOrEqual(expectedMax)
     })
@@ -258,10 +257,7 @@ describe('PasswordResetService', () => {
       const result = await PasswordResetService.requestReset('test@example.com')
 
       expect(result).toEqual({ success: true })
-      expect(logger.error).toHaveBeenCalledWith(
-        { error },
-        'Password reset request error:'
-      )
+      expect(logger.error).toHaveBeenCalledWith({ error }, 'Password reset request error:')
     })
 
     it('should generate 32-byte random token', async () => {
@@ -461,9 +457,9 @@ describe('PasswordResetService', () => {
     it('should verify token before resetting password', async () => {
       ;(prisma.passwordResetToken.findUnique as jest.Mock).mockResolvedValueOnce(null)
 
-      await expect(
-        PasswordResetService.resetPassword(mockToken, mockNewPassword)
-      ).rejects.toThrow('Invalid token')
+      await expect(PasswordResetService.resetPassword(mockToken, mockNewPassword)).rejects.toThrow(
+        'Invalid token'
+      )
 
       expect(prisma.user.update).not.toHaveBeenCalled()
     })
@@ -475,9 +471,9 @@ describe('PasswordResetService', () => {
       }
       ;(prisma.passwordResetToken.findUnique as jest.Mock).mockResolvedValueOnce(expiredToken)
 
-      await expect(
-        PasswordResetService.resetPassword(mockToken, mockNewPassword)
-      ).rejects.toThrow('Token expired')
+      await expect(PasswordResetService.resetPassword(mockToken, mockNewPassword)).rejects.toThrow(
+        'Token expired'
+      )
 
       expect(prisma.user.update).not.toHaveBeenCalled()
     })
@@ -501,11 +497,14 @@ describe('PasswordResetService', () => {
       await PasswordResetService.resetPassword(mockToken, mockNewPassword)
 
       // Verify the order of operations by checking invocation call order
-      const findUniqueOrder = (prisma.passwordResetToken.findUnique as jest.Mock).mock.invocationCallOrder[0]
+      const findUniqueOrder = (prisma.passwordResetToken.findUnique as jest.Mock).mock
+        .invocationCallOrder[0]
       const hashPasswordOrder = (authService.hashPassword as jest.Mock).mock.invocationCallOrder[0]
       const updateUserOrder = (prisma.user.update as jest.Mock).mock.invocationCallOrder[0]
-      const deleteTokenOrder = (prisma.passwordResetToken.deleteMany as jest.Mock).mock.invocationCallOrder[0]
-      const revokeTokensOrder = (prisma.refreshToken.updateMany as jest.Mock).mock.invocationCallOrder[0]
+      const deleteTokenOrder = (prisma.passwordResetToken.deleteMany as jest.Mock).mock
+        .invocationCallOrder[0]
+      const revokeTokensOrder = (prisma.refreshToken.updateMany as jest.Mock).mock
+        .invocationCallOrder[0]
 
       // 1. Verify token
       expect(findUniqueOrder).toBeLessThan(hashPasswordOrder)

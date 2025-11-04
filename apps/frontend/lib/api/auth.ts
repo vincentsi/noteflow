@@ -15,6 +15,7 @@ export type LoginDTO = {
 
 export type AuthResponse = {
   user: User
+  csrfToken: string
 }
 
 export type ForgotPasswordDTO = {
@@ -68,7 +69,6 @@ export const authApi = {
    */
   logout: async (): Promise<void> => {
     await apiClient.post('/api/auth/logout')
-    // Clear CSRF token cache to avoid using stale token after re-login
     clearCsrfTokenCache()
   },
 

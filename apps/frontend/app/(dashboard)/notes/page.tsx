@@ -65,20 +65,18 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          {showMyOnly && (
-            <Button variant="ghost" size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('common.actions.back')}
-            </Button>
-          )}
-        </div>
-        <h1 className="text-3xl font-bold mb-2">
+    <div className="space-y-8">
+      <div>
+        {showMyOnly && (
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('common.actions.back')}
+          </Button>
+        )}
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           {showMyOnly ? t('notes.myNotes') : t('notes.title')}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground mt-2">
           {showMyOnly
             ? `${notes.length} note${notes.length > 1 ? 's' : ''}`
             : t('notes.subtitle')
@@ -88,10 +86,10 @@ export default function NotesPage() {
 
       {/* Create Note Form - Hide when in my-only mode */}
       {!showMyOnly && (
-        <Card className="mb-8">
+        <Card>
           <CardHeader>
-            <CardTitle>{t('notes.createNote')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg font-semibold">{t('notes.createNote')}</CardTitle>
+            <CardDescription className="text-sm">
               {t('notes.subtitle')}
             </CardDescription>
           </CardHeader>
@@ -144,10 +142,10 @@ export default function NotesPage() {
 
       {/* Notes List */}
       <div>
-        {!showMyOnly && <h2 className="text-2xl font-semibold mb-4">{t('notes.myNotes')} ({notes.length})</h2>}
+        {!showMyOnly && <h2 className="text-lg font-semibold text-foreground mb-4">{t('notes.myNotes')} ({notes.length})</h2>}
 
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-12 text-muted-foreground">
             {t('common.messages.loading')}
           </div>
         ) : (

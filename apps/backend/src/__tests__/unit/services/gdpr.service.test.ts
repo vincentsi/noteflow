@@ -220,18 +220,20 @@ describe('GDPRService', () => {
         deletedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        refreshTokens: [],
-        verificationTokens: [],
-        resetTokens: [],
-        csrfTokens: [],
-        subscriptions: [],
-        savedArticles: [],
-        summaries: [],
-        notes: [],
-        posts: [],
       }
 
       prismaMock.user.findUnique.mockResolvedValue(mockUserData)
+
+      // Mock findMany calls for relations (new batching approach)
+      prismaMock.refreshToken.findMany.mockResolvedValue([])
+      prismaMock.verificationToken.findMany.mockResolvedValue([])
+      prismaMock.passwordResetToken.findMany.mockResolvedValue([])
+      prismaMock.csrfToken.findMany.mockResolvedValue([])
+      prismaMock.subscription.findMany.mockResolvedValue([])
+      prismaMock.savedArticle.findMany.mockResolvedValue([])
+      prismaMock.summary.findMany.mockResolvedValue([])
+      prismaMock.note.findMany.mockResolvedValue([])
+      prismaMock.post.findMany.mockResolvedValue([])
 
       const result = await gdprService.exportUserData(userId)
 

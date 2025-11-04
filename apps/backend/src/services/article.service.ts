@@ -119,6 +119,7 @@ export class ArticleService {
 
   /**
    * Get user's saved articles with optional filters
+   * PERFORMANCE: Returns total count for pagination UI
    */
   async getUserSavedArticles(userId: string, filters: GetArticlesFilters = {}) {
     const { source } = filters
@@ -131,28 +132,37 @@ export class ArticleService {
       ...(source && { article: { source } }),
     }
 
-    return await prisma.savedArticle.findMany({
-      where,
-      include: {
-        article: {
-          select: {
-            id: true,
-            title: true,
-            url: true,
-            excerpt: true,
-            imageUrl: true,
-            source: true,
-            tags: true,
-            publishedAt: true,
+    // PERFORMANCE: Fetch articles and count in parallel
+    const [savedArticles, total] = await Promise.all([
+      prisma.savedArticle.findMany({
+        where,
+        include: {
+          article: {
+            select: {
+              id: true,
+              title: true,
+              url: true,
+              excerpt: true,
+              imageUrl: true,
+              source: true,
+              tags: true,
+              publishedAt: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      skip,
-      take,
-    })
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip,
+        take,
+      }),
+      prisma.savedArticle.count({ where }),
+    ])
+
+    return {
+      savedArticles,
+      pagination: calculatePagination(total, filters.pagination ?? {}),
+    }
   }
 
   /**
@@ -164,6 +174,14 @@ export class ArticleService {
    * - With lock: Only first request saves, second waits and gets proper limit check
    */
   async saveArticle(userId: string, articleId: string): Promise<void> {
+    // Verify article exists before saving
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+    })
+    if (!article) {
+      throw new Error('Article not found')
+    }
+
     // Use distributed lock to ensure atomic limit check + save operation
     const result = await DistributedLockService.executeWithLock(
       `article-save-${userId}`,

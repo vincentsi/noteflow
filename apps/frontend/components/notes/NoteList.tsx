@@ -16,7 +16,7 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
   if (notes.length === 0) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
+        <CardContent className="py-12 text-center text-muted-foreground">
           Aucune note pour le moment. Créez votre première note ci-dessus.
         </CardContent>
       </Card>
@@ -26,9 +26,9 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
   return (
     <div className="grid gap-4">
       {notes.map((note) => (
-        <Card key={note.id} className="hover:shadow-md transition-shadow">
+        <Card key={note.id} className="hover:border-primary hover:-translate-y-0.5 transition-all duration-150">
           <CardHeader>
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div
                 className="flex-1 cursor-pointer"
                 onClick={() => onSelect?.(note)}
@@ -40,10 +40,10 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
                   }
                 }}
               >
-                <CardTitle className="hover:text-primary transition-colors">
+                <CardTitle className="text-base font-semibold hover:text-primary transition-colors">
                   {note.title}
                 </CardTitle>
-                <CardDescription className="mt-1">
+                <CardDescription className="mt-1 text-sm">
                   {new Date(note.updatedAt).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'long',
@@ -54,7 +54,7 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
               {onDelete && (
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="icon-sm"
                   onClick={() => onDelete(note.id)}
                   disabled={isDeleting}
                 >
@@ -65,7 +65,7 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
           </CardHeader>
           <CardContent>
             <div className="prose prose-sm dark:prose-invert max-w-none mb-3">
-              <pre className="whitespace-pre-wrap text-sm bg-muted p-3 rounded line-clamp-3">
+              <pre className="whitespace-pre-wrap text-sm bg-muted p-3 rounded-md line-clamp-3 font-mono">
                 {note.content}
               </pre>
             </div>
@@ -74,9 +74,9 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
                 {note.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary"
+                    className="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium border border-border bg-background"
                   >
-                    {tag}
+                    #{tag}
                   </span>
                 ))}
               </div>

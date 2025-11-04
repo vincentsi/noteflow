@@ -54,13 +54,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLanguageState(lang)
     localStorage.setItem('language', lang)
 
-    // Attempt to sync with backend (will succeed if user is authenticated via httpOnly cookie)
+    // Attempt to sync with backend only if auth token exists in localStorage
+    // This prevents unnecessary 401 errors on public pages
+    const hasAuthToken = localStorage.getItem('accessToken')
+    if (!hasAuthToken) {
+      return // Skip backend sync for unauthenticated users
+    }
+
+    // Sync with backend (will succeed if user is authenticated via httpOnly cookie)
     // The apiClient automatically includes auth cookies with the request
     try {
       await apiClient.patch('/api/users/me', { language: lang })
     } catch (error) {
       // Silent failure is acceptable:
-      // - User might not be authenticated (401) - expected behavior
       // - Network error - local preference still saved
       // Backend sync will happen on next successful auth
       logError(error, 'Failed to sync language with backend')

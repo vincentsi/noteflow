@@ -58,17 +58,20 @@ model User {
   @@index([role, deletedAt]) // Performance: admin stats (active users by role)
   @@index([emailVerified, deletedAt]) // Performance: admin stats queries (verified + active users)
   @@index([stripeCustomerId]) // Performance: Stripe customer lookups (getOrCreateCustomer)
+  @@index([lastLoginAt, role]) // Performance: admin analytics - recent logins by role
+  @@index([loginCount(sort: Desc)]) // Performance: admin analytics - most active users
   @@map("users")
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
+  id        String    @id @default(cuid())
+  token     String    @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-  revoked   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  revoked   Boolean   @default(false)
+  usedAt    DateTime? // Token replay detection: timestamp when token was used for refresh
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([token, revoked])
@@ -78,6 +81,7 @@ model RefreshToken {
   @@index([userId, token])
   @@index([createdAt]) // Performance: sort by creation date
   @@index([expiresAt, revoked]) // Performance: cleanup job composite (expired + revoked filter)
+  @@index([token, usedAt]) // Performance: token replay detection queries
   @@map("refresh_tokens")
 }
 

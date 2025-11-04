@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { ZodError } from 'zod'
 import { isAppError } from './custom-errors'
+import { env } from '@/config/env'
 
 /**
  * Custom error handler map
@@ -8,7 +9,11 @@ import { isAppError } from './custom-errors'
  */
 export type CustomErrorHandlers = Record<
   string,
-  (error: Error, reply: FastifyReply, request: FastifyRequest) => FastifyReply | Promise<FastifyReply>
+  (
+    error: Error,
+    reply: FastifyReply,
+    request: FastifyRequest
+  ) => FastifyReply | Promise<FastifyReply>
 >
 
 /**
@@ -88,19 +93,27 @@ export function handleControllerError(
 
     // Handle Zod validation errors
     if (error instanceof ZodError) {
+      // SECURITY: Log detailed validation errors but don't expose schema structure to clients
+      request.log.warn({ zodError: error.issues }, 'Validation error')
+
       return reply.status(400).send({
         success: false,
         error: 'Validation error',
-        details: error.issues,
+        // Only include details in development to help with debugging
+        ...(env.NODE_ENV === 'development' && { details: error.issues }),
       }) as FastifyReply
     }
 
     // Check by error.name for ZodError (in case instanceof fails)
     if (error.name === 'ZodError') {
+      // SECURITY: Log detailed validation errors but don't expose schema structure to clients
+      request.log.warn({ zodError: error }, 'Validation error (by name)')
+
       return reply.status(400).send({
         success: false,
         error: 'Validation error',
-        details: error,
+        // Only include details in development to help with debugging
+        ...(env.NODE_ENV === 'development' && { details: error }),
       }) as FastifyReply
     }
   }
@@ -115,10 +128,13 @@ export function handleControllerError(
       request.log.error(error)
     } else {
       // Sanitized error in production (no stack trace)
-      request.log.error({
-        name: error.name,
-        message: error.message,
-      }, 'Internal server error')
+      request.log.error(
+        {
+          name: error.name,
+          message: error.message,
+        },
+        'Internal server error'
+      )
     }
   } else {
     // Unknown error type

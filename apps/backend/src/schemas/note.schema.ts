@@ -4,14 +4,14 @@ import { searchQuerySchema, paginationSchema, idParamSchema } from './common.sch
 // Zod schemas
 export const createNoteSchema = z.object({
   title: z.string().min(1).max(200),
-  content: z.string(),
-  tags: z.array(z.string()).default([]),
+  content: z.string().min(1).max(100000),
+  tags: z.array(z.string().max(50)).max(20),
 })
 
 export const updateNoteSchema = z.object({
   title: z.string().min(1).max(200).optional(),
-  content: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  content: z.string().min(1).max(100000).optional(),
+  tags: z.array(z.string().max(50)).max(20).optional(),
 })
 
 export const getNotesSchema = z.object({

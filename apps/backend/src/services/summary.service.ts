@@ -1,9 +1,10 @@
 import { prisma } from '@/config/prisma'
 import { SummaryStyle, type Summary } from '@prisma/client'
 import { queueSummary } from '@/queues/summary.queue'
-import { CacheService } from './cache.service'
+import { CacheService, CacheKeys } from './cache.service'
+import { CACHE_TTL } from '@/constants/performance'
 import { PlanLimiter } from '@/utils/plan-limiter'
-import { buildSoftDeleteFilter, buildMonthRange } from '@/utils/query-builders'
+import { buildSoftDeleteFilter, buildMonthRange, buildCacheKey } from '@/utils/query-builders'
 import { BaseCrudService } from './base-crud.service'
 
 export class SummaryService extends BaseCrudService<Summary> {
@@ -80,10 +81,21 @@ export class SummaryService extends BaseCrudService<Summary> {
       where: activeWhere,
     })
 
+    // PERFORMANCE: Cache monthly count with month-specific TTL
     // Get count for current month (includes deleted - for usage quota)
-    const totalThisMonth = await prisma.summary.count({
-      where: monthlyWhere,
-    })
+    const now = new Date()
+    const cacheKey = CacheKeys.summaryUsage(userId, now.getFullYear(), now.getMonth())
+    let totalThisMonth = await CacheService.get<number>(cacheKey)
+
+    if (totalThisMonth === null) {
+      totalThisMonth = await prisma.summary.count({
+        where: monthlyWhere,
+      })
+
+      // Cache until end of month
+      const ttl = CACHE_TTL.PLAN_LIMITS_MONTHLY(now.getFullYear(), now.getMonth())
+      await CacheService.set(cacheKey, totalThisMonth, ttl)
+    }
 
     // Get summaries (only non-deleted)
     const summaries = await prisma.summary.findMany({
@@ -112,7 +124,7 @@ export class SummaryService extends BaseCrudService<Summary> {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        totalThisMonth,
+        totalThisMonth: totalThisMonth ?? 0,
       },
     }
   }
@@ -128,6 +140,42 @@ export class SummaryService extends BaseCrudService<Summary> {
 
     // Invalidate cache for this summary
     await CacheService.delete(`summary:${summaryId}`)
+  }
+
+  async getSummaryById(summaryId: string, userId: string) {
+    const cacheKey = buildCacheKey('summary', { id: summaryId })
+
+    const cached = await CacheService.get(cacheKey)
+    if (cached) {
+      return cached
+    }
+
+    const summary = await prisma.summary.findFirst({
+      where: {
+        id: summaryId,
+        userId,
+      },
+    })
+
+    if (!summary) {
+      return null
+    }
+
+    const summaryData = {
+      id: summary.id,
+      title: summary.title,
+      coverImage: summary.coverImage,
+      originalText: summary.originalText,
+      summaryText: summary.summaryText,
+      style: summary.style,
+      source: summary.source,
+      language: summary.language,
+      createdAt: summary.createdAt,
+    }
+
+    await CacheService.set(cacheKey, summaryData, CACHE_TTL.SUMMARY)
+
+    return summaryData
   }
 }
 

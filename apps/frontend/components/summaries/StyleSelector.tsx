@@ -53,7 +53,7 @@ export function StyleSelector({ value, onChange }: StyleSelectorProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       {styleOptions.map((option) => {
         const Icon = option.icon
         const isSelected = value === option.value
@@ -64,21 +64,21 @@ export function StyleSelector({ value, onChange }: StyleSelectorProps) {
             type="button"
             onClick={() => handleSelect(option.value)}
             className={cn(
-              'flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all',
-              'hover:border-primary/50 hover:bg-accent/50',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+              'hover:border-primary hover:-translate-y-0.5',
+              'focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20',
               isSelected
-                ? 'border-primary bg-primary/5'
+                ? 'border-primary bg-background'
                 : 'border-border bg-background'
             )}
             aria-pressed={isSelected}
           >
-            <Icon className={cn('h-6 w-6', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+            <Icon className={cn('h-5 w-5', isSelected ? 'text-primary' : 'text-foreground')} />
             <div className="text-center">
-              <div className={cn('font-medium text-sm', isSelected ? 'text-primary' : 'text-foreground')}>
+              <div className={cn('font-medium text-sm', isSelected ? 'text-foreground' : 'text-foreground')}>
                 {t(`summaries.styles.${option.value}`)}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-0.5">
                 {t(`summaries.styleDescriptions.${option.value}`)}
               </div>
             </div>

@@ -20,23 +20,22 @@ export const gdprRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
    *
    * GET /api/gdpr/export-data
    *
-   * Security (SEC-010): Rate limited to 5 exports per hour
+   * Security: Rate limited to 2 exports per day
    * - Prevents DoS attacks via expensive database queries
    * - Mitigates data exfiltration attempts
-   * - Allows legitimate use (multiple checks/verifications)
-   * - Matches audit recommendation (5 per hour)
+   * - Allows legitimate use (verification + re-verification)
    */
   fastify.get(
     '/export-data',
     {
       config: {
         rateLimit: {
-          max: 5,
-          timeWindow: '1 hour',
+          max: 2,
+          timeWindow: '24 hours',
           keyGenerator: req => `gdpr:export:${req.user?.userId || req.ip}`,
           errorResponseBuilder: () => {
             const error = new Error(
-              'Limite de taux dépassée. Vous pouvez exporter vos données 5 fois par heure. Veuillez réessayer dans quelques minutes.'
+              'Limite de taux dépassée. Vous pouvez exporter vos données 2 fois par jour. Veuillez réessayer demain.'
             ) as Error & { statusCode: number }
             error.statusCode = 429
             throw error

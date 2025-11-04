@@ -60,22 +60,25 @@ export function requireStripeIPWhitelist() {
     try {
       const allowedIPs = env.STRIPE_WEBHOOK_ALLOWED_IPS
 
-      // If no IPs configured, allow all (development convenience)
+      // If no IPs configured, block in production, allow in dev
       if (!allowedIPs || allowedIPs.length === 0) {
         if (env.NODE_ENV === 'production') {
-          request.log.error('Stripe IP whitelist: No IPs configured in production!')
+          request.log.error(
+            '🚨 SECURITY: Stripe IP whitelist not configured in production - blocking request'
+          )
           return reply.status(500).send({
             success: false,
             error: 'Server misconfiguration',
           })
         }
         request.log.debug('Stripe IP whitelist: No IPs configured, allowing all (dev mode)')
-        return // Allow all IPs
+        return // Allow all IPs in development
       }
 
       // Get client IP (supports X-Forwarded-For from reverse proxy)
       // In production, we trust the proxy since trustProxy is enabled
-      const clientIP = request.ip || request.headers['x-forwarded-for'] || request.socket.remoteAddress
+      const clientIP =
+        request.ip || request.headers['x-forwarded-for'] || request.socket.remoteAddress
 
       if (!clientIP) {
         request.log.warn({ url: request.url }, 'Stripe webhook: Could not determine client IP')
@@ -86,9 +89,12 @@ export function requireStripeIPWhitelist() {
       }
 
       // Extract first IP if X-Forwarded-For contains multiple IPs
-      const normalizedClientIP = typeof clientIP === 'string'
-        ? clientIP.split(',')[0]?.trim()
-        : (Array.isArray(clientIP) ? clientIP[0]?.trim() : clientIP)
+      const normalizedClientIP =
+        typeof clientIP === 'string'
+          ? clientIP.split(',')[0]?.trim()
+          : Array.isArray(clientIP)
+            ? clientIP[0]?.trim()
+            : clientIP
 
       if (!normalizedClientIP) {
         request.log.warn({ url: request.url }, 'Stripe webhook: Could not normalize client IP')

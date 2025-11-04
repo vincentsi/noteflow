@@ -40,7 +40,10 @@ export default function VeillePage() {
     take: ARTICLES_PER_PAGE,
   })
 
-  const totalArticles = data?.total || 0
+  // FIXME: Backend doesn't return total count yet, so we estimate based on results
+  // If we get exactly ARTICLES_PER_PAGE results, assume there might be more pages
+  const articlesCount = data?.articles?.length || 0
+  const totalArticles = data?.total || (articlesCount === ARTICLES_PER_PAGE ? articlesCount * 10 : articlesCount)
   const totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE)
 
   // Fetch saved articles to know which ones are saved
@@ -82,18 +85,16 @@ export default function VeillePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
-          {showSavedOnly && (
-            <Button variant="ghost" size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('common.actions.back')}
-            </Button>
-          )}
-        </div>
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        {showSavedOnly && (
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('common.actions.back')}
+          </Button>
+        )}
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           {showSavedOnly ? t('veille.savedArticlesTitle') : t('veille.title')}
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-base text-muted-foreground mt-2">
           {showSavedOnly
             ? t(savedCount === 1 ? 'veille.savedArticlesCount' : 'veille.savedArticlesCount_plural', { count: savedCount })
             : t('veille.subtitle')
@@ -103,29 +104,29 @@ export default function VeillePage() {
 
       {/* Plan Usage Card - Only show when not in saved-only mode */}
       {!showSavedOnly && (
-        <Card className="shadow-lg border-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold">{t('veille.planUsage.title')}</CardTitle>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">{t('veille.planUsage.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-foreground">{t('veille.planUsage.savedArticles')}</span>
-                <span className="text-2xl font-bold text-primary">
-                  {savedCount} <span className="text-lg text-muted-foreground">/ {limit === Infinity ? '∞' : limit}</span>
+                <span className="text-sm font-medium text-foreground">{t('veille.planUsage.savedArticles')}</span>
+                <span className="text-xl font-bold text-foreground">
+                  {savedCount} <span className="text-sm text-muted-foreground font-normal">/ {limit === Infinity ? '∞' : limit}</span>
                 </span>
               </div>
               {limit !== Infinity && (
-                <div className="w-full bg-secondary rounded-full h-3 shadow-inner">
+                <div className="w-full bg-muted rounded-sm h-2">
                   <div
-                    className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500 shadow-sm"
+                    className={`h-2 rounded-sm transition-all duration-300 ${percentage >= 80 ? 'bg-primary' : 'bg-foreground'}`}
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
               )}
               {percentage >= 80 && limit !== Infinity && (
-                <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <p className="text-xs font-medium text-amber-700 dark:text-amber-500">
+                <div className="p-3 bg-muted border border-border rounded-md">
+                  <p className="text-xs font-medium text-foreground">
                     {t('veille.planUsage.limitWarning')}
                   </p>
                 </div>
@@ -147,10 +148,10 @@ export default function VeillePage() {
       )}
 
       {/* Article List */}
-      <div className="space-y-6">
-        {!showSavedOnly && <h2 className="text-xl font-semibold">{t('veille.articleList.title')}</h2>}
+      <div className="space-y-4">
+        {!showSavedOnly && <h2 className="text-lg font-semibold text-foreground">{t('veille.articleList.title')}</h2>}
         {error && !showSavedOnly && (
-          <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-4 text-sm text-foreground bg-muted border border-border rounded-md">
             {t('veille.articleList.errorLoading')}
           </div>
         )}

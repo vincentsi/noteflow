@@ -98,8 +98,8 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-      JWT_SECRET: test-jwt-secret-min-32-characters-long-for-security
-      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-long-for-security
+      JWT_SECRET: test-jwt-secret-min-64-chars-required-for-backend-tests-security-12345678
+      JWT_REFRESH_SECRET: test-refresh-secret-min-64-chars-required-for-backend-tests-sec-90123
       FRONTEND_URL: http://localhost:3000
       REDIS_URL: redis://localhost:6379
       # Stripe test key (required for integration tests)
@@ -177,8 +177,8 @@ jobs:
     env:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-      JWT_SECRET: test-jwt-secret-min-32-characters-long-for-security
-      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-long-for-security
+      JWT_SECRET: test-jwt-secret-min-64-chars-required-for-e2e-tests-security-compliance
+      JWT_REFRESH_SECRET: test-refresh-secret-min-64-chars-required-for-e2e-tests-compliance
       FRONTEND_URL: http://localhost:3000
       REDIS_URL: redis://localhost:6379
       # Stripe test key (required for integration tests)
@@ -267,11 +267,12 @@ jobs:
     env:
       NODE_ENV: production
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-      JWT_SECRET: test-jwt-secret-min-32-characters-long-for-security
-      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-long-for-security
+      JWT_SECRET: test-jwt-secret-min-64-chars-required-for-load-tests-security-compliance
+      JWT_REFRESH_SECRET: test-refresh-secret-min-64-chars-required-for-load-tests-compliance
       FRONTEND_URL: http://localhost:3000
       REDIS_URL: redis://localhost:6379
       STRIPE_SECRET_KEY: sk_test_51DummyKeyForCITestingOnly123456789012345678901234567890
+      STRIPE_WEBHOOK_ALLOWED_IPS: '127.0.0.1,::1'
       DISABLE_STRIPE_WORKER: 'true'
       # Optional config (defaults provided)
       CLEANUP_BATCH_SIZE: '1000'

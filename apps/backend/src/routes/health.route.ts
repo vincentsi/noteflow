@@ -3,6 +3,7 @@ import { prisma } from '@/config/prisma'
 import { getRedis, isRedisAvailable } from '@/config/redis'
 import { env } from '@/config/env'
 import { healthCheckSchema } from '@/schemas/openapi.schema'
+import { requireAuth } from '@/utils/require-auth'
 
 /**
  * Health check routes
@@ -25,53 +26,48 @@ import { healthCheckSchema } from '@/schemas/openapi.schema'
  */
 export async function healthRoutes(app: FastifyInstance): Promise<void> {
   /**
-   * Basic health check
+   * Basic health check (PUBLIC)
    * Only checks critical services (database)
    * Fast response (~10-50ms)
+   * SECURITY: Minimal information for public access
    */
   app.get('/health', { schema: healthCheckSchema }, async (request, reply) => {
-    const checks = {
-      database: false,
-      redis: isRedisAvailable(), // Just check if connected, don't ping
-    }
-
     // Check database connection
+    let healthy = false
     try {
       // Use Prisma's native method instead of raw SQL to prevent injection patterns
       await prisma.user.findFirst({
         select: { id: true },
         take: 1,
       })
-      checks.database = true
+      healthy = true
     } catch (error) {
       request.log.error({ error }, 'Database health check failed')
     }
 
-    const healthy = checks.database // Only database is critical
-
     if (!healthy) {
       return reply.status(503).send({
         status: 'unhealthy',
-        checks,
         timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
       })
     }
 
+    // SECURITY: Only return minimal info for public health check
     return {
       status: 'ok',
-      checks,
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
     }
   })
 
   /**
-   * Detailed health check
+   * Detailed health check (AUTHENTICATED)
    * Checks all services including external APIs
    * Slower response (~100-500ms)
+   * SECURITY: Requires authentication to prevent info disclosure
    */
   app.get('/health/detailed', async (request, reply) => {
+    // SECURITY: Require authentication to access detailed system metrics
+    requireAuth(request)
     const checks = {
       database: { status: 'unknown' as 'ok' | 'error' | 'unknown', latency: 0 },
       redis: { status: 'unknown' as 'ok' | 'error' | 'unknown' | 'disabled', latency: 0 },

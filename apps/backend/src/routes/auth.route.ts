@@ -1,12 +1,7 @@
 import { env } from '@/config/env'
 import { authController } from '@/controllers/auth.controller'
 import { authMiddleware } from '@/middlewares/auth.middleware'
-import {
-  loginSchema,
-  meSchema,
-  refreshTokenSchema,
-  registerSchema,
-} from '@/schemas/openapi.schema'
+import { loginSchema, meSchema, refreshTokenSchema, registerSchema } from '@/schemas/openapi.schema'
 import type { FastifyInstance } from 'fastify'
 
 /**
@@ -54,18 +49,19 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
    * POST /api/auth/register
    * Create new user account
    *
-   * Rate limit: 15 requests/hour per IP+email (disabled in dev/test)
+   * Rate limit: 10 requests/hour per IP+email (disabled in dev/test)
    * Prevents: Account spam, email enumeration
    */
   app.post(
     '/register',
     {
+      bodyLimit: 1024,
       schema: registerSchema,
       config:
         env.NODE_ENV !== 'test'
           ? {
               rateLimit: {
-                max: env.NODE_ENV === 'production' ? 15 : 100,
+                max: env.NODE_ENV === 'production' ? 10 : 100,
                 timeWindow: env.NODE_ENV === 'production' ? '1 hour' : '15 minutes',
                 keyGenerator: request => {
                   const body = request.body as { email?: string }
@@ -88,18 +84,19 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
    * POST /api/auth/login
    * Authenticate user with email + password
    *
-   * Rate limit: 5 requests/15min per IP+email (disabled in dev/test)
+   * Rate limit: 3 requests/15min per IP+email (disabled in dev/test)
    * Prevents: Brute force attacks, credential stuffing
    */
   app.post(
     '/login',
     {
+      bodyLimit: 1024,
       schema: loginSchema,
       config:
         env.NODE_ENV !== 'test'
           ? {
               rateLimit: {
-                max: env.NODE_ENV === 'production' ? 5 : 100,
+                max: env.NODE_ENV === 'production' ? 3 : 100,
                 timeWindow: '15 minutes',
                 keyGenerator: request => {
                   const body = request.body as { email?: string }
@@ -128,6 +125,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     '/refresh',
     {
+      // SECURITY: Limit body size to 500 bytes (refresh token in cookie, minimal body)
+      bodyLimit: 500, // 500 bytes
       schema: refreshTokenSchema,
       config:
         env.NODE_ENV !== 'test'

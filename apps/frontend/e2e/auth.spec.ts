@@ -94,7 +94,7 @@ baseTest.describe('Authentication Flow', () => {
     const requests: Array<{ url: string; method: string; postData?: string | null }> = []
     const responses: Array<{ url: string; status: number; body?: string }> = []
 
-    page.on('request', (request) => {
+    page.on('request', request => {
       if (request.url().includes('/api/')) {
         requests.push({
           url: request.url(),
@@ -108,7 +108,7 @@ baseTest.describe('Authentication Flow', () => {
       }
     })
 
-    page.on('response', async (response) => {
+    page.on('response', async response => {
       if (response.url().includes('/api/')) {
         const body = await response.text().catch(() => '<unable to read>')
         responses.push({
@@ -152,7 +152,7 @@ baseTest.describe('Authentication Flow', () => {
     console.log(`🌐 Current URL after submit: ${currentUrl}`)
 
     // Log any console errors from the page
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         console.log(`❌ Browser console error: ${msg.text()}`)
       }
@@ -173,7 +173,7 @@ baseTest.describe('Authentication Flow', () => {
 
   baseTest('should show error on duplicate registration', async ({ page }) => {
     // Enable request/response logging
-    page.on('request', (request) => {
+    page.on('request', request => {
       if (request.url().includes('/api/')) {
         console.log(`🔵 REQUEST: ${request.method()} ${request.url()}`)
         if (request.postData()) {
@@ -182,7 +182,7 @@ baseTest.describe('Authentication Flow', () => {
       }
     })
 
-    page.on('response', async (response) => {
+    page.on('response', async response => {
       if (response.url().includes('/api/')) {
         const body = await response.text().catch(() => '<unable to read>')
         console.log(`🟢 RESPONSE: ${response.status()} ${response.url()}`)
@@ -229,8 +229,7 @@ baseTest.describe('Authentication Flow', () => {
     console.log(`📄 Page contains "taken": ${pageContent.includes('taken')}`)
 
     // Should show error about existing user
-    // Look for the error message div (specific class: bg-destructive/10)
-    const errorMessage = page.locator('div.bg-destructive\\/10')
+    const errorMessage = page.locator('div.bg-muted.text-foreground')
     const errorCount = await errorMessage.count()
     console.log(`🔍 Error message div found: ${errorCount}`)
 

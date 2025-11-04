@@ -8,6 +8,7 @@ import {
 } from '@/schemas/article.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { requireAuth } from '@/utils/require-auth'
+import { createAuthQueryHandler, createAuthParamHandler } from '@/utils/controller-wrapper'
 
 /**
  * Article controller
@@ -60,16 +61,13 @@ export class ArticleController {
   async getSavedArticles(request: FastifyRequest, reply: FastifyReply) {
     try {
       const userId = requireAuth(request)
-
-      // Validate query parameters
       const filters = getSavedArticlesSchema.parse(request.query)
-
-      // Get saved articles
-      const savedArticles = await articleService.getUserSavedArticles(userId, filters)
+      const result = await articleService.getUserSavedArticles(userId, filters)
 
       return reply.status(200).send({
         success: true,
-        data: savedArticles,
+        data: result.savedArticles,
+        pagination: result.pagination,
       })
     } catch (error) {
       return handleControllerError(error, request, reply)
@@ -83,13 +81,8 @@ export class ArticleController {
   async saveArticle(request: FastifyRequest, reply: FastifyReply) {
     try {
       const userId = requireAuth(request)
-
       const { articleId } = request.params as { articleId: string }
-
-      // Validate articleId
       saveArticleSchema.parse({ articleId })
-
-      // Save article
       await articleService.saveArticle(userId, articleId)
 
       return reply.status(201).send({
@@ -116,13 +109,8 @@ export class ArticleController {
   async unsaveArticle(request: FastifyRequest, reply: FastifyReply) {
     try {
       const userId = requireAuth(request)
-
       const { articleId } = request.params as { articleId: string }
-
-      // Validate articleId
       unsaveArticleSchema.parse({ articleId })
-
-      // Unsave article
       await articleService.unsaveArticle(userId, articleId)
 
       return reply.status(200).send({

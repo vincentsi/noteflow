@@ -25,52 +25,17 @@ export const apiClient: AxiosInstance = axios.create({
 // REQUEST INTERCEPTOR: Attach CSRF token for protection
 // ========================================
 
-// Cache CSRF token to avoid parsing cookies on every request
-let cachedCsrfToken: string | null = null
-
 /**
- * Clear the cached CSRF token
- * Call this after logout or when token is refreshed
+ * @deprecated Legacy function - no longer needed
  */
 export function clearCsrfTokenCache(): void {
-  cachedCsrfToken = null
-}
-
-/**
- * Validate CSRF token format
- * Tokens should be 64-character hex strings (SHA-256 hash)
- */
-function isValidCsrfToken(token: string): boolean {
-  return /^[a-f0-9]{64}$/i.test(token)
+  // No-op for backward compatibility
 }
 
 apiClient.interceptors.request.use(
   config => {
-    // Add CSRF token on all mutating requests (POST, PUT, PATCH, DELETE)
-    const isMutatingRequest = ['post', 'put', 'patch', 'delete'].includes(
-      config.method?.toLowerCase() || ''
-    )
-
-    if (isMutatingRequest && typeof document !== 'undefined') {
-      // Use cached token or parse from cookie once
-      if (!cachedCsrfToken) {
-        cachedCsrfToken = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('csrfToken='))
-          ?.split('=')[1] || null
-
-        // Validate token format
-        if (cachedCsrfToken && !isValidCsrfToken(cachedCsrfToken)) {
-          logWarn('Invalid CSRF token format detected, clearing cache')
-          cachedCsrfToken = null
-        }
-      }
-
-      if (cachedCsrfToken) {
-        config.headers['X-CSRF-Token'] = cachedCsrfToken
-      }
-    }
-
+    // CSRF token is handled by backend via httpOnly cookie
+    // No client-side token management needed
     return config
   },
   error => Promise.reject(error)

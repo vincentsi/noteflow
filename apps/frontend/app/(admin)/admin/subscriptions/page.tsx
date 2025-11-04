@@ -21,8 +21,8 @@ export default function AdminSubscriptionsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading subscriptions...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading subscriptions...</p>
         </div>
       </div>
     )
@@ -35,8 +35,8 @@ export default function AdminSubscriptionsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">Subscriptions Management</h1>
-          <p className="text-muted-foreground dark:text-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Subscriptions Management</h1>
+          <p className="text-base text-muted-foreground mt-2">
             {pagination?.totalCount || 0} total subscriptions
           </p>
         </div>
@@ -44,48 +44,48 @@ export default function AdminSubscriptionsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Subscriptions</CardTitle>
+          <CardTitle className="text-lg font-semibold">All Subscriptions</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b dark:border-gray-700">
-                  <th className="text-left p-2 dark:text-gray-300">User</th>
-                  <th className="text-left p-2 dark:text-gray-300">Plan</th>
-                  <th className="text-left p-2 dark:text-gray-300">Status</th>
-                  <th className="text-left p-2 dark:text-gray-300">Period</th>
-                  <th className="text-left p-2 dark:text-gray-300">Stripe ID</th>
+                <tr className="border-b border-border">
+                  <th className="text-left p-2 text-foreground">User</th>
+                  <th className="text-left p-2 text-foreground">Plan</th>
+                  <th className="text-left p-2 text-foreground">Status</th>
+                  <th className="text-left p-2 text-foreground">Period</th>
+                  <th className="text-left p-2 text-foreground">Stripe ID</th>
                 </tr>
               </thead>
               <tbody>
                 {subscriptions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center p-8 text-gray-500 dark:text-gray-400">
+                    <td colSpan={5} className="text-center p-8 text-muted-foreground">
                       No subscriptions found
                     </td>
                   </tr>
                 ) : (
                   subscriptions.map((sub) => (
-                    <tr key={sub.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr key={sub.id} className="border-b border-border hover:bg-muted transition-colors">
                       <td className="p-2">
-                        <div className="font-medium dark:text-gray-200">{sub.user.email}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{sub.user.name || '-'}</div>
+                        <div className="font-medium text-foreground">{sub.user.email}</div>
+                        <div className="text-xs text-muted-foreground">{sub.user.name || '-'}</div>
                       </td>
                       <td className="p-2">
-                        <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="px-2 py-1 rounded-sm text-xs font-medium border border-foreground/30 bg-foreground/10 text-foreground">
                           {sub.planType}
                         </span>
                       </td>
                       <td className="p-2">
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
+                          className={`px-2 py-1 rounded-sm text-xs font-medium border ${
                             sub.status === 'ACTIVE'
-                              ? 'bg-green-100 text-green-800'
+                              ? 'border-foreground bg-foreground/10 text-foreground'
                               : sub.status === 'CANCELED'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-foreground/30 bg-foreground/5 text-foreground/70'
                           }`}
                         >
                           {sub.status}
@@ -93,18 +93,18 @@ export default function AdminSubscriptionsPage() {
                         </span>
                       </td>
                       <td className="p-2 text-sm">
-                        <div className="dark:text-gray-300">
+                        <div className="text-foreground">
                           Start: {new Date(sub.currentPeriodStart).toLocaleDateString()}
                         </div>
-                        <div className="text-gray-600 dark:text-gray-400">
+                        <div className="text-muted-foreground">
                           End: {new Date(sub.currentPeriodEnd).toLocaleDateString()}
                         </div>
                       </td>
                       <td className="p-2">
-                        <div className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                        <div className="text-xs font-mono text-muted-foreground">
                           {sub.stripeSubscriptionId}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {new Date(sub.createdAt).toLocaleDateString()}
                         </div>
                       </td>
@@ -117,8 +117,8 @@ export default function AdminSubscriptionsPage() {
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4 pt-4 border-t dark:border-gray-700">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
+              <div className="text-sm text-muted-foreground">
                 Page {pagination.page} of {pagination.totalPages}
               </div>
               <div className="space-x-2">

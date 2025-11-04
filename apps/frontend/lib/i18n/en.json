@@ -484,9 +484,9 @@
     "filters": {
       "source": "Source",
       "allSources": "All sources",
-      "search": "🔍 Search",
+      "search": "Search",
       "searchPlaceholder": "Search in titles and content...",
-      "dateRange": "📅 Period",
+      "dateRange": "Period",
       "allDates": "All dates",
       "last24h": "Last 24h",
       "last7days": "Last 7 days",
@@ -588,6 +588,41 @@
       "reasonPlaceholder": "Help us improve...",
       "deleting": "Deleting...",
       "confirmButton": "Delete Account Permanently"
+    }
+  },
+  "home": {
+    "nav": {
+      "login": "Sign in",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "badge": "Your AI assistant for tech watch and note-taking",
+      "title1": "Watch. Summarize.",
+      "title2": "Note.",
+      "subtitle": "Centralize your tech watch, generate AI summaries and organize your knowledge in one place.",
+      "ctaPrimary": "Get Started Free",
+      "ctaSecondary": "Sign in"
+    },
+    "features": {
+      "veille": {
+        "title": "AI Watch",
+        "description": "Aggregate and filter articles from the best tech and AI RSS feeds. Save your favorites."
+      },
+      "powerpost": {
+        "title": "PowerPost",
+        "description": "Summarize your texts and PDFs with AI. 6 styles available: short, tweet, thread, bullet points..."
+      },
+      "powernote": {
+        "title": "PowerNote",
+        "description": "Take notes in Markdown with tags. Publish your best notes as public posts."
+      }
+    },
+    "pricing": {
+      "text": "Free plan available • Plans starting at €6/month",
+      "link": "View pricing"
+    },
+    "footer": {
+      "text": "NoteFlow - Powered by AI for developers"
     }
   }
 }

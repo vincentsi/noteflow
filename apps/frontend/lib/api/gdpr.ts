@@ -41,7 +41,7 @@ export type DeleteDataResponse = {
 export const gdprApi = {
   /**
    * Export all user data (GDPR Article 20 - Right to data portability)
-   * Rate limited: 3 exports per hour
+   * Rate limited: 2 exports per day
    */
   async exportData(): Promise<ExportDataResponse['data']> {
     const response = await apiClient.get<ExportDataResponse>('/api/gdpr/export-data')

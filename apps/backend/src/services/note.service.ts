@@ -3,6 +3,7 @@ import { PlanLimiter } from '@/utils/plan-limiter'
 import { buildTagsFilter, buildSoftDeleteFilter } from '@/utils/query-builders'
 import { BaseCrudService } from './base-crud.service'
 import { Prisma, type Note } from '@prisma/client'
+import { sanitizeText } from '@/utils/sanitize'
 
 export interface CreateNoteData {
   title: string
@@ -28,20 +29,17 @@ export class NoteService extends BaseCrudService<Note> {
    * Checks plan limits before creating
    */
   async createNote(userId: string, data: CreateNoteData) {
-    // Check plan limits using centralized utility
     await PlanLimiter.checkLimit(userId, 'note')
 
-    // Create the note
     const note = await prisma.note.create({
       data: {
         userId,
-        title: data.title,
-        content: data.content,
+        title: sanitizeText(data.title),
+        content: sanitizeText(data.content),
         tags: data.tags,
       },
     })
 
-    // Invalidate cache
     await PlanLimiter.invalidateCache(userId, 'note')
 
     return note
@@ -76,12 +74,17 @@ export class NoteService extends BaseCrudService<Note> {
    * Only the note owner can update it
    */
   async updateNote(noteId: string, userId: string, data: UpdateNoteData) {
-    // Use base class method for ownership verification
     await this.findByIdWithOwnership(noteId, userId)
+
+    const sanitizedData: UpdateNoteData = {
+      ...data,
+      ...(data.title && { title: sanitizeText(data.title) }),
+      ...(data.content && { content: sanitizeText(data.content) }),
+    }
 
     const note = await prisma.note.update({
       where: { id: noteId },
-      data,
+      data: sanitizedData,
     })
 
     return note

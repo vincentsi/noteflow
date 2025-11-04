@@ -15,8 +15,16 @@ function generateNonce(): string {
 /**
  * Middleware to generate a unique nonce for CSP on every request
  * This nonce is used to allow specific inline scripts while blocking XSS
+ *
  */
 export function middleware(request: NextRequest) {
+  if (request.headers.get('x-middleware-subrequest')) {
+    return new NextResponse(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   // Generate a cryptographically secure random nonce
   const nonce = generateNonce()
 

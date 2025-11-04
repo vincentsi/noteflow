@@ -44,7 +44,7 @@ import { z } from 'zod'
 export const searchQuerySchema = z
   .string()
   .max(200, 'Search query must not exceed 200 characters')
-  .regex(/^[a-zA-Z0-9\s\-_.,!?'"]*$/, 'Search query contains invalid characters')
+  .regex(/^[\w\s\-.,!?'"]{0,200}$/, 'Search query contains invalid characters')
 
 /**
  * Pagination Schema (page/limit pattern)

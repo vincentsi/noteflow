@@ -11,7 +11,7 @@ import { checkRateLimit } from '@/utils/rate-limiter'
  *
  * Manages password reset flow with advanced security measures:
  * - Token hashing via SHA-256 (tokens stored as hashes in database)
- * - 1-hour token expiration (prevents stale reset links)
+ * - 30-minute token expiration (prevents stale reset links)
  * - Timing attack protection (constant delay prevents email enumeration)
  * - One-time use tokens (deleted after successful password reset)
  * - Session revocation (invalidates all refresh tokens after reset)
@@ -21,7 +21,7 @@ import { checkRateLimit } from '@/utils/rate-limiter'
  * - NEVER reveal if email exists (always return success: true)
  * - ALWAYS add constant delay even on errors (timing attack protection)
  * - NEVER store tokens in plaintext (always use TokenHasher.hash())
- * - Token expiration is 1 hour (security vs UX balance)
+ * - Token expiration is 30 minutes (security vs UX balance)
  * - resetPassword() MUST revoke all refresh tokens (force re-login)
  * - resetPassword() MUST delete token after use (prevent replay attacks)
  * - addConstantDelay() simulates email send time (200-300ms random)
@@ -97,7 +97,7 @@ export class PasswordResetService {
       const hashedToken = TokenHasher.hash(token)
 
       const expiresAt = new Date()
-      expiresAt.setHours(expiresAt.getHours() + 1)
+      expiresAt.setMinutes(expiresAt.getMinutes() + 30)
 
       await prisma.passwordResetToken.deleteMany({
         where: { userId: user.id },
@@ -148,7 +148,10 @@ export class PasswordResetService {
       await prisma.passwordResetToken.deleteMany({
         where: { token: hashedToken },
       })
-      logger.warn({ tokenPrefix: hashedToken.substring(0, 8) }, 'Password reset token deleted after brute force attempts')
+      logger.warn(
+        { tokenPrefix: hashedToken.substring(0, 8) },
+        'Password reset token deleted after brute force attempts'
+      )
       throw new Error('Too many failed attempts. Please request a new reset link.')
     }
 

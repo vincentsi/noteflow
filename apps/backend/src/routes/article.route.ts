@@ -1,6 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { createProtectedRoutes } from '@/utils/protected-routes'
 import { articleController } from '@/controllers/article.controller'
+import { env } from '@/config/env'
+import { standardResponses, errorResponse } from '@/schemas/common-responses.schema'
+import { rateLimitPresets } from '@/utils/rate-limit-configs'
 
 /**
  * Article routes
@@ -72,18 +75,10 @@ export const articleRoutes = createProtectedRoutes(
         schema: {
           tags: ['Articles'],
           description: 'Get list of unique article sources',
-          response: {
-            200: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean' },
-                data: {
-                  type: 'array',
-                  items: { type: 'string' },
-                },
-              },
-            },
-          },
+          response: standardResponses({
+            type: 'array',
+            items: { type: 'string' },
+          }),
         },
       },
       articleController.getSources.bind(articleController)
@@ -151,10 +146,17 @@ export const articleRoutes = createProtectedRoutes(
      * Save an article
      * @route POST /api/articles/:articleId/save
      * @access Private
+     * @rateLimit 60 requests/hour per user (prevents abuse)
      */
     fastify.post(
       '/:articleId/save',
       {
+        config:
+          env.NODE_ENV !== 'test'
+            ? {
+                rateLimit: rateLimitPresets.articleSave,
+              }
+            : {},
         schema: {
           tags: ['Articles'],
           description: 'Save an article for the user',
@@ -173,14 +175,7 @@ export const articleRoutes = createProtectedRoutes(
                 message: { type: 'string' },
               },
             },
-            403: {
-              type: 'object',
-              properties: {
-                success: { type: 'boolean' },
-                error: { type: 'string' },
-                message: { type: 'string' },
-              },
-            },
+            403: errorResponse,
           },
         },
       },
@@ -191,10 +186,17 @@ export const articleRoutes = createProtectedRoutes(
      * Unsave an article
      * @route DELETE /api/articles/:articleId/unsave
      * @access Private
+     * @rateLimit 60 requests/hour per user (prevents abuse)
      */
     fastify.delete(
       '/:articleId/unsave',
       {
+        config:
+          env.NODE_ENV !== 'test'
+            ? {
+                rateLimit: rateLimitPresets.articleUnsave,
+              }
+            : {},
         schema: {
           tags: ['Articles'],
           description: 'Unsave an article for the user',

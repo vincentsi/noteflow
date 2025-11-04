@@ -1,14 +1,14 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { exec } from 'child_process'
+import { spawn } from 'child_process'
 import type { FastifyInstance } from 'fastify'
 import * as fs from 'fs/promises'
 import cron from 'node-cron'
 import * as path from 'path'
-import { promisify } from 'util'
 import { logger } from '@/utils/logger'
 import { DistributedLockService } from './distributed-lock.service'
 
-const execAsync = promisify(exec)
+// SECURITY: Use spawn instead of exec to prevent command injection
+// spawn does not spawn a shell, making it safer for executing external programs
 
 /**
  * Database Backup Service (PostgreSQL)
@@ -109,17 +109,15 @@ export class BackupService {
             const backupPath = await this.createBackup()
             fastify.log.info(`✅ Scheduled backup completed: ${backupPath}`)
           } catch (error: unknown) {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error)
+            const errorMessage = error instanceof Error ? error.message : String(error)
             fastify.log.error({ err: error }, '❌ Scheduled backup failed')
 
             // Report to Sentry if available
             if (process.env.SENTRY_DSN) {
               const { captureException } = await import('@/config/sentry')
-              captureException(
-                error instanceof Error ? error : new Error(errorMessage),
-                { context: 'scheduled-backup' }
-              )
+              captureException(error instanceof Error ? error : new Error(errorMessage), {
+                context: 'scheduled-backup',
+              })
             }
           }
         }
@@ -178,16 +176,10 @@ export class BackupService {
    * Stream backup directly to S3 (no local file)
    * More efficient for production use
    */
-  private static async createBackupToS3(
-    bucketName: string,
-    s3Client: S3Client
-  ): Promise<string> {
+  private static async createBackupToS3(bucketName: string, s3Client: S3Client): Promise<string> {
     try {
       // Generate filename with timestamp
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[:.]/g, '-')
-        .slice(0, -5)
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
       const filename = `backup_${timestamp}.sql.gz`
 
       // Get DATABASE_URL
@@ -206,26 +198,75 @@ export class BackupService {
         password: url.password,
       }
 
-      // Use pg_dump with environment variables instead of connection string
-      // This prevents shell injection and keeps credentials secure
-      const dumpCommand = 'pg_dump --format=plain --no-owner --no-acl --clean --if-exists'
+      // SECURITY: Use spawn with separated parameters to prevent command injection
+      // Pass password via environment variable (more secure than connection string)
+      const pgDump = spawn(
+        'pg_dump',
+        [
+          '-h',
+          dbParams.host,
+          '-p',
+          dbParams.port,
+          '-U',
+          dbParams.user,
+          '-d',
+          dbParams.database,
+          '--format=plain',
+          '--no-owner',
+          '--no-acl',
+          '--clean',
+          '--if-exists',
+        ],
+        {
+          env: {
+            ...process.env,
+            PGPASSWORD: dbParams.password, // More secure than in connection string
+          },
+        }
+      )
 
-      // Set environment variables for PostgreSQL connection
-      const env = {
-        ...process.env,
-        PGHOST: dbParams.host,
-        PGPORT: dbParams.port,
-        PGDATABASE: dbParams.database,
-        PGUSER: dbParams.user,
-        PGPASSWORD: dbParams.password,
-      }
+      const gzip = spawn('gzip', ['-c'])
 
-      // Execute and capture output as buffer, then pipe to gzip
-      const { stdout } = await execAsync(`${dumpCommand} | gzip`, {
-        env,
-        encoding: 'buffer',
-        maxBuffer: 100 * 1024 * 1024, // 100MB max
+      // Pipe pg_dump output to gzip
+      pgDump.stdout.pipe(gzip.stdin)
+
+      // Collect gzipped output in buffer
+      const chunks: Buffer[] = []
+      gzip.stdout.on('data', (chunk: Buffer) => {
+        chunks.push(chunk)
       })
+
+      // Wait for both processes to complete
+      await new Promise<void>((resolve, reject) => {
+        let pgDumpError = ''
+        let gzipError = ''
+
+        pgDump.stderr.on('data', (data: Buffer) => {
+          pgDumpError += data.toString()
+        })
+
+        gzip.stderr.on('data', (data: Buffer) => {
+          gzipError += data.toString()
+        })
+
+        pgDump.on('error', err => {
+          reject(new Error(`pg_dump failed to start: ${err.message}`))
+        })
+
+        gzip.on('error', err => {
+          reject(new Error(`gzip failed to start: ${err.message}`))
+        })
+
+        gzip.on('close', code => {
+          if (code !== 0) {
+            reject(new Error(`Backup failed. pg_dump: ${pgDumpError}, gzip: ${gzipError}`))
+          } else {
+            resolve()
+          }
+        })
+      })
+
+      const stdout = Buffer.concat(chunks)
 
       // Upload to S3 with server-side encryption
       const command = new PutObjectCommand({
@@ -262,10 +303,7 @@ export class BackupService {
       await fs.mkdir(this.backupDir, { recursive: true })
 
       // Generate filename with timestamp
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[:.]/g, '-')
-        .slice(0, -5)
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
       const filename = `backup_${timestamp}.sql`
       const filepath = path.join(this.backupDir, filename)
       const compressedPath = `${filepath}.gz`
@@ -286,10 +324,7 @@ export class BackupService {
         password: url.password,
       }
 
-      // Use pg_dump with environment variables instead of connection string
-      // This prevents shell injection and keeps credentials secure
-      const dumpCommand = `pg_dump --format=plain --no-owner --no-acl --clean --if-exists --file="${filepath}"`
-
+      // SECURITY: Use spawn with explicit arguments (not shell) to prevent command injection
       // Set environment variables for PostgreSQL connection
       const env = {
         ...process.env,
@@ -300,10 +335,60 @@ export class BackupService {
         PGPASSWORD: dbParams.password,
       }
 
-      await execAsync(dumpCommand, { env })
+      // Execute pg_dump safely using spawn (no shell)
+      await new Promise<void>((resolve, reject) => {
+        const pgDump = spawn(
+          'pg_dump',
+          [
+            '--format=plain',
+            '--no-owner',
+            '--no-acl',
+            '--clean',
+            '--if-exists',
+            `--file=${filepath}`,
+          ],
+          { env }
+        )
 
-      // Compress backup using --force to overwrite if exists
-      await execAsync(`gzip --force "${filepath}"`)
+        let errorOutput = ''
+        pgDump.stderr.on('data', (data: Buffer) => {
+          errorOutput += data.toString()
+        })
+
+        pgDump.on('error', err => {
+          reject(new Error(`pg_dump failed to start: ${err.message}`))
+        })
+
+        pgDump.on('close', code => {
+          if (code !== 0) {
+            reject(new Error(`pg_dump failed with code ${code}: ${errorOutput}`))
+          } else {
+            resolve()
+          }
+        })
+      })
+
+      // Compress backup safely using spawn (no shell)
+      await new Promise<void>((resolve, reject) => {
+        const gzipProcess = spawn('gzip', ['--force', filepath])
+
+        let errorOutput = ''
+        gzipProcess.stderr.on('data', (data: Buffer) => {
+          errorOutput += data.toString()
+        })
+
+        gzipProcess.on('error', err => {
+          reject(new Error(`gzip failed to start: ${err.message}`))
+        })
+
+        gzipProcess.on('close', code => {
+          if (code !== 0) {
+            reject(new Error(`gzip failed with code ${code}: ${errorOutput}`))
+          } else {
+            resolve()
+          }
+        })
+      })
 
       // Get file size
       const stats = await fs.stat(compressedPath)
@@ -337,9 +422,7 @@ export class BackupService {
       await fs.mkdir(this.backupDir, { recursive: true })
 
       const files = await fs.readdir(this.backupDir)
-      const backupFiles = files.filter(
-        f => f.startsWith('backup_') && f.endsWith('.sql.gz')
-      )
+      const backupFiles = files.filter(f => f.startsWith('backup_') && f.endsWith('.sql.gz'))
 
       const backups = await Promise.all(
         backupFiles.map(async filename => {
@@ -357,9 +440,7 @@ export class BackupService {
       )
 
       // Sort by creation date (newest first)
-      return backups.sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-      )
+      return backups.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     } catch (error) {
       logger.error({ error: error }, '❌ Failed to list backups:')
       return []

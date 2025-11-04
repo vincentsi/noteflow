@@ -45,15 +45,15 @@ function VerifyEmailContent() {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('auth.verifyEmail.title')}</CardTitle>
-            <CardDescription>{t('auth.verifyEmail.verifying')}</CardDescription>
+            <CardTitle className="text-2xl font-bold">{t('auth.verifyEmail.title')}</CardTitle>
+            <CardDescription className="text-sm">{t('auth.verifyEmail.verifying')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
             </div>
           </CardContent>
         </Card>
@@ -63,11 +63,11 @@ function VerifyEmailContent() {
 
   if (status === 'success') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-green-600">{t('auth.verifyEmail.successTitle')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-bold text-foreground">{t('auth.verifyEmail.successTitle')}</CardTitle>
+            <CardDescription className="text-sm">
               {t('auth.verifyEmail.successMessage')}
             </CardDescription>
           </CardHeader>
@@ -82,11 +82,11 @@ function VerifyEmailContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-red-600">{t('auth.verifyEmail.errorTitle')}</CardTitle>
-          <CardDescription>{errorMessage}</CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground">{t('auth.verifyEmail.errorTitle')}</CardTitle>
+          <CardDescription className="text-sm">{errorMessage}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -108,10 +108,10 @@ function VerifyEmailContent() {
 function VerifyEmailFallback() {
   const { t } = useI18n()
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
-          <p className="text-center text-muted-foreground dark:text-gray-400">{t('common.messages.loading')}</p>
+          <p className="text-center text-muted-foreground">{t('common.messages.loading')}</p>
         </CardContent>
       </Card>
     </div>

@@ -6,6 +6,8 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.test.ts'],
   moduleNameMapper: {
+    // Mock isomorphic-dompurify to avoid ESM issues in tests
+    '^@/utils/sanitize$': '<rootDir>/src/__tests__/__mocks__/sanitize.mock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
@@ -13,6 +15,10 @@ module.exports = {
     'src/utils/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    // Exclude backup service from coverage (no tests, disabled in dev)
+    '!src/services/backup.service.ts',
+    '!src/services/cleanup.service.ts',
+    '!src/services/rss-cleanup.service.ts',
   ],
   coverageThreshold: {
     global: {

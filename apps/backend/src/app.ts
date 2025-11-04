@@ -132,23 +132,22 @@ export async function createApp(): Promise<FastifyInstance> {
     staticCSP: true,
   })
 
-  // SECURITY: Protect /docs with authentication in production
+  // SECURITY: Protect /docs with authentication in all environments
   // Prevents unauthorized access to API documentation
-  if (env.NODE_ENV === 'production') {
-    app.addHook('onRequest', async (request, reply) => {
-      if (request.url.startsWith('/docs')) {
-        // Require authentication
-        try {
-          await authMiddleware(request, reply)
-        } catch {
-          return reply.status(401).send({
-            success: false,
-            error: 'Authentication required to access API documentation',
-          })
-        }
+  // API documentation can reveal sensitive information about endpoints, schemas, and business logic
+  app.addHook('onRequest', async (request, reply) => {
+    if (request.url.startsWith('/docs')) {
+      // Require authentication
+      try {
+        await authMiddleware(request, reply)
+      } catch {
+        return reply.status(401).send({
+          success: false,
+          error: 'Authentication required to access API documentation',
+        })
       }
-    })
-  }
+    }
+  })
 
   // Register security middlewares
   await registerSecurityMiddlewares(app)

@@ -95,11 +95,11 @@ function ResetPasswordContent() {
 
   if (error && !token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('auth.resetPassword.invalidLinkTitle')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-bold">{t('auth.resetPassword.invalidLinkTitle')}</CardTitle>
+            <CardDescription className="text-sm">
               {t('auth.resetPassword.invalidLinkMessage')}
             </CardDescription>
           </CardHeader>
@@ -115,11 +115,11 @@ function ResetPasswordContent() {
 
   if (isSuccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('auth.resetPassword.successTitle')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-bold">{t('auth.resetPassword.successTitle')}</CardTitle>
+            <CardDescription className="text-sm">
               {t('auth.resetPassword.successMessage')}
             </CardDescription>
           </CardHeader>
@@ -134,11 +134,11 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t('auth.resetPassword.title')}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('auth.resetPassword.title')}</CardTitle>
+          <CardDescription className="text-sm">
             {t('auth.resetPassword.subtitle')}
           </CardDescription>
         </CardHeader>
@@ -207,7 +207,7 @@ function ResetPasswordContent() {
 function ResetPasswordFallback() {
   const { t } = useI18n()
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
           <p className="text-center text-muted-foreground dark:text-gray-400">{t('common.messages.loading')}</p>

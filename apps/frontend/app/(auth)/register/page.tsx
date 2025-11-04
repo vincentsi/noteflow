@@ -47,11 +47,11 @@ export default function RegisterPage() {
   })
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t('auth.register.title')}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('auth.register.title')}</CardTitle>
+          <CardDescription className="text-sm">
             {t('auth.register.subtitle')}
           </CardDescription>
         </CardHeader>
@@ -60,7 +60,7 @@ export default function RegisterPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
               {form.formState.errors.root && (
-                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                <div className="bg-muted text-foreground text-sm p-3 rounded-md border border-border">
                   {form.formState.errors.root.message}
                 </div>
               )}
@@ -125,10 +125,10 @@ export default function RegisterPage() {
           </Form>
         </CardContent>
 
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground dark:text-gray-400">
+        <CardFooter className="flex justify-center border-t">
+          <p className="text-sm text-muted-foreground">
             {t('auth.register.haveAccount')}{' '}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-foreground font-medium hover:text-primary transition-colors">
               {t('auth.register.signInLink')}
             </Link>
           </p>

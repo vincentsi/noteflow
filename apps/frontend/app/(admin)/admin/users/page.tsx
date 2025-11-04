@@ -99,8 +99,8 @@ export default function AdminUsersPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">{t('admin.users.loadingUsers')}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">{t('admin.users.loadingUsers')}</p>
         </div>
       </div>
     )
@@ -113,8 +113,8 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">{t('admin.users.title')}</h1>
-          <p className="text-muted-foreground dark:text-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('admin.users.title')}</h1>
+          <p className="text-base text-muted-foreground mt-2">
             {t('admin.users.totalUsers', { count: pagination?.totalCount || 0 })}
           </p>
         </div>
@@ -122,38 +122,38 @@ export default function AdminUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('admin.users.allUsers')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('admin.users.allUsers')}</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b dark:border-gray-700">
-                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.email')}</th>
-                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.name')}</th>
-                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.role')}</th>
-                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.verified')}</th>
-                  <th className="text-left p-2 dark:text-gray-300">{t('admin.users.table.created')}</th>
-                  <th className="text-right p-2 dark:text-gray-300">{t('admin.users.table.actions')}</th>
+                <tr className="border-b border-border">
+                  <th className="text-left p-2 text-foreground">{t('admin.users.table.email')}</th>
+                  <th className="text-left p-2 text-foreground">{t('admin.users.table.name')}</th>
+                  <th className="text-left p-2 text-foreground">{t('admin.users.table.role')}</th>
+                  <th className="text-left p-2 text-foreground">{t('admin.users.table.verified')}</th>
+                  <th className="text-left p-2 text-foreground">{t('admin.users.table.created')}</th>
+                  <th className="text-right p-2 text-foreground">{t('admin.users.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={user.id} className="border-b border-border hover:bg-muted transition-colors">
                     <td className="p-2">
-                      <div className="font-medium dark:text-gray-200">{user.email}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{user.id}</div>
+                      <div className="font-medium text-foreground">{user.email}</div>
+                      <div className="text-xs text-muted-foreground font-mono">{user.id}</div>
                     </td>
-                    <td className="p-2 dark:text-gray-300">{user.name || '-'}</td>
+                    <td className="p-2 text-foreground">{user.name || '-'}</td>
                     <td className="p-2">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
+                        className={`px-2 py-1 rounded-sm text-xs font-medium border ${
                           user.role === 'ADMIN'
-                            ? 'bg-red-100 text-red-800'
+                            ? 'border-primary bg-primary/10 text-primary'
                             : user.role === 'MODERATOR'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
+                              ? 'border-foreground/30 bg-foreground/10 text-foreground'
+                              : 'border-border bg-background text-foreground'
                         }`}
                       >
                         {t(`admin.users.roles.${user.role}`)}
@@ -161,19 +161,19 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="p-2">
                       {user.emailVerified ? (
-                        <span className="text-green-600">✓</span>
+                        <span className="text-foreground">✓</span>
                       ) : (
-                        <span className="text-red-600">✗</span>
+                        <span className="text-primary">✗</span>
                       )}
                     </td>
-                    <td className="p-2 text-sm text-gray-600 dark:text-gray-400">
+                    <td className="p-2 text-sm text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="p-2 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {/* Role Dropdown */}
                         <select
-                          className="text-sm border dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-gray-200"
+                          className="text-sm border border-border rounded-md px-2 py-1 bg-background text-foreground"
                           value={user.role}
                           onChange={(e) =>
                             handleChangeRole(
@@ -207,8 +207,8 @@ export default function AdminUsersPage() {
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4 pt-4 border-t dark:border-gray-700">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
+              <div className="text-sm text-muted-foreground">
                 {t('admin.users.pagination.page', { current: pagination.page, total: pagination.totalPages })}
               </div>
               <div className="space-x-2">

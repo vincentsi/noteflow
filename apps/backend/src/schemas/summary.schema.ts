@@ -8,7 +8,10 @@ export { SummaryStyle }
  * Schema for creating a summary
  */
 export const createSummarySchema = z.object({
-  text: z.string().min(10, 'Text must be at least 10 characters'),
+  text: z
+    .string()
+    .min(10, 'Text must be at least 10 characters')
+    .max(50000, 'Text must not exceed 50,000 characters'),
   style: z.nativeEnum(SummaryStyle),
   language: z.enum(['fr', 'en']).optional(),
 })

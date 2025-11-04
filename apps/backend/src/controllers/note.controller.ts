@@ -9,6 +9,12 @@ import {
 } from '@/schemas/note.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { requireAuth } from '@/utils/require-auth'
+import {
+  createAuthHandler,
+  createAuthQueryHandler,
+  createAuthParamBodyHandler,
+  createAuthParamHandler,
+} from '@/utils/controller-wrapper'
 
 /**
  * Note controller
@@ -22,11 +28,7 @@ export class NoteController {
   async createNote(request: FastifyRequest, reply: FastifyReply) {
     try {
       const userId = requireAuth(request)
-
-      // Validate request body
       const body = createNoteSchema.parse(request.body)
-
-      // Create note
       const note = await noteService.createNote(userId, body)
 
       return reply.status(201).send({
@@ -34,15 +36,16 @@ export class NoteController {
         data: note,
       })
     } catch (error) {
-      if (error instanceof Error && error.message === 'Plan limit reached') {
-        return reply.status(403).send({
-          success: false,
-          error: 'Plan limit reached',
-          message:
-            'You have reached your note limit for your current plan. Please upgrade to create more notes.',
-        })
-      }
-      return handleControllerError(error, request, reply)
+      return handleControllerError(error, request, reply, {
+        'Plan limit reached': (err, reply) => {
+          return reply.status(403).send({
+            success: false,
+            error: 'Plan limit reached',
+            message:
+              'You have reached your note limit for your current plan. Please upgrade to create more notes.',
+          })
+        },
+      })
     }
   }
 
@@ -50,66 +53,45 @@ export class NoteController {
    * GET /api/notes
    * Get user notes with optional tag filtering
    */
-  async getUserNotes(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const userId = requireAuth(request)
-
-      // Validate query params
-      const query = getNotesSchema.parse(request.query)
-
-      // Get notes
-      const notes = await noteService.getUserNotes(userId, {
-        tags: query.tags,
-      })
-
-      return reply.status(200).send({
-        success: true,
-        data: { notes },
-      })
-    } catch (error) {
-      return handleControllerError(error, request, reply)
-    }
-  }
+  getUserNotes = createAuthQueryHandler(getNotesSchema, async (userId, query) => {
+    const notes = await noteService.getUserNotes(userId, {
+      tags: query.tags,
+    })
+    return { notes }
+  })
 
   /**
    * PATCH /api/notes/:id
    * Update a note
    */
-  async updateNote(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const userId = requireAuth(request)
-
-      // Validate params
-      const params = noteIdSchema.parse(request.params)
-
-      // Validate body
-      const body = updateNoteSchema.parse(request.body)
-
-      // Update note
+  updateNote = createAuthParamBodyHandler(
+    noteIdSchema,
+    updateNoteSchema,
+    async (userId, params, body) => {
       const note = await noteService.updateNote(params.id, userId, body)
-
-      return reply.status(200).send({
-        success: true,
-        data: note,
-      })
-    } catch (error) {
-      // Prisma throws P2025 when record to update not found
-      // Or our service throws "Note not found"
-      if (
-        error instanceof Error &&
-        (error.message.includes('Record to update not found') ||
-          error.message.includes('P2025') ||
-          error.message === 'Note not found')
-      ) {
-        return reply.status(404).send({
+      return note
+    },
+    {
+      'Note not found': (err, reply) =>
+        reply.status(404).send({
           success: false,
           error: 'Not Found',
           message: 'Note not found',
-        })
-      }
-      return handleControllerError(error, request, reply)
+        }),
+      'Record to update not found': (err, reply) =>
+        reply.status(404).send({
+          success: false,
+          error: 'Not Found',
+          message: 'Note not found',
+        }),
+      P2025: (err, reply) =>
+        reply.status(404).send({
+          success: false,
+          error: 'Not Found',
+          message: 'Note not found',
+        }),
     }
-  }
+  )
 
   /**
    * DELETE /api/notes/:id
@@ -118,29 +100,30 @@ export class NoteController {
   async deleteNote(request: FastifyRequest, reply: FastifyReply) {
     try {
       const userId = requireAuth(request)
-
-      // Validate params
       const params = noteIdSchema.parse(request.params)
-
-      // Delete note
       await noteService.deleteNote(params.id, userId)
-
       return reply.status(204).send()
     } catch (error) {
-      // Prisma throws P2025 when record to delete not found
-      if (
-        error instanceof Error &&
-        (error.message.includes('Record to delete does not exist') ||
-          error.message.includes('P2025') ||
-          error.message.includes('Not found'))
-      ) {
-        return reply.status(404).send({
-          success: false,
-          error: 'Not Found',
-          message: 'Note not found',
-        })
-      }
-      return handleControllerError(error, request, reply)
+      return handleControllerError(error, request, reply, {
+        'Not found': (err, reply) =>
+          reply.status(404).send({
+            success: false,
+            error: 'Not Found',
+            message: 'Note not found',
+          }),
+        'Record to delete does not exist': (err, reply) =>
+          reply.status(404).send({
+            success: false,
+            error: 'Not Found',
+            message: 'Note not found',
+          }),
+        P2025: (err, reply) =>
+          reply.status(404).send({
+            success: false,
+            error: 'Not Found',
+            message: 'Note not found',
+          }),
+      })
     }
   }
 
@@ -148,24 +131,10 @@ export class NoteController {
    * GET /api/notes/search
    * Search notes by title or content
    */
-  async searchNotes(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const userId = requireAuth(request)
-
-      // Validate query params
-      const query = searchNotesSchema.parse(request.query)
-
-      // Search notes
-      const notes = await noteService.searchNotes(userId, query.q)
-
-      return reply.status(200).send({
-        success: true,
-        data: { notes },
-      })
-    } catch (error) {
-      return handleControllerError(error, request, reply)
-    }
-  }
+  searchNotes = createAuthQueryHandler(searchNotesSchema, async (userId, query) => {
+    const notes = await noteService.searchNotes(userId, query.q)
+    return { notes }
+  })
 }
 
 export const noteController = new NoteController()

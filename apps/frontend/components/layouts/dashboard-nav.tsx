@@ -1,48 +1,65 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { LogOut, User } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/provider'
+import { cn } from '@/lib/utils'
 
 export function DashboardNav() {
   const { user, logout } = useAuth()
   const { t } = useI18n()
+  const pathname = usePathname()
+
+  const navLinks = [
+    { href: '/dashboard', label: t('common.navigation.dashboard') },
+    { href: '/veille', label: t('common.navigation.veille') },
+    { href: '/summaries', label: t('common.navigation.summaries') },
+    { href: '/notes', label: t('common.navigation.notes') },
+    { href: '/pricing', label: t('common.navigation.pricing') },
+    { href: '/settings', label: t('common.navigation.settings') },
+  ]
 
   return (
-    <nav className="border-b bg-white dark:bg-gray-900 dark:border-gray-800">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="container mx-auto h-full px-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/dashboard" className="text-xl font-bold" prefetch>
+          <Link href="/dashboard" className="text-lg font-bold text-foreground" prefetch>
             NoteFlow
           </Link>
 
-          <div className="flex gap-6">
-            <Link href="/dashboard" className="text-sm hover:text-primary transition-colors" prefetch>
-              {t('common.navigation.dashboard')}
-            </Link>
-            <Link href="/veille" className="text-sm hover:text-primary transition-colors" prefetch>
-              {t('common.navigation.veille')}
-            </Link>
-            <Link href="/summaries" className="text-sm hover:text-primary transition-colors" prefetch>
-              {t('common.navigation.summaries')}
-            </Link>
-            <Link href="/notes" className="text-sm hover:text-primary transition-colors" prefetch>
-              {t('common.navigation.notes')}
-            </Link>
-            <Link href="/pricing" className="text-sm hover:text-primary transition-colors" prefetch>
-              {t('common.navigation.pricing')}
-            </Link>
-            <Link href="/settings" className="text-sm hover:text-primary transition-colors" prefetch>
-              {t('common.navigation.settings')}
-            </Link>
+          <div className="hidden md:flex gap-6">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href || pathname?.startsWith(link.href + '/')
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    'text-sm font-medium transition-colors duration-150 relative py-1',
+                    isActive
+                      ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
+                      : 'text-foreground hover:text-primary'
+                  )}
+                  prefetch
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
             {user?.role === 'ADMIN' && (
               <Link
                 href="/admin"
-                className="text-sm hover:text-primary font-semibold text-red-600 transition-colors"
+                className={cn(
+                  'text-sm font-semibold transition-colors duration-150 relative py-1',
+                  pathname?.startsWith('/admin')
+                    ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
+                    : 'text-primary hover:text-primary/80'
+                )}
                 prefetch
               >
                 {t('common.navigation.admin')}
@@ -51,18 +68,18 @@ export function DashboardNav() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
             <User className="h-4 w-4" />
-            <span>{user?.email}</span>
+            <span className="max-w-[150px] truncate">{user?.email}</span>
           </div>
 
           <LanguageSwitcher />
           <ThemeToggle />
 
           <Button variant="outline" size="sm" onClick={logout} data-testid="nav-logout-button">
-            <LogOut className="h-4 w-4 mr-2" />
-            {t('common.navigation.logout')}
+            <LogOut className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">{t('common.navigation.logout')}</span>
           </Button>
         </div>
       </div>

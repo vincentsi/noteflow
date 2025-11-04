@@ -1,6 +1,13 @@
 import type { FastifyInstance } from 'fastify'
 import { createProtectedRoutes } from '@/utils/protected-routes'
 import { noteController } from '@/controllers/note.controller'
+import { env } from '@/config/env'
+import {
+  createResponses,
+  standardResponses,
+  errorResponse,
+} from '@/schemas/common-responses.schema'
+import { rateLimitPresets } from '@/utils/rate-limit-configs'
 
 /**
  * Note routes
@@ -11,10 +18,19 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
    * Create a note
    * @route POST /api/notes
    * @access Private
+   * @rateLimit 60 requests/hour per user (prevents abuse)
    */
   fastify.post(
     '/',
     {
+      // SECURITY: Limit body size to 100KB for markdown notes
+      bodyLimit: 1024 * 100, // 100KB
+      config:
+        env.NODE_ENV !== 'test'
+          ? {
+              rateLimit: rateLimitPresets.noteCreate,
+            }
+          : {},
       schema: {
         tags: ['Notes'],
         description: 'Create a new note',
@@ -28,24 +44,8 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
           required: ['title', 'content'],
         },
         response: {
-          201: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              data: {
-                type: 'object',
-                additionalProperties: true,
-              },
-            },
-          },
-          403: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          ...createResponses({ type: 'object', additionalProperties: true }),
+          403: errorResponse,
         },
       },
     },
@@ -72,26 +72,15 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
             },
           },
         },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              data: {
-                type: 'object',
-                properties: {
-                  notes: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      additionalProperties: true,
-                    },
-                  },
-                },
-              },
+        response: standardResponses({
+          type: 'object',
+          properties: {
+            notes: {
+              type: 'array',
+              items: { type: 'object', additionalProperties: true },
             },
           },
-        },
+        }),
       },
     },
     noteController.getUserNotes.bind(noteController)
@@ -115,26 +104,15 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
           },
           required: ['q'],
         },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              data: {
-                type: 'object',
-                properties: {
-                  notes: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      additionalProperties: true,
-                    },
-                  },
-                },
-              },
+        response: standardResponses({
+          type: 'object',
+          properties: {
+            notes: {
+              type: 'array',
+              items: { type: 'object', additionalProperties: true },
             },
           },
-        },
+        }),
       },
     },
     noteController.searchNotes.bind(noteController)
@@ -144,10 +122,19 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
    * Update a note
    * @route PATCH /api/notes/:id
    * @access Private
+   * @rateLimit 60 requests/hour per user (prevents abuse)
    */
   fastify.patch(
     '/:id',
     {
+      // SECURITY: Limit body size to 100KB for markdown notes
+      bodyLimit: 1024 * 100, // 100KB
+      config:
+        env.NODE_ENV !== 'test'
+          ? {
+              rateLimit: rateLimitPresets.noteUpdate,
+            }
+          : {},
       schema: {
         tags: ['Notes'],
         description: 'Update a note',
@@ -167,24 +154,8 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
           },
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              data: {
-                type: 'object',
-                additionalProperties: true,
-              },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          ...standardResponses({ type: 'object', additionalProperties: true }),
+          404: errorResponse,
         },
       },
     },
@@ -195,10 +166,17 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
    * Delete a note
    * @route DELETE /api/notes/:id
    * @access Private
+   * @rateLimit 60 requests/hour per user (prevents abuse)
    */
   fastify.delete(
     '/:id',
     {
+      config:
+        env.NODE_ENV !== 'test'
+          ? {
+              rateLimit: rateLimitPresets.noteDelete,
+            }
+          : {},
       schema: {
         tags: ['Notes'],
         description: 'Delete a note',
@@ -214,14 +192,7 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
             type: 'null',
             description: 'Note deleted successfully',
           },
-          404: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          404: errorResponse,
         },
       },
     },

@@ -40,13 +40,15 @@ export async function passwordResetRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/forgot-password',
     {
+      // SECURITY: Limit body size to 500 bytes (email only)
+      bodyLimit: 500, // 500 bytes
       schema: requestPasswordResetSchema,
       config: {
         rateLimit: {
           // Stricter in production, more permissive in dev
           max: env.NODE_ENV === 'production' ? 3 : 10,
           timeWindow: env.NODE_ENV === 'production' ? '1 hour' : '15 minutes',
-          keyGenerator: (request) => {
+          keyGenerator: request => {
             // Rate limit by IP to prevent spam
             return `password-reset:${request.ip}`
           },
@@ -70,13 +72,15 @@ export async function passwordResetRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/reset-password',
     {
+      // SECURITY: Limit body size to 1KB (token + password)
+      bodyLimit: 1024, // 1KB
       schema: resetPasswordSchema,
       config: {
         rateLimit: {
           // Stricter in production, more permissive in dev
           max: env.NODE_ENV === 'production' ? 5 : 20,
           timeWindow: '15 minutes',
-          keyGenerator: (request) => {
+          keyGenerator: request => {
             // Rate limit by IP + token to prevent brute force
             const body = request.body as { token?: string }
             const token = body?.token ? body.token.slice(0, 10) : 'unknown' // First 10 chars for identification

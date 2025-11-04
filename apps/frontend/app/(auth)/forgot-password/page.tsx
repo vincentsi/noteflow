@@ -58,11 +58,11 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('auth.forgotPassword.successTitle')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-bold">{t('auth.forgotPassword.successTitle')}</CardTitle>
+            <CardDescription className="text-sm">
               {t('auth.forgotPassword.successMessage')}
             </CardDescription>
           </CardHeader>
@@ -77,11 +77,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t('auth.forgotPassword.title')}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('auth.forgotPassword.title')}</CardTitle>
+          <CardDescription className="text-sm">
             {t('auth.forgotPassword.subtitle')}
           </CardDescription>
         </CardHeader>
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
               </Button>
 
               <div className="text-center text-sm">
-                <Link href="/login" className="text-muted-foreground dark:text-gray-400 hover:text-primary">
+                <Link href="/login" className="text-muted-foreground hover:text-primary transition-colors">
                   {t('auth.forgotPassword.backToLogin')}
                 </Link>
               </div>

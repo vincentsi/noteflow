@@ -29,7 +29,7 @@ function ProgressBar({ value, max, isNearLimit }: { value: number; max: number |
   if (max === null) {
     return (
       <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-        <div className="h-full bg-primary" style={{ width: '100%' }} />
+        <div className="h-full bg-foreground" style={{ width: '100%' }} />
       </div>
     )
   }
@@ -39,7 +39,7 @@ function ProgressBar({ value, max, isNearLimit }: { value: number; max: number |
   return (
     <div className="h-2 w-full bg-muted rounded-full overflow-hidden" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={max}>
       <div
-        className={`h-full transition-all ${isNearLimit ? 'bg-destructive' : 'bg-primary'}`}
+        className={`h-full transition-all duration-300 ${isNearLimit ? 'bg-primary' : 'bg-foreground'}`}
         style={{ width: `${percentage}%` }}
       />
     </div>
@@ -159,8 +159,8 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
         {/* Pro unlimited badge */}
         {isPro && (
           <div className="pt-4 border-t">
-            <div className="rounded-lg bg-primary/10 p-4 text-center">
-              <p className="text-sm font-medium text-primary">
+            <div className="rounded-md bg-foreground p-4 text-center">
+              <p className="text-sm font-medium text-background">
                 {t('dashboard.planUsage.proUnlimited')}
               </p>
             </div>

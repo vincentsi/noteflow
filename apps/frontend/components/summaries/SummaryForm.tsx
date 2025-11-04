@@ -5,6 +5,7 @@ import { StyleSelector, type SummaryStyle } from './StyleSelector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Link, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
@@ -73,24 +74,24 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       {/* Source Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('summaries.form.sourceTitle')}</CardTitle>
-          <CardDescription>{t('summaries.form.sourceDescription')}</CardDescription>
+          <CardTitle className="text-base font-semibold">{t('summaries.form.sourceTitle')}</CardTitle>
+          <CardDescription className="text-sm">{t('summaries.form.sourceDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setSource('url')}
               className={cn(
-                'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
-                'hover:border-primary/50 hover:bg-accent/50',
+                'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+                'hover:border-primary hover:-translate-y-0.5',
                 source === 'url'
-                  ? 'border-primary bg-primary/5'
+                  ? 'border-primary bg-background'
                   : 'border-border bg-background'
               )}
             >
-              <Link className={cn('h-6 w-6', source === 'url' ? 'text-primary' : 'text-muted-foreground')} />
-              <span className={cn('font-medium', source === 'url' ? 'text-primary' : 'text-foreground')}>
+              <Link className={cn('h-5 w-5', source === 'url' ? 'text-primary' : 'text-foreground')} />
+              <span className={cn('font-medium text-sm', source === 'url' ? 'text-foreground' : 'text-foreground')}>
                 {t('summaries.form.urlLabel')}
               </span>
             </button>
@@ -99,15 +100,15 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
               type="button"
               onClick={() => setSource('pdf')}
               className={cn(
-                'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
-                'hover:border-primary/50 hover:bg-accent/50',
+                'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+                'hover:border-primary hover:-translate-y-0.5',
                 source === 'pdf'
-                  ? 'border-primary bg-primary/5'
+                  ? 'border-primary bg-background'
                   : 'border-border bg-background'
               )}
             >
-              <Upload className={cn('h-6 w-6', source === 'pdf' ? 'text-primary' : 'text-muted-foreground')} />
-              <span className={cn('font-medium', source === 'pdf' ? 'text-primary' : 'text-foreground')}>
+              <Upload className={cn('h-5 w-5', source === 'pdf' ? 'text-primary' : 'text-foreground')} />
+              <span className={cn('font-medium text-sm', source === 'pdf' ? 'text-foreground' : 'text-foreground')}>
                 {t('summaries.form.pdfLabel')}
               </span>
             </button>
@@ -118,8 +119,8 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       {/* Content Input */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('summaries.form.contentTitle')}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-base font-semibold">{t('summaries.form.contentTitle')}</CardTitle>
+          <CardDescription className="text-sm">
             {source === 'url'
               ? t('summaries.form.contentDescriptionUrl')
               : t('summaries.form.contentDescriptionPdf')}
@@ -127,26 +128,25 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
         </CardHeader>
         <CardContent>
           {source === 'url' ? (
-            <input
+            <Input
               id="url-input"
               name="url"
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder={t('summaries.form.urlPlaceholder')}
-              className="w-full h-12 px-4 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               disabled={isLoading}
               aria-label={t('summaries.form.urlAriaLabel')}
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-4">
                 <Label
                   htmlFor="pdf-upload"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-input bg-background cursor-pointer hover:bg-accent transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-md border border-border bg-background cursor-pointer hover:border-primary transition-all duration-150"
                 >
                   <Upload className="h-4 w-4" />
-                  <span>{t('summaries.form.choosePdfFile')}</span>
+                  <span className="text-sm">{t('summaries.form.choosePdfFile')}</span>
                 </Label>
                 <input
                   id="pdf-upload"
@@ -171,8 +171,8 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       {/* Style Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('summaries.form.styleTitle')}</CardTitle>
-          <CardDescription>{t('summaries.form.styleDescription')}</CardDescription>
+          <CardTitle className="text-base font-semibold">{t('summaries.form.styleTitle')}</CardTitle>
+          <CardDescription className="text-sm">{t('summaries.form.styleDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <StyleSelector value={style} onChange={setStyle} />

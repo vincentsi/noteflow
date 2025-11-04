@@ -6,31 +6,31 @@ export const dynamic = 'force-dynamic'
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminRoute>
-      <div className="min-h-screen bg-slate-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-background">
         {/* Admin Navigation */}
-        <nav className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+        <nav className="bg-background border-b border-border">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-8">
-                <Link href="/admin" className="font-bold text-xl dark:text-white">
+                <Link href="/admin" className="font-bold text-xl text-foreground">
                   Admin Panel
                 </Link>
                 <div className="hidden md:flex space-x-4">
                   <Link
                     href="/admin"
-                    className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Dashboard
                   </Link>
                   <Link
                     href="/admin/users"
-                    className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Users
                   </Link>
                   <Link
                     href="/admin/subscriptions"
-                    className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Subscriptions
                   </Link>
@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <Link
                 href="/dashboard"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 ← Back to Dashboard
               </Link>

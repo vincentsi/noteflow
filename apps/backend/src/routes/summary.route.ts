@@ -18,6 +18,8 @@ export const summaryRoutes = createProtectedRoutes(
     fastify.post(
       '/',
       {
+        // SECURITY: Limit body size to 10MB for PDF uploads
+        bodyLimit: 1024 * 1024 * 10, // 10MB
         config:
           env.NODE_ENV !== 'test'
             ? {
@@ -41,7 +43,26 @@ export const summaryRoutes = createProtectedRoutes(
           tags: ['Summaries'],
           description:
             'Create a new summary generation job (supports JSON or multipart/form-data for PDF uploads)',
-          // No body schema validation - handle both JSON and multipart in controller
+          body: {
+            type: 'object',
+            properties: {
+              text: {
+                type: 'string',
+                minLength: 10,
+                maxLength: 50000,
+              },
+              style: {
+                type: 'string',
+                enum: ['SHORT', 'TWEET', 'THREAD', 'BULLET_POINT', 'TOP3', 'MAIN_POINTS'],
+              },
+              language: {
+                type: 'string',
+                enum: ['fr', 'en'],
+              },
+            },
+            // Allow additional properties for multipart/form-data PDF uploads
+            additionalProperties: true,
+          },
           response: {
             202: {
               type: 'object',

@@ -49,8 +49,8 @@ export default function AdminDashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">{t('admin.dashboard.loadingStats')}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">{t('admin.dashboard.loadingStats')}</p>
         </div>
       </div>
     )
@@ -59,8 +59,8 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold dark:text-white">{t('admin.dashboard.title')}</h1>
-        <p className="text-muted-foreground dark:text-gray-400">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('admin.dashboard.title')}</h1>
+        <p className="text-base text-muted-foreground mt-2">
           {t('admin.subtitle')}
         </p>
       </div>
@@ -124,14 +124,14 @@ export default function AdminDashboardPage() {
       {/* Users by Role */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('admin.dashboard.usersByRole.title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('admin.dashboard.usersByRole.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {stats?.byRole.map((roleStats) => (
               <div key={roleStats.role} className="flex justify-between items-center">
-                <span className="font-medium dark:text-gray-200">{roleStats.role}</span>
-                <span className="text-muted-foreground dark:text-gray-400">{t('admin.dashboard.usersByRole.usersCount', { count: roleStats._count })}</span>
+                <span className="font-medium text-foreground">{roleStats.role}</span>
+                <span className="text-muted-foreground">{t('admin.dashboard.usersByRole.usersCount', { count: roleStats._count })}</span>
               </div>
             ))}
           </div>
@@ -141,7 +141,7 @@ export default function AdminDashboardPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('admin.dashboard.quickActions.title')}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('admin.dashboard.quickActions.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button

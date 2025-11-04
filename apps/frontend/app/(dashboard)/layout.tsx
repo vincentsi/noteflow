@@ -10,9 +10,9 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-slate-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-background">
         <DashboardNav />
-        <main className="container mx-auto py-8 px-4">
+        <main className="container mx-auto py-8 px-4 max-w-7xl">
           {children}
         </main>
       </div>

@@ -49,13 +49,13 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
   // Currently using Newspaper icon as placeholder for all articles without images
 
   return (
-    <Card className="group hover:shadow-xl hover:border-primary/30 transition-all duration-300 overflow-hidden border-2">
-      <div className="flex flex-col md:flex-row">
+    <Card className="group overflow-hidden">
+      <div className="flex flex-col sm:flex-row">
         {/* Article Image or Placeholder */}
-        <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0 relative">
+        <div className="w-full sm:w-32 h-32 flex-shrink-0 relative">
           {showPlaceholder ? (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <Newspaper className="h-16 w-16 text-white/80" />
+            <div className="w-full h-full bg-muted flex items-center justify-center border-r border-border">
+              <Newspaper className="h-8 w-8 text-muted-foreground" />
             </div>
           ) : (
             <Image
@@ -73,79 +73,70 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
         <div className="flex-1 flex flex-col">
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <CardTitle className="text-lg">
+              <div className="flex-1 space-y-1">
+                <CardTitle className="text-base font-semibold leading-tight">
                   <a
                     href={article.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-primary transition-colors inline-flex items-center gap-2 group-hover:underline"
+                    className="hover:text-primary transition-colors inline-flex items-center gap-1.5"
                   >
                     {article.title}
-                    <ExternalLink className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ExternalLink className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </a>
                 </CardTitle>
-                <CardDescription className="mt-2">
+                <CardDescription className="text-xs">
                   <span className="font-medium">{article.source}</span> · {formattedDate}
                 </CardDescription>
               </div>
               {(onSave || onUnsave) && (
                 <CardAction>
                   <Button
-                    variant={isSaved ? 'default' : 'outline'}
-                    size="sm"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={handleToggleSave}
                     disabled={isLoading}
                     aria-label={isSaved ? t('veille.actions.unsave') : t('veille.actions.save')}
+                    className="shrink-0"
                   >
                     {isSaved ? (
-                      <>
-                        <BookmarkCheck className="h-4 w-4 mr-2" />
-                        {t('veille.actions.saved')}
-                      </>
+                      <BookmarkCheck className="h-4 w-4 text-primary" />
                     ) : (
-                      <>
-                        <Bookmark className="h-4 w-4 mr-2" />
-                        {t('veille.actions.save')}
-                      </>
+                      <Bookmark className="h-4 w-4" />
                     )}
                   </Button>
                 </CardAction>
               )}
             </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground line-clamp-3">{article.excerpt}</p>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
+          <CardContent className="flex-1">
+            <p className="text-sm text-muted-foreground line-clamp-2">{article.excerpt}</p>
             {article.tags && article.tags.length > 0 && (
-              <div className="flex gap-2 flex-wrap">
-                {article.tags.map((tag, index) => {
-                  const colors = [
-                    'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400',
-                    'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400',
-                    'bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400',
-                    'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400',
-                    'bg-rose-500/10 text-rose-700 border-rose-500/20 dark:text-rose-400',
-                  ]
-                  return (
-                    <span
-                      key={tag}
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border shadow-sm ${colors[index % colors.length]}`}
-                    >
-                      #{tag}
-                    </span>
-                  )
-                })}
+              <div className="flex gap-1.5 flex-wrap mt-3">
+                {article.tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-foreground"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+                {article.tags.length > 3 && (
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    +{article.tags.length - 3}
+                  </span>
+                )}
               </div>
             )}
+          </CardContent>
+          <CardFooter>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={handleSummarize}
-              className="w-full group/btn hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 hover:border-primary transition-all"
+              className="w-full justify-start text-xs font-medium hover:text-primary"
             >
-              <Sparkles className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
               {t('veille.actions.summarize')}
             </Button>
           </CardFooter>

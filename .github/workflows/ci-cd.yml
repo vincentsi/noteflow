@@ -74,8 +74,8 @@ jobs:
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boilerplate_test
-          JWT_SECRET: test-jwt-secret-min-32-chars-required-for-ci-testing
-          JWT_REFRESH_SECRET: test-jwt-refresh-secret-min-32-chars-required-for-ci
+          JWT_SECRET: test-jwt-secret-min-64-chars-required-for-ci-testing-and-security-compliance-12345
+          JWT_REFRESH_SECRET: test-jwt-refresh-secret-min-64-chars-required-for-ci-testing-security-678
 
       # Integration tests skipped - require more CI/CD configuration
       # - name: Run integration tests

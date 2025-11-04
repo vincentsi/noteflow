@@ -70,34 +70,12 @@ export function setAuthCookies(
     path: '/',
   })
 
-  // CSRF Token - Protection against CSRF attacks
-  // IMPORTANT: maxAge synchronized with access token to avoid desynchronization
-  //
-  // 🔒 SECURITY: Synchronizer Token Pattern with Server-Side Storage
-  // ================================================================
-  // CSRF tokens are stored server-side in Redis and validated against storage:
-  // 1. Backend generates token and stores hash in Redis (CsrfService.createToken)
-  // 2. Backend sets httpOnly cookie (prevents XSS access)
-  // 3. Backend also returns token in response body for frontend to store
-  // 4. Frontend sends token in X-CSRF-Token header with each request
-  // 5. Backend validates header token against Redis storage
-  //
-  // This is more secure than double-submit pattern because:
-  // - Token not accessible via JavaScript (XSS protection)
-  // - Server-side validation prevents token forgery
-  // - Redis storage enables token rotation and invalidation
-  //
-  // Defense-in-depth measures:
-  // 1. ✅ httpOnly cookie (prevents XSS token theft)
-  // 2. ✅ Short token lifetime (15 min, synchronized with access token)
-  // 3. ✅ Token rotation on sensitive operations (password change, etc.)
-  // 4. ✅ Server-side storage in Redis with hash verification
-  // 5. ✅ Strict CORS policy (see env.ts FRONTEND_URL validation)
+  // CSRF Token - httpOnly prevents XSS, token also returned in response body
   reply.setCookie('csrfToken', csrfToken, {
-    httpOnly: true, // NOT accessible via JS (XSS protection)
-    secure: true, // Always HTTPS (required for sameSite: none)
-    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
-    maxAge: TOKEN_EXPIRY.CSRF_TOKEN, // Synchronized with access token
+    httpOnly: true,
+    secure: true,
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
 }
@@ -168,10 +146,9 @@ export function refreshSessionCookies(
     path: '/',
   })
 
-  // Renew CSRF token (synchronized with access token)
-  // See setAuthCookies() for security explanation of httpOnly: true
+  // Renew CSRF token
   reply.setCookie('csrfToken', csrfToken, {
-    httpOnly: true, // NOT accessible via JS (XSS protection)
+    httpOnly: true,
     secure: true,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
@@ -225,9 +202,8 @@ export function setRefreshTokenCookie(reply: FastifyReply, refreshToken: string)
 export function setCsrfTokenCookie(reply: FastifyReply, csrfToken: string): void {
   const isProduction = env.NODE_ENV === 'production'
 
-  // See setAuthCookies() for security explanation of httpOnly: true
   reply.setCookie('csrfToken', csrfToken, {
-    httpOnly: true, // NOT accessible via JS (XSS protection)
+    httpOnly: true,
     secure: true,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,

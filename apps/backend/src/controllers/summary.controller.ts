@@ -339,27 +339,9 @@ export class SummaryController {
   async getSummaryById(request: FastifyRequest, reply: FastifyReply) {
     try {
       const userId = requireAuth(request)
-
       const { id } = request.params as { id: string }
 
-      // Try cache first
-      const cacheKey = buildCacheKey('summary', { id })
-      const cached = await CacheService.get(cacheKey)
-
-      if (cached) {
-        return reply.status(200).send({
-          success: true,
-          data: { summary: cached },
-        })
-      }
-
-      // Cache miss - query database
-      const summary = await prisma.summary.findFirst({
-        where: {
-          id,
-          userId,
-        },
-      })
+      const summary = await summaryService.getSummaryById(id, userId)
 
       if (!summary) {
         return reply.status(404).send({
@@ -369,24 +351,9 @@ export class SummaryController {
         })
       }
 
-      const summaryData = {
-        id: summary.id,
-        title: summary.title,
-        coverImage: summary.coverImage,
-        originalText: summary.originalText,
-        summaryText: summary.summaryText,
-        style: summary.style,
-        source: summary.source,
-        language: summary.language,
-        createdAt: summary.createdAt,
-      }
-
-      // Cache for 1 hour (summaries are immutable)
-      await CacheService.set(cacheKey, summaryData, CACHE_TTL.SUMMARY)
-
       return reply.status(200).send({
         success: true,
-        data: { summary: summaryData },
+        data: { summary },
       })
     } catch (error) {
       return handleControllerError(error, request, reply)

@@ -484,9 +484,9 @@
     "filters": {
       "source": "Source",
       "allSources": "Toutes les sources",
-      "search": "🔍 Rechercher",
+      "search": "Rechercher",
       "searchPlaceholder": "Rechercher dans les titres et contenus...",
-      "dateRange": "📅 Période",
+      "dateRange": "Période",
       "allDates": "Toutes les dates",
       "last24h": "Dernières 24h",
       "last7days": "7 derniers jours",
@@ -588,6 +588,41 @@
       "reasonPlaceholder": "Aidez-nous à nous améliorer...",
       "deleting": "Suppression...",
       "confirmButton": "Supprimer définitivement le compte"
+    }
+  },
+  "home": {
+    "nav": {
+      "login": "Se connecter",
+      "getStarted": "Commencer"
+    },
+    "hero": {
+      "badge": "Votre assistant IA pour la veille et les notes",
+      "title1": "Veille. Résumé.",
+      "title2": "Note.",
+      "subtitle": "Centralisez votre veille technologique, générez des résumés IA et organisez vos connaissances en un seul endroit.",
+      "ctaPrimary": "Commencer gratuitement",
+      "ctaSecondary": "Se connecter"
+    },
+    "features": {
+      "veille": {
+        "title": "Veille IA",
+        "description": "Aggrégez et filtrez les articles des meilleurs flux RSS tech et IA. Sauvegardez vos favoris."
+      },
+      "powerpost": {
+        "title": "PowerPost",
+        "description": "Résumez vos textes et PDFs avec l'IA. 6 styles disponibles : court, tweet, thread, bullet points..."
+      },
+      "powernote": {
+        "title": "PowerNote",
+        "description": "Prenez des notes en Markdown avec tags. Publiez vos meilleures notes en posts publics."
+      }
+    },
+    "pricing": {
+      "text": "Forfait gratuit disponible • Plans à partir de 6€/mois",
+      "link": "Voir les tarifs"
+    },
+    "footer": {
+      "text": "NoteFlow - Propulsé par l'IA pour les développeurs"
     }
   }
 }

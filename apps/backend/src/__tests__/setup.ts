@@ -7,9 +7,11 @@
 
 // Set test environment variables
 process.env.NODE_ENV = 'test'
-process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:0771@localhost:5432/noteflow_test'
-process.env.JWT_SECRET = 'test-jwt-secret-min-32-chars-required-for-testing-purposes'
-process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-min-32-chars-required-for-testing'
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL || 'postgresql://postgres:0771@localhost:5432/noteflow_test'
+process.env.JWT_SECRET = 'test-jwt-secret-min-64-chars-required-for-testing-purposes-12345678'
+process.env.JWT_REFRESH_SECRET =
+  'test-refresh-secret-min-64-chars-required-for-testing-purposes-1234'
 process.env.PORT = '3002'
 
 // Mock Sentry in tests (we don't want to send errors to Sentry during tests)

@@ -14,8 +14,10 @@ jest.mock('../../../config/prisma', () => ({
     },
     refreshToken: {
       create: jest.fn(),
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
     },
@@ -84,6 +86,7 @@ describe('AuthService', () => {
         lastLoginIp: '127.0.0.1',
         loginCount: 1,
       })
+      ;(prisma.refreshToken.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({
         id: 'token_123',
         token: 'refresh_token',
@@ -184,6 +187,7 @@ describe('AuthService', () => {
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
       ;(bcrypt.hash as jest.Mock).mockResolvedValue('hashed_password')
       ;(prisma.user.create as jest.Mock).mockResolvedValue(mockUser)
+      ;(prisma.refreshToken.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({
         id: 'token_123',
         token: 'refresh_token',
@@ -236,6 +240,7 @@ describe('AuthService', () => {
 
       ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(mockToken)
       ;(prisma.refreshToken.delete as jest.Mock).mockResolvedValue(mockToken)
+      ;(prisma.refreshToken.findMany as jest.Mock).mockResolvedValue([])
       ;(prisma.refreshToken.create as jest.Mock).mockResolvedValue({
         id: 'new_token_123',
         token: 'new_refresh_token',
@@ -266,17 +271,17 @@ describe('AuthService', () => {
 
       ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(mockToken)
 
-      await expect(
-        authService.refresh('expired_token')
-      ).rejects.toThrow('Invalid or expired refresh token')
+      await expect(authService.refresh('expired_token')).rejects.toThrow(
+        'Invalid or expired refresh token'
+      )
     })
 
     it('should fail with invalid token', async () => {
       ;(prisma.refreshToken.findUnique as jest.Mock).mockResolvedValue(null)
 
-      await expect(
-        authService.refresh('invalid_token')
-      ).rejects.toThrow('Invalid or expired refresh token')
+      await expect(authService.refresh('invalid_token')).rejects.toThrow(
+        'Invalid or expired refresh token'
+      )
     })
   })
 })

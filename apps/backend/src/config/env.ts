@@ -17,9 +17,65 @@ const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().url(),
 
-  // JWT Secrets
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+  // JWT Secrets (512 bits minimum for cryptographic strength)
+  JWT_SECRET: z
+    .string()
+    .min(64, 'JWT_SECRET must be at least 64 characters (512 bits)')
+    .refine(
+      val => {
+        // Detect weak/example secrets in real production only (not CI)
+        const isCI = process.env.CI === 'true'
+        const isProduction = process.env.NODE_ENV === 'production'
+
+        // Skip validation in CI or non-production environments
+        if (!isProduction || isCI) return true
+
+        const weakPatterns = [
+          'your-super-secret-jwt-key',
+          'change-me',
+          'example',
+          'secret',
+          '1234',
+          'test',
+          'dev',
+        ]
+        const isWeak = weakPatterns.some(pattern => val.toLowerCase().includes(pattern))
+        return !isWeak
+      },
+      {
+        message:
+          'JWT_SECRET appears to be a weak/example secret. Generate a strong random secret for production.',
+      }
+    ),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(64, 'JWT_REFRESH_SECRET must be at least 64 characters (512 bits)')
+    .refine(
+      val => {
+        // Detect weak/example secrets in real production only (not CI)
+        const isCI = process.env.CI === 'true'
+        const isProduction = process.env.NODE_ENV === 'production'
+
+        // Skip validation in CI or non-production environments
+        if (!isProduction || isCI) return true
+
+        const weakPatterns = [
+          'your-super-secret-jwt-key',
+          'change-me',
+          'example',
+          'secret',
+          '1234',
+          'test',
+          'dev',
+        ]
+        const isWeak = weakPatterns.some(pattern => val.toLowerCase().includes(pattern))
+        return !isWeak
+      },
+      {
+        message:
+          'JWT_REFRESH_SECRET appears to be a weak/example secret. Generate a strong random secret for production.',
+      }
+    ),
 
   // Frontend URL for CORS (supports comma-separated list)
   FRONTEND_URL: z
@@ -122,7 +178,16 @@ const envSchema = z.object({
         .split(',')
         .map(ip => ip.trim())
         .filter(ip => ip.length > 0)
-    }),
+    })
+    .refine(
+      val => {
+        if (process.env.NODE_ENV === 'production' && val.length === 0) {
+          return false
+        }
+        return true
+      },
+      { message: 'STRIPE_WEBHOOK_ALLOWED_IPS is required in production for security' }
+    ),
 
   // Test Routes Security (development only)
   ENABLE_TEST_ROUTES: z
@@ -130,6 +195,9 @@ const envSchema = z.object({
     .optional()
     .default('false')
     .transform(val => val === 'true'),
+
+  // Queue Encryption (optional, falls back to JWT_SECRET)
+  QUEUE_ENCRYPTION_KEY: z.string().optional(),
 })
 
 /**

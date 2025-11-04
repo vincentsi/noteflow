@@ -36,16 +36,20 @@ describe('ArticleService', () => {
       ]
 
       prismaMock.savedArticle.findMany.mockResolvedValue(mockArticles)
+      prismaMock.savedArticle.count.mockResolvedValue(1)
 
       const result = await articleService.getUserSavedArticles(userId)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].article.title).toBe('Test Article')
+      expect(result.savedArticles).toHaveLength(1)
+      expect(result.savedArticles[0].article.title).toBe('Test Article')
+      expect(result.pagination.total).toBe(1)
+      expect(result.pagination.totalPages).toBe(1)
     })
 
     it('should apply source filter', async () => {
       const userId = 'user-123'
       prismaMock.savedArticle.findMany.mockResolvedValue([])
+      prismaMock.savedArticle.count.mockResolvedValue(0)
 
       await articleService.getUserSavedArticles(userId, {
         source: 'TechCrunch',
@@ -64,6 +68,7 @@ describe('ArticleService', () => {
     it('should apply pagination', async () => {
       const userId = 'user-123'
       prismaMock.savedArticle.findMany.mockResolvedValue([])
+      prismaMock.savedArticle.count.mockResolvedValue(0)
 
       await articleService.getUserSavedArticles(userId, {
         pagination: {
@@ -116,6 +121,18 @@ describe('ArticleService', () => {
         updatedAt: new Date(),
       })
 
+      prismaMock.article.findUnique.mockResolvedValue({
+        id: articleId,
+        title: 'Test Article',
+        url: 'https://test.com/article',
+        excerpt: 'Test excerpt',
+        imageUrl: null,
+        source: 'Test Source',
+        tags: [],
+        publishedAt: new Date(),
+        createdAt: new Date(),
+      })
+
       prismaMock.savedArticle.count.mockResolvedValue(5) // Under limit (10)
       prismaMock.savedArticle.create.mockResolvedValue({
         id: 'saved-1',
@@ -161,6 +178,18 @@ describe('ArticleService', () => {
         updatedAt: new Date(),
       })
 
+      prismaMock.article.findUnique.mockResolvedValue({
+        id: articleId,
+        title: 'Test Article',
+        url: 'https://test.com/article',
+        excerpt: 'Test excerpt',
+        imageUrl: null,
+        source: 'Test Source',
+        tags: [],
+        publishedAt: new Date(),
+        createdAt: new Date(),
+      })
+
       prismaMock.savedArticle.count.mockResolvedValue(10) // At limit
 
       await expect(articleService.saveArticle(userId, articleId)).rejects.toThrow(
@@ -193,6 +222,18 @@ describe('ArticleService', () => {
         updatedAt: new Date(),
       })
 
+      prismaMock.article.findUnique.mockResolvedValue({
+        id: articleId,
+        title: 'Test Article',
+        url: 'https://test.com/article',
+        excerpt: 'Test excerpt',
+        imageUrl: null,
+        source: 'Test Source',
+        tags: [],
+        publishedAt: new Date(),
+        createdAt: new Date(),
+      })
+
       prismaMock.savedArticle.create.mockResolvedValue({
         id: 'saved-1',
         userId,
@@ -206,9 +247,37 @@ describe('ArticleService', () => {
       expect(prismaMock.savedArticle.create).toHaveBeenCalled()
     })
 
+    it('should throw error when article does not exist', async () => {
+      const userId = 'user-123'
+      const articleId = 'non-existent-article'
+
+      prismaMock.article.findUnique.mockResolvedValue(null)
+
+      await expect(articleService.saveArticle(userId, articleId)).rejects.toThrow(
+        'Article not found'
+      )
+
+      expect(prismaMock.article.findUnique).toHaveBeenCalledWith({
+        where: { id: articleId },
+      })
+      expect(prismaMock.savedArticle.create).not.toHaveBeenCalled()
+    })
+
     it('should throw error when distributed lock cannot be acquired', async () => {
       const userId = 'user-123'
       const articleId = 'article-1'
+
+      prismaMock.article.findUnique.mockResolvedValue({
+        id: articleId,
+        title: 'Test Article',
+        url: 'https://test.com/article',
+        excerpt: 'Test excerpt',
+        imageUrl: null,
+        source: 'Test Source',
+        tags: [],
+        publishedAt: new Date(),
+        createdAt: new Date(),
+      })
 
       // Mock lock failure (another instance is processing)
       jest.spyOn(DistributedLockService, 'executeWithLock').mockResolvedValue(null)

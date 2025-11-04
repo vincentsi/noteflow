@@ -3,12 +3,14 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
+import { useI18n } from '@/lib/i18n/provider'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Newspaper, Sparkles, FileText } from 'lucide-react'
+import { Newspaper, Sparkles, FileText, ArrowRight, Globe } from 'lucide-react'
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth()
+  const { t, language, setLanguage } = useI18n()
   const router = useRouter()
 
   useEffect(() => {
@@ -19,8 +21,8 @@ export default function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
       </div>
     )
   }
@@ -30,84 +32,116 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Hero Section */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className="max-w-4xl text-center space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              NoteFlow
-            </h1>
-            <p className="text-2xl text-muted-foreground">
-              Votre assistant IA pour la veille technologique et la prise de notes
-            </p>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Navigation */}
+      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="text-2xl font-bold tracking-tight text-foreground">
+            NoteFlow
+          </Link>
+          <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <button
+              onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label="Change language"
+            >
+              <Globe className="h-4 w-4" />
+              <span className="uppercase">{language}</span>
+            </button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/login">{t('home.nav.login')}</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/register">{t('home.nav.getStarted')}</Link>
+            </Button>
           </div>
+        </div>
+      </nav>
 
-          <div className="flex gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-8">
-              <Link href="/register">Commencer gratuitement</Link>
-            </Button>
-
-            <Button asChild variant="outline" size="lg" className="text-lg px-8">
-              <Link href="/login">Se connecter</Link>
-            </Button>
+      {/* Hero Section */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
+        <div className="max-w-5xl w-full space-y-16">
+          {/* Hero Content */}
+          <div className="text-center space-y-6 max-w-3xl mx-auto">
+            <div className="inline-block px-3 py-1 bg-muted border border-border rounded-full text-xs font-medium text-foreground mb-4">
+              {t('home.hero.badge')}
+            </div>
+            <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-foreground">
+              {t('home.hero.title1')}
+              <br />
+              <span className="text-primary">{t('home.hero.title2')}</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {t('home.hero.subtitle')}
+            </p>
+            <div className="flex gap-4 justify-center pt-4">
+              <Button asChild size="lg" className="text-base px-8 h-12">
+                <Link href="/register">
+                  {t('home.hero.ctaPrimary')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="text-base px-8 h-12">
+                <Link href="/login">{t('home.hero.ctaSecondary')}</Link>
+              </Button>
+            </div>
           </div>
 
           {/* Features Grid */}
-          <div className="pt-16 grid md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                  <Newspaper className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                </div>
+          <div className="grid md:grid-cols-3 gap-6 pt-8">
+            <div className="group border border-border bg-card rounded-lg p-6 hover:border-foreground/30 transition-all duration-200">
+              <div className="flex items-center justify-center h-12 w-12 rounded-sm bg-background border border-border mb-4">
+                <Newspaper className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Veille IA</h3>
-              <p className="text-muted-foreground">
-                Aggrégez et filtrez les articles des meilleurs flux RSS tech et IA. Sauvegardez vos favoris.
+              <h3 className="text-lg font-semibold mb-2 text-foreground">{t('home.features.veille.title')}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t('home.features.veille.description')}
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-                  <Sparkles className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                </div>
+            <div className="group border border-border bg-card rounded-lg p-6 hover:border-primary/50 transition-all duration-200">
+              <div className="flex items-center justify-center h-12 w-12 rounded-sm bg-primary/10 border border-primary/20 mb-4">
+                <Sparkles className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">PowerPost</h3>
-              <p className="text-muted-foreground">
-                Résumez vos textes et PDFs avec l&apos;IA. 6 styles disponibles : court, tweet, thread, bullet points...
+              <h3 className="text-lg font-semibold mb-2 text-foreground">{t('home.features.powerpost.title')}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t('home.features.powerpost.description')}
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                  <FileText className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
+            <div className="group border border-border bg-card rounded-lg p-6 hover:border-foreground/30 transition-all duration-200">
+              <div className="flex items-center justify-center h-12 w-12 rounded-sm bg-background border border-border mb-4">
+                <FileText className="h-6 w-6 text-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">PowerNote</h3>
-              <p className="text-muted-foreground">
-                Prenez des notes en Markdown avec tags. Publiez vos meilleures notes en posts publics.
+              <h3 className="text-lg font-semibold mb-2 text-foreground">{t('home.features.powernote.title')}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t('home.features.powernote.description')}
               </p>
             </div>
           </div>
 
           {/* Pricing Teaser */}
-          <div className="pt-12">
-            <p className="text-sm text-muted-foreground mb-4">
-              Forfait gratuit disponible • Plans à partir de 6€/mois
+          <div className="text-center space-y-4 pt-8 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              {t('home.pricing.text')}
             </p>
-            <Button asChild variant="link">
-              <Link href="/pricing">Voir les tarifs →</Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/pricing">
+                {t('home.pricing.link')}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="border-t bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>NoteFlow - Propulsé par l&apos;IA pour les développeurs</p>
+      <footer className="border-t border-border bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>{t('home.footer.text')}</p>
+          </div>
         </div>
       </footer>
     </div>

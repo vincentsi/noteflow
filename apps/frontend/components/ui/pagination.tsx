@@ -1,5 +1,8 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/provider'
 
 export interface PaginationProps {
   currentPage: number
@@ -9,6 +12,7 @@ export interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange, className }: PaginationProps) {
+  const { t } = useI18n()
   const pages: (number | string)[] = []
 
   if (totalPages <= 7) {
@@ -48,7 +52,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
-        Previous
+        {t('common.pagination.previous')}
       </Button>
 
       <div className="flex items-center gap-1">
@@ -81,7 +85,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >
-        Next
+        {t('common.pagination.next')}
       </Button>
     </div>
   )
