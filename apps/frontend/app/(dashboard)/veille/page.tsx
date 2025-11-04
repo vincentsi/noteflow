@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import type { GetArticlesParams } from '@/lib/api/articles'
+import { toast } from 'sonner'
 
 // Pagination constants
 const ARTICLES_PER_PAGE = 20
@@ -24,7 +25,7 @@ const PLAN_LIMITS = {
 } as const
 
 export default function VeillePage() {
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -74,12 +75,30 @@ export default function VeillePage() {
   const percentage = limit === Infinity ? 0 : Math.round((savedCount / limit) * 100)
 
   const handleSave = useCallback((articleId: string) => {
+    if (!isAuthenticated) {
+      toast.error(t('common.messages.loginRequired'), {
+        action: {
+          label: t('common.navigation.login'),
+          onClick: () => router.push('/login'),
+        },
+      })
+      return
+    }
     saveArticle.mutate(articleId)
-  }, [saveArticle])
+  }, [saveArticle, isAuthenticated, t, router])
 
   const handleUnsave = useCallback((articleId: string) => {
+    if (!isAuthenticated) {
+      toast.error(t('common.messages.loginRequired'), {
+        action: {
+          label: t('common.navigation.login'),
+          onClick: () => router.push('/login'),
+        },
+      })
+      return
+    }
     unsaveArticle.mutate(articleId)
-  }, [unsaveArticle])
+  }, [unsaveArticle, isAuthenticated, t, router])
 
   return (
     <div className="space-y-6">

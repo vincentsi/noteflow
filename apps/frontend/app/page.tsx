@@ -6,11 +6,12 @@ import { useAuth } from '@/providers/auth.provider'
 import { useI18n } from '@/lib/i18n/provider'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Newspaper, Sparkles, FileText, ArrowRight, Globe } from 'lucide-react'
+import { Newspaper, Sparkles, FileText, ArrowRight } from 'lucide-react'
+import { DashboardNav } from '@/components/layouts/dashboard-nav'
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth()
-  const { t, language, setLanguage } = useI18n()
+  const { t } = useI18n()
   const router = useRouter()
 
   useEffect(() => {
@@ -33,31 +34,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Navigation */}
-      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-foreground">
-            NoteFlow
-          </Link>
-          <div className="flex items-center gap-4">
-            {/* Language Switcher */}
-            <button
-              onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              aria-label="Change language"
-            >
-              <Globe className="h-4 w-4" />
-              <span className="uppercase">{language}</span>
-            </button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">{t('home.nav.login')}</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/register">{t('home.nav.getStarted')}</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <DashboardNav />
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
@@ -90,7 +67,7 @@ export default function HomePage() {
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-6 pt-8">
-            <div className="group border border-border bg-card rounded-lg p-6 hover:border-foreground/30 transition-all duration-200">
+            <Link href="/veille" className="group border border-border bg-card rounded-lg p-6 hover:border-foreground/30 transition-all duration-200 cursor-pointer hover:shadow-lg">
               <div className="flex items-center justify-center h-12 w-12 rounded-sm bg-background border border-border mb-4">
                 <Newspaper className="h-6 w-6 text-foreground" />
               </div>
@@ -98,9 +75,9 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {t('home.features.veille.description')}
               </p>
-            </div>
+            </Link>
 
-            <div className="group border border-border bg-card rounded-lg p-6 hover:border-primary/50 transition-all duration-200">
+            <Link href="/summaries" className="group border border-border bg-card rounded-lg p-6 hover:border-primary/50 transition-all duration-200 cursor-pointer hover:shadow-lg">
               <div className="flex items-center justify-center h-12 w-12 rounded-sm bg-primary/10 border border-primary/20 mb-4">
                 <Sparkles className="h-6 w-6 text-primary" />
               </div>
@@ -108,9 +85,9 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {t('home.features.powerpost.description')}
               </p>
-            </div>
+            </Link>
 
-            <div className="group border border-border bg-card rounded-lg p-6 hover:border-foreground/30 transition-all duration-200">
+            <Link href="/notes" className="group border border-border bg-card rounded-lg p-6 hover:border-foreground/30 transition-all duration-200 cursor-pointer hover:shadow-lg">
               <div className="flex items-center justify-center h-12 w-12 rounded-sm bg-background border border-border mb-4">
                 <FileText className="h-6 w-6 text-foreground" />
               </div>
@@ -118,7 +95,7 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {t('home.features.powernote.description')}
               </p>
-            </div>
+            </Link>
           </div>
 
           {/* Pricing Teaser */}

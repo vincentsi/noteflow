@@ -93,16 +93,22 @@ export const ArticleCard = memo(function ArticleCard({ article, isSaved = false,
                 <CardAction>
                   <Button
                     variant="ghost"
-                    size="icon-sm"
+                    size="sm"
                     onClick={handleToggleSave}
                     disabled={isLoading}
                     aria-label={isSaved ? t('veille.actions.unsave') : t('veille.actions.save')}
                     className="shrink-0"
                   >
                     {isSaved ? (
-                      <BookmarkCheck className="h-4 w-4 text-primary" />
+                      <>
+                        <BookmarkCheck className="h-4 w-4 text-primary mr-1.5" />
+                        <span className="text-xs">{t('veille.actions.saved')}</span>
+                      </>
                     ) : (
-                      <Bookmark className="h-4 w-4" />
+                      <>
+                        <Bookmark className="h-4 w-4 mr-1.5" />
+                        <span className="text-xs">{t('veille.actions.save')}</span>
+                      </>
                     )}
                   </Button>
                 </CardAction>

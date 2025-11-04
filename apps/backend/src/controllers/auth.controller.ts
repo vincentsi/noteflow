@@ -47,8 +47,7 @@ export class AuthController {
       })
     } catch (error) {
       return handleControllerError(error, request, reply, {
-        'Registration failed. Please check your information.': (err, reply) => {
-          // Error already logged in service with email (server-side only)
+        'Registration failed. This email may already be in use or is invalid.': (err, reply) => {
           // Return generic 400 error to prevent email enumeration
           return reply.status(400).send({
             success: false,
@@ -109,6 +108,13 @@ export class AuthController {
             error: err.message,
           })
         },
+        'Too many failed login attempts. Your account is temporarily locked. Please try again later or reset your password.':
+          (err, reply) => {
+            return reply.status(429).send({
+              success: false,
+              error: err.message,
+            })
+          },
         'Account has been deleted': (err, reply, req) => {
           // Log without email for GDPR compliance (only IP address)
           req.log.warn({ ip: req.ip }, 'Login attempt for deleted account')

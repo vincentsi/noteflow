@@ -27,12 +27,11 @@ export const registerSchema = z.object({
   email: z.string().email('Invalid email'),
   password: z
     .string()
-    .min(12, 'Password must be at least 12 characters')
+    .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password cannot exceed 128 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter (A-Z)')
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter (a-z)')
     .regex(/[0-9]/, 'Password must contain at least one number (0-9)')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character (!@#$%...)')
     .refine(
       (password) => {
         const lowerPassword = password.toLowerCase()

@@ -123,6 +123,9 @@ npm run test:e2e         # Playwright E2E tests
 - `cache-key-helpers.ts` - Centralized cache key generation (prevents month-boundary race conditions)
 - `error-response.ts` - Standardized error handling
 - `custom-errors.ts` - Custom error classes
+- `controller-wrapper.ts` - Reusable controller patterns (auth handlers, param handlers)
+- `rate-limit-configs.ts` - Centralized rate-limiting presets
+- `common-responses.schema.ts` - Reusable OpenAPI response schemas
 
 ### Database Schema (Prisma)
 
@@ -189,8 +192,14 @@ See `plan/TDD-WORKFLOW.md` for ~50 detailed features with test code and implemen
 3. Run test (should fail): `npm test -- <name>.service.test.ts`
 4. Implement service in `src/services/<name>.service.ts`
 5. Create Zod schema in `src/schemas/<name>.schema.ts`
-6. Create controller in `src/controllers/<name>.controller.ts`
-7. Add routes in `src/routes/<name>.route.ts`
+6. Create controller in `src/controllers/<name>.controller.ts` - **Use controller wrappers** from `controller-wrapper.ts`:
+   - `createAuthHandler()` for POST/PUT with body
+   - `createAuthQueryHandler()` for GET with query params
+   - `createAuthParamHandler()` for params-only operations
+   - `createAuthParamBodyHandler()` for params + body operations
+7. Add routes in `src/routes/<name>.route.ts` - **Use common schemas**:
+   - Import `standardResponses()`, `createResponses()`, `errorResponse` from `common-responses.schema.ts`
+   - Import rate-limit presets from `rate-limit-configs.ts`
 8. Register routes in `src/app.ts`
 9. Write integration tests in `src/__tests__/integration/<name>.test.ts`
 10. Verify all tests pass: `npm test`
@@ -298,7 +307,7 @@ DATABASE_URL=postgresql://postgres:0771@localhost:5432/noteflow_test \
 
 **Current Test Coverage:**
 
-- 127/128 tests passing (99.2%)
+- 447/448 tests passing (99.2%)
 - 41%+ statement coverage
 - All critical and high priority bugs fixed
 

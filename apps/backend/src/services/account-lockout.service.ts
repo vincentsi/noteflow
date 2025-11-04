@@ -5,10 +5,11 @@ import { securityLogger } from '@/utils/security-logger'
  * Account Lockout Service (SEC-015, SEC-020)
  *
  * Implements progressive backoff for failed login attempts:
- * - 1-3 failures: No delay
- * - 4-6 failures: 1 minute lockout
- * - 7-9 failures: 5 minutes lockout
- * - 10+ failures: 15 minutes lockout
+ * - 1-5 failures: No delay
+ * - 6-10 failures: 2 minute lockout
+ * - 11-15 failures: 10 minutes lockout
+ * - 16-29 failures: 30 minutes lockout
+ * - 30+ failures: 24 hours lockout
  *
  * Uses both email and IP-based tracking to prevent:
  * - Brute force attacks on specific accounts
@@ -28,13 +29,13 @@ import { securityLogger } from '@/utils/security-logger'
  */
 export class AccountLockoutService {
   private static readonly LOCKOUT_THRESHOLDS = [
-    { attempts: 3, lockoutMinutes: 0 }, // 1-3: No lockout
-    { attempts: 6, lockoutMinutes: 1 }, // 4-6: 1 minute
-    { attempts: 9, lockoutMinutes: 5 }, // 7-9: 5 minutes
-    { attempts: Infinity, lockoutMinutes: 15 }, // 10+: 15 minutes
+    { attempts: 5, lockoutMinutes: 0 }, // 1-5: No lockout
+    { attempts: 10, lockoutMinutes: 2 }, // 6-10: 2 minutes
+    { attempts: 15, lockoutMinutes: 10 }, // 11-15: 10 minutes
+    { attempts: Infinity, lockoutMinutes: 30 }, // 16+: 30 minutes
   ]
 
-  private static readonly MAX_ATTEMPTS_BEFORE_PERMANENT = 20 // After 20 attempts, lock for 24h
+  private static readonly MAX_ATTEMPTS_BEFORE_PERMANENT = 30 // After 30 attempts, lock for 24h
   private static readonly PERMANENT_LOCKOUT_HOURS = 24
 
   /**

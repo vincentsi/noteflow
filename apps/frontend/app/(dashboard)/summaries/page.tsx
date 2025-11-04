@@ -28,7 +28,7 @@ const STYLE_CONFIG: Record<SummaryStyle, { icon: typeof FileText }> = {
 }
 
 export default function SummariesPage() {
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const { t } = useI18n()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -55,6 +55,16 @@ export default function SummariesPage() {
   const percentage = limit === Infinity ? 0 : Math.round((summariesThisMonth / limit) * 100)
 
   const handleSubmit = async (params: CreateSummaryParams) => {
+    if (!isAuthenticated) {
+      toast.error(t('common.messages.loginRequired'), {
+        action: {
+          label: t('common.navigation.login'),
+          onClick: () => router.push('/login'),
+        },
+      })
+      return
+    }
+
     createSummary.mutate(params, {
       onSuccess: (response) => {
         if (response.success && response.data.jobId) {

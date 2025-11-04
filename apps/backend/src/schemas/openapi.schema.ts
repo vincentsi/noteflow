@@ -53,9 +53,9 @@ export const registerSchema = {
       },
       password: {
         type: 'string',
-        minLength: 12,
-        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])',
-        description: 'Password (min 12 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)',
+        minLength: 8,
+        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)',
+        description: 'Password (min 8 chars, 1 uppercase, 1 lowercase, 1 number)',
       },
       name: {
         type: 'string',
@@ -545,9 +545,9 @@ export const resetPasswordSchema = {
       token: { type: 'string', description: 'Password reset token' },
       newPassword: {
         type: 'string',
-        minLength: 12,
-        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])',
-        description: 'New password (min 12 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)',
+        minLength: 8,
+        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)',
+        description: 'New password (min 8 chars, 1 uppercase, 1 lowercase, 1 number)',
       },
     },
   },

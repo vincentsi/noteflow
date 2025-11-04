@@ -286,7 +286,7 @@ export class AuthService {
 
     if (existingUser) {
       logger.warn({ timestamp: Date.now() }, 'Registration attempt with existing email')
-      throw new Error('Registration failed. Please check your information.')
+      throw new Error('Registration failed. This email may already be in use or is invalid.')
     }
 
     const hashedPassword = await this.hashPassword(data.password)

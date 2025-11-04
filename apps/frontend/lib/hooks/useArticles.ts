@@ -38,11 +38,22 @@ export function useArticleSources() {
 /**
  * Hook to fetch user's saved articles
  * Uses TanStack Query for caching and automatic refetching
+ * Returns empty array for unauthenticated users instead of throwing
  */
 export function useArticles(params?: GetSavedArticlesParams) {
   return useQuery<SavedArticle[], Error>({
     queryKey: articlesKeys.saved(params),
-    queryFn: () => articlesApi.getSavedArticles(params),
+    queryFn: async () => {
+      try {
+        return await articlesApi.getSavedArticles(params)
+      } catch (error) {
+        const axiosError = error as { response?: { status?: number } }
+        if (axiosError.response?.status === 401) {
+          return []
+        }
+        throw error
+      }
+    },
   })
 }
 

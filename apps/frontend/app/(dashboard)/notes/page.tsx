@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useAuth } from '@/providers/auth.provider'
 import { useNotes, useCreateNote, useDeleteNote } from '@/lib/hooks/useNotes'
 import { NoteList } from '@/components/notes/NoteList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Plus, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
+import Link from 'next/link'
 
 // Lazy load the Markdown editor (reduces initial bundle size by ~20-30 KB)
 const NoteEditor = dynamic(
@@ -21,6 +23,7 @@ const NoteEditor = dynamic(
 )
 
 export default function NotesPage() {
+  const { isAuthenticated } = useAuth()
   const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -35,6 +38,16 @@ export default function NotesPage() {
   const deleteNote = useDeleteNote()
 
   const handleCreate = async () => {
+    if (!isAuthenticated) {
+      toast.error(t('common.messages.loginRequired'), {
+        action: {
+          label: t('common.navigation.login'),
+          onClick: () => router.push('/login'),
+        },
+      })
+      return
+    }
+
     if (!title.trim() || !content.trim()) {
       toast.error(t('common.messages.requiredField'))
       return
@@ -56,6 +69,16 @@ export default function NotesPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!isAuthenticated) {
+      toast.error(t('common.messages.loginRequired'), {
+        action: {
+          label: t('common.navigation.login'),
+          onClick: () => router.push('/login'),
+        },
+      })
+      return
+    }
+
     try {
       await deleteNote.mutateAsync(id)
       toast.success(t('notes.actions.delete'))

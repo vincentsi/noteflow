@@ -147,10 +147,7 @@ const onRefreshed = () => {
 
 const addRefreshSubscriber = (callback: () => void) => {
   if (refreshSubscribers.length >= MAX_SUBSCRIBERS) {
-    logError(
-      new Error('Too many refresh subscribers - clearing queue'),
-      'TokenRefresh'
-    )
+    logError(new Error('Too many refresh subscribers - clearing queue'), 'TokenRefresh')
     refreshSubscribers = []
   }
   refreshSubscribers.push(callback)
@@ -173,13 +170,8 @@ apiClient.interceptors.response.use(
         originalRequest.url?.includes('/auth/login') ||
         originalRequest.url?.includes('/auth/register')
       ) {
-        // Redirect to login if refresh fails
-        if (
-          typeof window !== 'undefined' &&
-          !window.location.pathname.includes('/login')
-        ) {
-          window.location.href = '/login'
-        }
+        // Don't redirect to login - let the page handle it
+        // Pages are now public by default
         return Promise.reject(error)
       }
 
@@ -190,17 +182,8 @@ apiClient.interceptors.response.use(
       // Check if max attempts reached
       const currentAttempts = getRefreshAttempts()
       if (currentAttempts >= API_CONFIG.MAX_REFRESH_ATTEMPTS) {
-        logError(
-          new Error('Max refresh attempts reached'),
-          'TokenRefresh'
-        )
+        logError(new Error('Max refresh attempts reached'), 'TokenRefresh')
         resetRefreshAttempts() // Reset for next session
-        if (
-          typeof window !== 'undefined' &&
-          !window.location.pathname.includes('/login')
-        ) {
-          window.location.href = '/login'
-        }
         return Promise.reject(error)
       }
 
@@ -224,11 +207,7 @@ apiClient.interceptors.response.use(
 
         try {
           // Call refresh endpoint (token sent automatically via cookies)
-          await axios.post(
-            `${API_URL}/api/auth/refresh`,
-            {},
-            { withCredentials: true }
-          )
+          await axios.post(`${API_URL}/api/auth/refresh`, {}, { withCredentials: true })
 
           // Token refreshed successfully
           isRefreshing = false
@@ -244,20 +223,13 @@ apiClient.interceptors.response.use(
           releaseRefreshLock() // Release cross-tab lock
 
           // Convert to Error if needed
-          const err = refreshError instanceof Error
-            ? refreshError
-            : new Error('Token refresh failed')
+          const err =
+            refreshError instanceof Error ? refreshError : new Error('Token refresh failed')
 
-          // If we've exhausted attempts, redirect
+          // If we've exhausted attempts, just reject
           const attempts = getRefreshAttempts()
           if (attempts >= API_CONFIG.MAX_REFRESH_ATTEMPTS) {
             resetRefreshAttempts()
-            if (
-              typeof window !== 'undefined' &&
-              !window.location.pathname.includes('/login')
-            ) {
-              window.location.href = '/login'
-            }
           }
 
           return Promise.reject(err)

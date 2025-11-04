@@ -21,14 +21,13 @@ const COMMON_PASSWORDS = [
 ]
 
 /**
- * Strict password validation schema
+ * Password validation schema
  *
  * Security rules:
- * - Minimum 12 characters (NIST recommendation)
+ * - Minimum 8 characters
  * - At least 1 uppercase letter
  * - At least 1 lowercase letter
  * - At least 1 digit
- * - At least 1 special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
  * - No common passwords
  *
  * These rules protect against:
@@ -38,25 +37,18 @@ const COMMON_PASSWORDS = [
  */
 const passwordSchema = z
   .string()
-  .min(12, 'Password must be at least 12 characters')
+  .min(8, 'Password must be at least 8 characters')
   .max(128, 'Password cannot exceed 128 characters')
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter (A-Z)')
   .regex(/[a-z]/, 'Password must contain at least one lowercase letter (a-z)')
   .regex(/[0-9]/, 'Password must contain at least one digit (0-9)')
-  .regex(
-    /[^A-Za-z0-9]/,
-    'Password must contain at least one special character (!@#$%^&*...)'
-  )
   .refine(
-    (password) => {
+    password => {
       const lowerPassword = password.toLowerCase()
-      return !COMMON_PASSWORDS.some((common) =>
-        lowerPassword.includes(common.toLowerCase())
-      )
+      return !COMMON_PASSWORDS.some(common => lowerPassword.includes(common.toLowerCase()))
     },
     {
-      message:
-        'This password is too common. Choose a more secure password.',
+      message: 'This password is too common. Choose a more secure password.',
     }
   )
 
@@ -70,13 +62,9 @@ const emailSchema = z
   .min(1, 'Email is required')
   .toLowerCase()
   .trim()
-  .refine(
-    (email) => !isDisposableEmail(email),
-    {
-      message:
-        'Disposable email addresses are not allowed. Please use a permanent email address.',
-    }
-  )
+  .refine(email => !isDisposableEmail(email), {
+    message: 'Disposable email addresses are not allowed. Please use a permanent email address.',
+  })
 
 /**
  * Validation schema for registration
@@ -88,7 +76,7 @@ export const registerSchema = z.object({
   name: z
     .string()
     .optional()
-    .transform((val) => {
+    .transform(val => {
       // Convert empty string to undefined for optional field
       if (val === '' || val === null) return undefined
       return val
@@ -100,12 +88,7 @@ export const registerSchema = z.object({
  * Only email and password required
  */
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .email('Invalid email format')
-    .min(1, 'Email is required')
-    .toLowerCase()
-    .trim(),
+  email: z.string().email('Invalid email format').min(1, 'Email is required').toLowerCase().trim(),
   password: z.string().min(1, 'Password is required'),
 })
 
@@ -129,12 +112,7 @@ export const resetPasswordSchema = z.object({
  * Validation schema for password reset request
  */
 export const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .email('Invalid email format')
-    .min(1, 'Email is required')
-    .toLowerCase()
-    .trim(),
+  email: z.string().email('Invalid email format').min(1, 'Email is required').toLowerCase().trim(),
 })
 
 /**

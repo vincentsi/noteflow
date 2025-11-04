@@ -125,7 +125,9 @@ describe('Auth Routes Integration Tests', () => {
       // Return 400 with generic message to prevent email enumeration
       expect(response.statusCode).toBe(400)
       const body = JSON.parse(response.body)
-      expect(body.error).toBe('Registration failed. Please check your information.')
+      expect(body.error).toBe(
+        'Registration failed. This email may already be in use or is invalid.'
+      )
     })
   })
 
@@ -278,7 +280,7 @@ describe('Auth Routes Integration Tests', () => {
         method: 'POST',
         url: '/api/auth/refresh',
         payload: {
-          refreshToken,  // Send in body
+          refreshToken, // Send in body
         },
       })
 
@@ -310,7 +312,7 @@ describe('Auth Routes Integration Tests', () => {
         method: 'POST',
         url: '/api/auth/refresh',
         payload: {
-          refreshToken,  // Old token
+          refreshToken, // Old token
         },
       })
 
@@ -321,7 +323,7 @@ describe('Auth Routes Integration Tests', () => {
         method: 'POST',
         url: '/api/auth/refresh',
         payload: {
-          refreshToken,  // Old token (revoked after first refresh)
+          refreshToken, // Old token (revoked after first refresh)
         },
       })
 

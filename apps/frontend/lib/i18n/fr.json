@@ -35,7 +35,9 @@
       "invalidEmail": "Email invalide",
       "passwordTooShort": "Mot de passe trop court",
       "networkError": "Erreur réseau. Vérifiez votre connexion.",
-      "copied": "Copié dans le presse-papier"
+      "copied": "Copié dans le presse-papier",
+      "loginRequired": "Connectez-vous pour utiliser cette fonctionnalité",
+      "loginRequiredTitle": "Connexion requise"
     },
     "navigation": {
       "dashboard": "Tableau de bord",
@@ -46,7 +48,9 @@
       "settings": "Paramètres",
       "pricing": "Tarifs",
       "admin": "Administration",
-      "logout": "Déconnexion"
+      "logout": "Déconnexion",
+      "login": "Connexion",
+      "signup": "Inscription"
     }
   },
   "auth": {
@@ -106,7 +110,7 @@
       "invalidLinkMessage": "Ce lien de réinitialisation est invalide ou a expiré.",
       "requestNewLink": "Demander un nouveau lien",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
-      "passwordMinLength": "Le mot de passe doit contenir au moins 12 caractères",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
       "passwordUppercase": "Le mot de passe doit contenir au moins une majuscule",
       "passwordLowercase": "Le mot de passe doit contenir au moins une minuscule",
       "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
@@ -341,6 +345,7 @@
     "free": "Gratuit",
     "loading": "Chargement...",
     "upgrade": "Passer au plan",
+    "signUp": "S'inscrire",
     "error": "Erreur - Réessayer",
     "plans": {
       "FREE": {

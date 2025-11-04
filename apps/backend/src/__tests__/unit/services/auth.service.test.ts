@@ -219,7 +219,7 @@ describe('AuthService', () => {
           password: 'password',
           name: 'Test',
         })
-      ).rejects.toThrow('Registration failed. Please check your information.')
+      ).rejects.toThrow('Registration failed. This email may already be in use or is invalid.')
     })
   })
 

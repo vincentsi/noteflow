@@ -35,7 +35,9 @@
       "invalidEmail": "Invalid email",
       "passwordTooShort": "Password too short",
       "networkError": "Network error. Check your connection.",
-      "copied": "Copied to clipboard"
+      "copied": "Copied to clipboard",
+      "loginRequired": "Please login to use this feature",
+      "loginRequiredTitle": "Login Required"
     },
     "navigation": {
       "dashboard": "Dashboard",
@@ -46,7 +48,9 @@
       "settings": "Settings",
       "pricing": "Pricing",
       "admin": "Admin",
-      "logout": "Logout"
+      "logout": "Logout",
+      "login": "Login",
+      "signup": "Sign up"
     }
   },
   "auth": {
@@ -106,7 +110,7 @@
       "invalidLinkMessage": "This password reset link is invalid or has expired.",
       "requestNewLink": "Request New Link",
       "passwordMismatch": "Passwords don't match",
-      "passwordMinLength": "Password must be at least 12 characters",
+      "passwordMinLength": "Password must be at least 8 characters",
       "passwordUppercase": "Password must contain at least one uppercase letter",
       "passwordLowercase": "Password must contain at least one lowercase letter",
       "passwordNumber": "Password must contain at least one number",
@@ -341,6 +345,7 @@
     "free": "Free",
     "loading": "Loading...",
     "upgrade": "Upgrade to plan",
+    "signUp": "Sign up",
     "error": "Error - Retry",
     "plans": {
       "FREE": {
