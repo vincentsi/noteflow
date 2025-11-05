@@ -60,6 +60,21 @@ export function useUpdateNote() {
 }
 
 /**
+ * Hook to toggle pinned status of a note
+ */
+export function useTogglePinned() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => notesApi.togglePinned(id),
+    onSuccess: () => {
+      // Invalidate and refetch notes
+      queryClient.invalidateQueries({ queryKey: notesKeys.all })
+    },
+  })
+}
+
+/**
  * Hook to delete a note
  */
 export function useDeleteNote() {

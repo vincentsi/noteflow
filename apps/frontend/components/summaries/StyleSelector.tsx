@@ -1,10 +1,10 @@
 'use client'
 
-import { FileText, MessageSquare, List, ListOrdered, Trophy, Target } from 'lucide-react'
+import { FileText, MessageSquare, List, ListOrdered, Trophy, Target, GraduationCap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
 
-export type SummaryStyle = 'SHORT' | 'TWEET' | 'THREAD' | 'BULLET_POINT' | 'TOP3' | 'MAIN_POINTS'
+export type SummaryStyle = 'SHORT' | 'TWEET' | 'THREAD' | 'BULLET_POINT' | 'TOP3' | 'MAIN_POINTS' | 'EDUCATIONAL'
 
 export interface StyleSelectorProps {
   value: SummaryStyle
@@ -40,6 +40,10 @@ const styleOptions: StyleOption[] = [
   {
     value: 'MAIN_POINTS',
     icon: Target,
+  },
+  {
+    value: 'EDUCATIONAL',
+    icon: GraduationCap,
   },
 ]
 

@@ -7,6 +7,7 @@ export type Note = {
   title: string
   content: string
   tags: string[]
+  pinned: boolean
   createdAt: string
   updatedAt: string
 }
@@ -21,10 +22,13 @@ export type UpdateNoteData = {
   title?: string
   content?: string
   tags?: string[]
+  pinned?: boolean
 }
 
 export type GetNotesParams = {
   tags?: string
+  sortBy?: 'updatedAt' | 'createdAt' | 'title'
+  sortOrder?: 'asc' | 'desc'
 }
 
 export type NotesResponse = ApiResponse<{ notes: Note[] }>
@@ -73,6 +77,14 @@ export const notesApi = {
    */
   deleteNote: async (id: string): Promise<void> => {
     await apiClient.delete(`/api/notes/${id}`)
+  },
+
+  /**
+   * Toggle pinned status of a note
+   */
+  togglePinned: async (id: string): Promise<Note> => {
+    const response = await apiClient.patch<NoteResponse>(`/api/notes/${id}/pin`)
+    return response.data.data
   },
 
   /**

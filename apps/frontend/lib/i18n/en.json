@@ -178,7 +178,8 @@
       "THREAD": "Thread",
       "BULLET_POINT": "Key Points",
       "TOP3": "Top 3",
-      "MAIN_POINTS": "Main Points"
+      "MAIN_POINTS": "Main Points",
+      "EDUCATIONAL": "Educational"
     },
     "styleDescriptions": {
       "SHORT": "Short summary in 2-3 sentences",
@@ -186,7 +187,8 @@
       "THREAD": "Twitter thread in multiple tweets",
       "BULLET_POINT": "Key points as bullet list",
       "TOP3": "Top 3 essential points",
-      "MAIN_POINTS": "All main points"
+      "MAIN_POINTS": "All main points",
+      "EDUCATIONAL": "Simplified pedagogical explanation"
     },
     "planUsage": {
       "title": "Plan Usage",
@@ -273,10 +275,19 @@
     "empty": "No notes",
     "emptySubtitle": "Create your first note to get started",
     "emptyMessage": "No notes yet. Create your first note above.",
+    "search": {
+      "placeholder": "Search notes..."
+    },
+    "sort": {
+      "updatedAt": "Last modified",
+      "createdAt": "Creation date",
+      "title": "Title"
+    },
     "editor": {
       "titlePlaceholder": "Note title",
       "contentPlaceholder": "Start writing...",
       "tagsPlaceholder": "Add tags",
+      "previewEmpty": "Preview will appear here...",
       "saveButton": "Save",
       "saving": "Saving...",
       "cancelButton": "Cancel",
@@ -285,6 +296,8 @@
     "actions": {
       "edit": "Edit",
       "delete": "Delete",
+      "pin": "Pin",
+      "unpin": "Unpin",
       "convertToPost": "Convert to public post",
       "viewPost": "View post"
     }
@@ -360,7 +373,7 @@
           "5 AI summaries per month",
           "20 notes",
           "Access to RSS feeds",
-          "6 summary styles"
+          "7 summary styles"
         ]
       },
       "STARTER": {
@@ -382,6 +395,7 @@
           "Unlimited articles",
           "Unlimited summaries",
           "Unlimited notes",
+          "7 summary styles",
           "Priority support"
         ]
       }

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
 import type { CreateSummaryParams } from '@/lib/api/summaries'
 import { toast } from 'sonner'
-import { ArrowLeft, ChevronLeft, ChevronRight, FileText, MessageSquare, List, Trophy, Lightbulb, Hash } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, GraduationCap } from 'lucide-react'
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 import type { SummaryStyle } from '@/lib/api/summaries'
 import { cn } from '@/lib/utils'
@@ -26,6 +26,7 @@ const STYLE_CONFIG: Record<SummaryStyle, { icon: typeof FileText }> = {
   BULLET_POINT: { icon: List },
   TOP3: { icon: Trophy },
   MAIN_POINTS: { icon: Lightbulb },
+  EDUCATIONAL: { icon: GraduationCap },
 }
 
 export default function SummariesPage() {

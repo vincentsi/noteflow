@@ -1,7 +1,7 @@
 import { apiClient } from './client'
 import type { ApiResponse } from './types'
 
-export type SummaryStyle = 'SHORT' | 'TWEET' | 'THREAD' | 'BULLET_POINT' | 'TOP3' | 'MAIN_POINTS'
+export type SummaryStyle = 'SHORT' | 'TWEET' | 'THREAD' | 'BULLET_POINT' | 'TOP3' | 'MAIN_POINTS' | 'EDUCATIONAL'
 
 export type Summary = {
   id: string

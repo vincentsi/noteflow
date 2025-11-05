@@ -12,6 +12,7 @@ export const updateNoteSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).max(100000).optional(),
   tags: z.array(z.string().max(50)).max(20).optional(),
+  pinned: z.boolean().optional(),
 })
 
 export const getNotesSchema = z.object({
@@ -19,6 +20,8 @@ export const getNotesSchema = z.object({
     .string()
     .optional()
     .transform(val => (val ? val.split(',') : undefined)),
+  sortBy: z.enum(['updatedAt', 'createdAt', 'title']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   ...paginationSchema,
 })
 

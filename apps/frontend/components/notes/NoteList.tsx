@@ -3,16 +3,18 @@
 import type { Note } from '@/lib/api/notes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Pin } from 'lucide-react'
 
 export interface NoteListProps {
   notes: Note[]
   onSelect?: (note: Note) => void
   onDelete?: (id: string) => void
+  onTogglePin?: (id: string) => void
   isDeleting?: boolean
+  isTogglingPin?: boolean
 }
 
-export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProps) {
+export function NoteList({ notes, onSelect, onDelete, onTogglePin, isDeleting, isTogglingPin }: NoteListProps) {
   if (notes.length === 0) {
     return (
       <Card>
@@ -51,16 +53,28 @@ export function NoteList({ notes, onSelect, onDelete, isDeleting }: NoteListProp
                   })}
                 </CardDescription>
               </div>
-              {onDelete && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => onDelete(note.id)}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {onTogglePin && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => onTogglePin(note.id)}
+                    disabled={isTogglingPin}
+                  >
+                    <Pin className={`h-4 w-4 ${note.pinned ? 'fill-primary text-primary' : ''}`} />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => onDelete(note.id)}
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>

@@ -15,10 +15,13 @@ export interface UpdateNoteData {
   title?: string
   content?: string
   tags?: string[]
+  pinned?: boolean
 }
 
 export interface GetNotesFilters {
   tags?: string[]
+  sortBy?: 'updatedAt' | 'createdAt' | 'title'
+  sortOrder?: 'asc' | 'desc'
 }
 
 export class NoteService extends BaseCrudService<Note> {
@@ -47,7 +50,8 @@ export class NoteService extends BaseCrudService<Note> {
 
   /**
    * Get all notes for a user
-   * Optional filtering by tags
+   * Optional filtering by tags and sorting
+   * Pinned notes always appear first
    */
   async getUserNotes(userId: string, filters?: GetNotesFilters) {
     // Build WHERE clause (only active notes - soft delete)
@@ -61,9 +65,16 @@ export class NoteService extends BaseCrudService<Note> {
       where.tags = tagsFilter.tags
     }
 
+    // Build order by clause
+    const sortBy = filters?.sortBy || 'updatedAt'
+    const sortOrder = filters?.sortOrder || 'desc'
+
     const notes = await prisma.note.findMany({
       where,
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [
+        { pinned: 'desc' }, // Pinned notes always first
+        { [sortBy]: sortOrder },
+      ],
     })
 
     return notes
@@ -88,6 +99,21 @@ export class NoteService extends BaseCrudService<Note> {
     })
 
     return note
+  }
+
+  /**
+   * Toggle pinned status of a note
+   * Only the note owner can pin/unpin it
+   */
+  async togglePinned(noteId: string, userId: string) {
+    const note = await this.findByIdWithOwnership(noteId, userId)
+
+    const updated = await prisma.note.update({
+      where: { id: noteId },
+      data: { pinned: !note.pinned },
+    })
+
+    return updated
   }
 
   /**

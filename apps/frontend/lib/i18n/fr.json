@@ -178,7 +178,8 @@
       "THREAD": "Thread",
       "BULLET_POINT": "Points clés",
       "TOP3": "Top 3",
-      "MAIN_POINTS": "Points principaux"
+      "MAIN_POINTS": "Points principaux",
+      "EDUCATIONAL": "Pédagogique"
     },
     "styleDescriptions": {
       "SHORT": "Résumé court en 2-3 phrases",
@@ -186,7 +187,8 @@
       "THREAD": "Thread Twitter en plusieurs tweets",
       "BULLET_POINT": "Points clés à puces",
       "TOP3": "Top 3 des points essentiels",
-      "MAIN_POINTS": "Tous les points principaux"
+      "MAIN_POINTS": "Tous les points principaux",
+      "EDUCATIONAL": "Explication pédagogique simplifiée"
     },
     "planUsage": {
       "title": "Utilisation du plan",
@@ -273,10 +275,19 @@
     "empty": "Aucune note",
     "emptySubtitle": "Créez votre première note pour commencer",
     "emptyMessage": "Aucune note pour le moment. Créez votre première note ci-dessus.",
+    "search": {
+      "placeholder": "Rechercher des notes..."
+    },
+    "sort": {
+      "updatedAt": "Dernière modification",
+      "createdAt": "Date de création",
+      "title": "Titre"
+    },
     "editor": {
       "titlePlaceholder": "Titre de la note",
       "contentPlaceholder": "Commencez à écrire...",
       "tagsPlaceholder": "Ajouter des tags",
+      "previewEmpty": "L'aperçu apparaîtra ici...",
       "saveButton": "Enregistrer",
       "saving": "Enregistrement...",
       "cancelButton": "Annuler",
@@ -285,6 +296,8 @@
     "actions": {
       "edit": "Modifier",
       "delete": "Supprimer",
+      "pin": "Épingler",
+      "unpin": "Désépingler",
       "convertToPost": "Convertir en post public",
       "viewPost": "Voir le post"
     }
@@ -360,7 +373,7 @@
           "5 résumés IA par mois",
           "20 notes",
           "Accès aux flux RSS",
-          "6 styles de résumé"
+          "7 styles de résumé"
         ]
       },
       "STARTER": {
@@ -382,7 +395,8 @@
           "Articles illimités",
           "Résumés illimités",
           "Notes illimitées",
-          "Support prioritaire"
+          "Support prioritaire",
+          "7 styles de résumé"
         ]
       }
     },

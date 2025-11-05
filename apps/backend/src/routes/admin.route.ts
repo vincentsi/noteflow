@@ -60,7 +60,7 @@ export const adminRoutes = createProtectedRoutes(async (fastify: FastifyInstance
         )
 
         // Rename 'items' to 'users' for backward compatibility
-        reply.send({
+        return reply.send({
           ...response,
           data: {
             users: response.data.items,

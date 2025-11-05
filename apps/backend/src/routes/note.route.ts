@@ -62,13 +62,23 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
     {
       schema: {
         tags: ['Notes'],
-        description: 'Get user notes with optional tag filtering',
+        description: 'Get user notes with optional filtering and sorting',
         querystring: {
           type: 'object',
           properties: {
             tags: {
               type: 'string',
               description: 'Comma-separated list of tags to filter by',
+            },
+            sortBy: {
+              type: 'string',
+              enum: ['updatedAt', 'createdAt', 'title'],
+              description: 'Field to sort by',
+            },
+            sortOrder: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              description: 'Sort order',
             },
           },
         },
@@ -160,6 +170,33 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
       },
     },
     noteController.updateNote.bind(noteController)
+  )
+
+  /**
+   * Toggle pinned status
+   * @route PATCH /api/notes/:id/pin
+   * @access Private
+   */
+  fastify.patch(
+    '/:id/pin',
+    {
+      schema: {
+        tags: ['Notes'],
+        description: 'Toggle pinned status of a note',
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+          },
+          required: ['id'],
+        },
+        response: {
+          ...standardResponses({ type: 'object', additionalProperties: true }),
+          404: errorResponse,
+        },
+      },
+    },
+    noteController.togglePinned.bind(noteController)
   )
 
   /**

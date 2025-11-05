@@ -8,7 +8,7 @@ import {
 } from '@/schemas/article.schema'
 import { handleControllerError } from '@/utils/error-response'
 import { requireAuth } from '@/utils/require-auth'
-import { createAuthQueryHandler, createAuthParamHandler } from '@/utils/controller-wrapper'
+import { createAuthQueryHandler } from '@/utils/controller-wrapper'
 
 /**
  * Article controller

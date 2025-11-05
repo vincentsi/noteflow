@@ -4,16 +4,16 @@ import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
-import { useNotes, useCreateNote, useDeleteNote } from '@/lib/hooks/useNotes'
+import { useNotes, useCreateNote, useDeleteNote, useTogglePinned, useSearchNotes } from '@/lib/hooks/useNotes'
 import { NoteList } from '@/components/notes/NoteList'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
-import { Plus, ArrowLeft } from 'lucide-react'
+import { Plus, ArrowLeft, Search, Eye, Code, ArrowUpDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
-import Link from 'next/link'
+import type { GetNotesParams } from '@/lib/api/notes'
 
 // Lazy load the Markdown editor (reduces initial bundle size by ~20-30 KB)
 const NoteEditor = dynamic(
@@ -35,9 +35,20 @@ export default function NotesPage() {
   const [tags, setTags] = useState('')
   const [showAuthDialog, setShowAuthDialog] = useState(false)
 
-  const { data: notes = [], isLoading } = useNotes()
+  // New state for features
+  const [searchQuery, setSearchQuery] = useState('')
+  const [splitView, setSplitView] = useState(false)
+  const [sortBy, setSortBy] = useState<'updatedAt' | 'createdAt' | 'title'>('updatedAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const params: GetNotesParams = { sortBy, sortOrder }
+  const { data: notes = [], isLoading } = useNotes(params)
+  const { data: searchResults = [], isLoading: isSearching } = useSearchNotes(searchQuery)
   const createNote = useCreateNote()
   const deleteNote = useDeleteNote()
+  const togglePinned = useTogglePinned()
+
+  const displayedNotes = searchQuery ? searchResults : notes
 
   const handleCreate = async () => {
     if (!isAuthenticated) {
@@ -65,6 +76,19 @@ export default function NotesPage() {
     }
   }
 
+  const handleTogglePin = async (id: string) => {
+    if (!isAuthenticated) {
+      setShowAuthDialog(true)
+      return
+    }
+
+    try {
+      await togglePinned.mutateAsync(id)
+    } catch {
+      toast.error(t('common.messages.error'))
+    }
+  }
+
   const handleDelete = async (id: string) => {
     if (!isAuthenticated) {
       setShowAuthDialog(true)
@@ -77,6 +101,10 @@ export default function NotesPage() {
     } catch {
       toast.error(t('common.messages.error'))
     }
+  }
+
+  const toggleSort = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
   }
 
   return (
@@ -93,11 +121,51 @@ export default function NotesPage() {
         </h1>
         <p className="text-base text-muted-foreground mt-2">
           {showMyOnly
-            ? `${notes.length} note${notes.length > 1 ? 's' : ''}`
+            ? `${displayedNotes.length} note${displayedNotes.length > 1 ? 's' : ''}`
             : t('notes.subtitle')
           }
         </p>
       </div>
+
+      {/* Search and Controls Bar */}
+      {!showMyOnly && (
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('notes.search.placeholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              className="border border-border rounded-md px-3 py-2 bg-background text-foreground text-sm"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'updatedAt' | 'createdAt' | 'title')}
+            >
+              <option value="updatedAt">{t('notes.sort.updatedAt')}</option>
+              <option value="createdAt">{t('notes.sort.createdAt')}</option>
+              <option value="title">{t('notes.sort.title')}</option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleSort}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSplitView(!splitView)}
+            >
+              {splitView ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Create Note Form - Hide when in my-only mode */}
       {!showMyOnly && (
@@ -122,12 +190,32 @@ export default function NotesPage() {
 
             <div>
               <label htmlFor="note-content" className="text-sm font-medium mb-2 block">{t('notes.editor.contentPlaceholder')}</label>
-              <NoteEditor
-                id="note-content"
-                value={content}
-                onChange={setContent}
-                placeholder={t('notes.editor.contentPlaceholder')}
-              />
+              {splitView ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <NoteEditor
+                    id="note-content"
+                    value={content}
+                    onChange={setContent}
+                    placeholder={t('notes.editor.contentPlaceholder')}
+                  />
+                  <div className="border border-border rounded-md p-4 bg-background min-h-[200px]">
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      {content ? (
+                        <pre className="whitespace-pre-wrap text-sm">{content}</pre>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">{t('notes.editor.previewEmpty')}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <NoteEditor
+                  id="note-content"
+                  value={content}
+                  onChange={setContent}
+                  placeholder={t('notes.editor.contentPlaceholder')}
+                />
+              )}
             </div>
 
             <div>
@@ -157,17 +245,19 @@ export default function NotesPage() {
 
       {/* Notes List */}
       <div>
-        {!showMyOnly && <h2 className="text-lg font-semibold text-foreground mb-4">{t('notes.myNotes')} ({notes.length})</h2>}
+        {!showMyOnly && <h2 className="text-lg font-semibold text-foreground mb-4">{t('notes.myNotes')} ({displayedNotes.length})</h2>}
 
-        {isLoading ? (
+        {(isLoading || isSearching) ? (
           <div className="text-center py-12 text-muted-foreground">
             {t('common.messages.loading')}
           </div>
         ) : (
           <NoteList
-            notes={notes}
+            notes={displayedNotes}
             onDelete={handleDelete}
+            onTogglePin={handleTogglePin}
             isDeleting={deleteNote.isPending}
+            isTogglingPin={togglePinned.isPending}
           />
         )}
       </div>

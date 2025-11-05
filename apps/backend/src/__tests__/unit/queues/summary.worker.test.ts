@@ -160,6 +160,7 @@ describe('Summary Worker', () => {
         SummaryStyle.BULLET_POINT,
         SummaryStyle.TOP3,
         SummaryStyle.MAIN_POINTS,
+        SummaryStyle.EDUCATIONAL,
       ]
 
       for (const style of styles) {

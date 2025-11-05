@@ -251,6 +251,7 @@ model Note {
   title   String
   content String // Markdown content
   tags    String[] // Array de tags
+  pinned  Boolean @default(false) // Pin/favorite notes
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -261,6 +262,7 @@ model Note {
   @@index([userId, createdAt(sort: Desc)]) // PERF-002: List queries sorted by creation date
   @@index([userId, deletedAt]) // Optimizes soft delete queries
   @@index([userId, deletedAt, createdAt(sort: Desc)]) // PERF-002: Pagination with soft delete
+  @@index([userId, pinned, updatedAt]) // Optimizes pinned notes queries
   @@map("notes")
 }
 
@@ -294,6 +296,7 @@ enum SummaryStyle {
   BULLET_POINT // Points clés en liste
   TOP3 // Top 3 des highlights
   MAIN_POINTS // Points principaux détaillés
+  EDUCATIONAL // Explication pédagogique simplifiée
 }
 
 model RSSFeed {

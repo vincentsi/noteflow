@@ -7,28 +7,32 @@ import { readFile } from 'node:fs/promises'
 
 const PROMPTS = {
   [SummaryStyle.SHORT]: {
-    fr: 'Résume ce texte en 2-3 phrases courtes et claires.',
-    en: 'Summarize this text in 2-3 short and clear sentences.',
+    fr: 'Résume ce texte en 2 à 3 phrases claires, simples et informatives, sans omettre les idées essentielles.',
+    en: 'Summarize this text in 2–3 clear, simple, and informative sentences that retain the core ideas.',
   },
   [SummaryStyle.TWEET]: {
-    fr: 'Résume ce texte en un tweet de maximum 280 caractères.',
-    en: 'Summarize this text in a tweet of maximum 280 characters.',
+    fr: 'Résume ce texte en un tweet percutant (max. 280 caractères) avec un ton clair, engageant et facile à lire.',
+    en: 'Summarize this text in a punchy tweet (max. 280 characters) with a clear, engaging, and readable tone.',
   },
   [SummaryStyle.THREAD]: {
-    fr: 'Crée un thread Twitter (5-7 tweets numérotés) résumant les points clés de ce texte.',
-    en: 'Create a Twitter thread (5-7 numbered tweets) summarizing the key points of this text.',
+    fr: 'Crée un thread Twitter (5 à 7 tweets numérotés) présentant les points clés du texte de manière fluide et captivante.',
+    en: 'Create a Twitter thread (5–7 numbered tweets) presenting the key points clearly, smoothly, and engagingly.',
   },
   [SummaryStyle.BULLET_POINT]: {
-    fr: 'Liste les points clés de ce texte sous forme de bullet points (5-8 points avec •).',
-    en: 'List the key points of this text as bullet points (5-8 points with •).',
+    fr: 'Dresse une liste de 5 à 8 points clés du texte sous forme de puces (•), chaque point étant concis, clair et informatif.',
+    en: 'List 5–8 key points from the text as bullet points (•), each one concise, clear, and informative.',
   },
   [SummaryStyle.TOP3]: {
-    fr: 'Extrais les 3 points les plus importants de ce texte (numérotés 1, 2, 3).',
-    en: 'Extract the 3 most important points from this text (numbered 1, 2, 3).',
+    fr: 'Identifie et numérote les 3 idées les plus importantes du texte (1, 2, 3), formulées de manière claire et directe.',
+    en: 'Identify and number the 3 most important ideas from the text (1, 2, 3), stated clearly and directly.',
   },
   [SummaryStyle.MAIN_POINTS]: {
-    fr: 'Résume les points principaux de ce texte de manière détaillée et structurée.',
-    en: 'Summarize the main points of this text in a detailed and structured way.',
+    fr: 'Rédige un résumé détaillé et structuré du texte, en distinguant les idées principales, les arguments et les exemples clés.',
+    en: 'Write a detailed and structured summary of the text, distinguishing main ideas, arguments, and key examples.',
+  },
+  [SummaryStyle.EDUCATIONAL]: {
+    fr: 'Explique ce texte comme à un élève débutant, en simplifiant les termes complexes et en illustrant les idées clés.',
+    en: 'Explain this text as if to a beginner, simplifying complex terms and illustrating the key ideas clearly.',
   },
 } as const
 

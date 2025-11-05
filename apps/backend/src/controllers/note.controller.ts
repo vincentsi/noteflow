@@ -10,7 +10,6 @@ import {
 import { handleControllerError } from '@/utils/error-response'
 import { requireAuth } from '@/utils/require-auth'
 import {
-  createAuthHandler,
   createAuthQueryHandler,
   createAuthParamBodyHandler,
   createAuthParamHandler,
@@ -51,11 +50,13 @@ export class NoteController {
 
   /**
    * GET /api/notes
-   * Get user notes with optional tag filtering
+   * Get user notes with optional tag filtering and sorting
    */
   getUserNotes = createAuthQueryHandler(getNotesSchema, async (userId, query) => {
     const notes = await noteService.getUserNotes(userId, {
       tags: query.tags,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
     })
     return { notes }
   })
@@ -92,6 +93,16 @@ export class NoteController {
         }),
     }
   )
+
+  /**
+   * PATCH /api/notes/:id/pin
+   * Toggle pinned status of a note
+   */
+  togglePinned = createAuthParamHandler(async (userId, params) => {
+    const { id } = noteIdSchema.parse(params)
+    const note = await noteService.togglePinned(id, userId)
+    return note
+  })
 
   /**
    * DELETE /api/notes/:id
