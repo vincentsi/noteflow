@@ -49,6 +49,7 @@ model User {
   summaries          Summary[]
   notes              Note[]
   posts              Post[]
+  transcriptions     Transcription[]
 
   @@index([deletedAt]) // Performance: filter out deleted users
   @@index([role]) // Performance: admin stats & role filtering
@@ -253,6 +254,8 @@ model Note {
   tags    String[] // Array de tags
   pinned  Boolean @default(false) // Pin/favorite notes
 
+  transcription Transcription? // Optional: linked transcription if created from audio
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete - null = active, not null = deleted
@@ -314,4 +317,35 @@ model RSSFeed {
   @@index([active])
   @@index([lastFetchAt])
   @@map("rss_feeds")
+}
+
+model Transcription {
+  id       String              @id @default(cuid())
+  userId   String
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId   String?             @unique
+  note     Note?               @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  fileName String // Original audio filename
+  mimeType String // Audio MIME type (audio/mp3, audio/wav, etc.)
+  fileSize Int // File size in bytes
+  duration Int? // Audio duration in seconds (extracted from file)
+  status   TranscriptionStatus @default(PENDING)
+  text     String?             @db.Text // Transcribed text (null until completed)
+  errorMsg String? // Error message if failed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status]) // For monitoring pending/failed transcriptions
+  @@map("transcriptions")
+}
+
+enum TranscriptionStatus {
+  PENDING // Waiting to be processed
+  PROCESSING // Currently being transcribed
+  COMPLETED // Successfully transcribed
+  FAILED // Transcription failed
 }

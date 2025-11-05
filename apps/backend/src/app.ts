@@ -26,6 +26,7 @@ import { userRoutes } from '@/routes/user.routes'
 import { articleRoutes } from '@/routes/article.route'
 import { summaryRoutes } from '@/routes/summary.route'
 import { noteRoutes } from '@/routes/note.route'
+import { transcriptionRoutes } from '@/routes/transcription.route'
 
 /**
  * Create and configure Fastify application
@@ -109,6 +110,10 @@ export async function createApp(): Promise<FastifyInstance> {
         { name: 'Articles', description: 'Article management endpoints (RSS feed articles)' },
         { name: 'Summaries', description: 'AI summary generation endpoints' },
         { name: 'Notes', description: 'Note management endpoints (markdown notes with tags)' },
+        {
+          name: 'Transcriptions',
+          description: 'Audio transcription endpoints (STARTER and PRO plans only)',
+        },
       ],
       components: {
         securitySchemes: {
@@ -191,6 +196,7 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(articleRoutes, { prefix: '/api/articles' })
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
   await app.register(noteRoutes, { prefix: '/api/notes' })
+  await app.register(transcriptionRoutes, { prefix: '/api/transcriptions' })
 
   // SECURITY: Only register test routes in test mode OR development with explicit flag
   // Test routes provide dangerous operations (data seeding, cleanup) that must NEVER be exposed in production
