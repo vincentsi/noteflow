@@ -128,6 +128,7 @@ export class NoteService extends BaseCrudService<Note> {
 
   /**
    * Search notes by title or content
+   * Pinned notes always appear first
    */
   async searchNotes(userId: string, query: string) {
     // Build WHERE clause (only active notes)
@@ -142,7 +143,10 @@ export class NoteService extends BaseCrudService<Note> {
 
     const notes = await prisma.note.findMany({
       where,
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [
+        { pinned: 'desc' }, // Pinned notes always first
+        { updatedAt: 'desc' },
+      ],
     })
 
     return notes

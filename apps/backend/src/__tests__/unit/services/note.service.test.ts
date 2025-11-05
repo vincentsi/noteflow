@@ -175,7 +175,7 @@ describe('NoteService', () => {
           deletedAt: null, // Soft delete filter
           tags: { hasSome: ['work'] },
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
       })
     })
   })
@@ -232,9 +232,9 @@ describe('NoteService', () => {
     it('should throw error if note not found', async () => {
       prismaMock.note.findFirst.mockResolvedValue(null)
 
-      await expect(
-        noteService.updateNote('note-1', 'user-123', { title: 'Test' })
-      ).rejects.toThrow('Note not found')
+      await expect(noteService.updateNote('note-1', 'user-123', { title: 'Test' })).rejects.toThrow(
+        'Note not found'
+      )
     })
   })
 
@@ -311,7 +311,7 @@ describe('NoteService', () => {
             { content: { contains: 'search term', mode: 'insensitive' } },
           ],
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
       })
     })
   })
