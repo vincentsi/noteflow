@@ -1,6 +1,5 @@
 import OpenAI from 'openai'
 import { prisma } from '@/config/prisma'
-import { PlanLimiter } from '@/utils/plan-limiter'
 import { env } from '@/config/env'
 import { TranscriptionStatus, PlanType } from '@prisma/client'
 import { logger } from '@/utils/logger'
@@ -17,13 +16,6 @@ const TRANSCRIPTION_LIMITS = {
   FREE: 0, // Feature not available for FREE plan
   STARTER: 5, // 5 transcriptions per month
   PRO: Infinity, // Unlimited for PRO
-} as const
-
-// Max file duration in seconds
-const MAX_DURATION = {
-  FREE: 0,
-  STARTER: 10 * 60, // 10 minutes
-  PRO: 25 * 60, // 25 minutes
 } as const
 
 export class TranscriptionService {
@@ -133,7 +125,7 @@ export class TranscriptionService {
       const file = Object.assign(blob, {
         name: transcription.fileName,
         lastModified: Date.now(),
-      }) as any
+      }) as File
 
       // Call OpenAI Whisper API
       const response = await this.openai.audio.transcriptions.create({
@@ -143,7 +135,8 @@ export class TranscriptionService {
         response_format: 'text',
       })
 
-      const transcribedText = typeof response === 'string' ? response : (response as any).text || ''
+      const transcribedText =
+        typeof response === 'string' ? response : (response as { text?: string }).text || ''
 
       logger.info(`Transcription ${transcriptionId} completed successfully`)
 

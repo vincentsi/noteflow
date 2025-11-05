@@ -613,6 +613,24 @@
       "confirmButton": "Delete Account Permanently"
     }
   },
+  "transcriptions": {
+    "uploadAudio": "Transcribe Audio",
+    "uploadDescription": "Upload an audio file to transcribe it to text with AI",
+    "usageInfo": "{{count}} / {{limit}} transcriptions this month",
+    "uploading": "Uploading...",
+    "processing": "Transcribing...",
+    "uploadSuccess": "Transcription successful! A note has been created.",
+    "dropHere": "Drop audio file here",
+    "dropOrClick": "Drag & drop or click to upload",
+    "supportedFormats": "MP3, WAV, M4A, WebM, OGG, FLAC",
+    "maxSize": "Max size: 25 MB",
+    "limitReached": "Transcription limit reached",
+    "upgradeMessage": "Upgrade to STARTER or PRO to continue transcribing",
+    "errors": {
+      "fileTooLarge": "File too large. Maximum 25 MB.",
+      "invalidFormat": "Unsupported audio format. Use MP3, WAV, M4A, WebM, OGG or FLAC."
+    }
+  },
   "home": {
     "nav": {
       "login": "Sign in",

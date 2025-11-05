@@ -613,6 +613,24 @@
       "confirmButton": "Supprimer définitivement le compte"
     }
   },
+  "transcriptions": {
+    "uploadAudio": "Transcrire un audio",
+    "uploadDescription": "Uploadez un fichier audio pour le transcrire en texte avec l'IA",
+    "usageInfo": "{{count}} / {{limit}} transcriptions ce mois",
+    "uploading": "Upload en cours...",
+    "processing": "Transcription en cours...",
+    "uploadSuccess": "Transcription réussie! Une note a été créée.",
+    "dropHere": "Déposez le fichier audio ici",
+    "dropOrClick": "Glissez-déposez ou cliquez pour uploader",
+    "supportedFormats": "MP3, WAV, M4A, WebM, OGG, FLAC",
+    "maxSize": "Taille max: 25 MB",
+    "limitReached": "Limite de transcriptions atteinte",
+    "upgradeMessage": "Passez à STARTER ou PRO pour continuer à transcrire",
+    "errors": {
+      "fileTooLarge": "Fichier trop volumineux. Maximum 25 MB.",
+      "invalidFormat": "Format audio non supporté. Utilisez MP3, WAV, M4A, WebM, OGG ou FLAC."
+    }
+  },
   "home": {
     "nav": {
       "login": "Se connecter",

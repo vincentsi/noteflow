@@ -1,121 +1,35 @@
 import { prismaMock } from '../../helpers/test-db'
 import { TranscriptionService } from '../../../services/transcription.service'
 import { Transcription, TranscriptionStatus, PlanType } from '@prisma/client'
-import * as OpenAI from 'openai'
+import OpenAI from 'openai'
 
-// Mock OpenAI
-jest.mock('openai')
+// Mock OpenAI with proper Jest mock structure
+jest.mock('openai', () => {
+  const mockCreate = jest.fn()
+  return jest.fn().mockImplementation(() => ({
+    audio: {
+      transcriptions: {
+        create: mockCreate,
+      },
+    },
+  }))
+})
+
+// Get reference to the mocked create function
+let mockCreate: jest.Mock
 
 describe('TranscriptionService', () => {
   let transcriptionService: TranscriptionService
-  let mockOpenAI: jest.Mocked<OpenAI.OpenAI>
 
   beforeEach(() => {
     transcriptionService = new TranscriptionService()
-    mockOpenAI = new OpenAI.OpenAI() as jest.Mocked<OpenAI.OpenAI>
+    // Get the mock create function from the OpenAI instance
+    const openAIInstance = (OpenAI as unknown as jest.Mock).mock.results[0].value
+    mockCreate = openAIInstance.audio.transcriptions.create
     jest.clearAllMocks()
   })
 
   describe('createTranscription', () => {
-    it('should create transcription for FREE user under limit', async () => {
-      const audioBuffer = Buffer.from('fake-audio-data')
-      const fileName = 'test-audio.mp3'
-
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: 'user-123',
-        email: 'test@test.com',
-        password: 'hashed',
-        name: 'Test',
-        role: 'USER',
-        emailVerified: true,
-        planType: PlanType.FREE,
-        language: 'fr',
-        stripeCustomerId: null,
-        subscriptionStatus: 'NONE',
-        subscriptionId: null,
-        currentPeriodEnd: null,
-        lastLoginAt: null,
-        lastLoginIp: null,
-        loginCount: 0,
-        deletedAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-
-      // Mock count for FREE plan (limit not reached)
-      prismaMock.transcription.count.mockResolvedValue(3) // Under FREE limit (5)
-
-      const mockTranscription: Transcription = {
-        id: 'trans-1',
-        userId: 'user-123',
-        noteId: null,
-        fileName,
-        mimeType: 'audio/mp3',
-        fileSize: audioBuffer.length,
-        duration: null,
-        status: TranscriptionStatus.PENDING,
-        text: null,
-        errorMsg: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
-      prismaMock.transcription.create.mockResolvedValue(mockTranscription)
-
-      const result = await transcriptionService.createTranscription('user-123', {
-        buffer: audioBuffer,
-        fileName,
-        mimeType: 'audio/mp3',
-      })
-
-      expect(result.status).toBe(TranscriptionStatus.PENDING)
-      expect(prismaMock.transcription.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          userId: 'user-123',
-          fileName,
-          mimeType: 'audio/mp3',
-          fileSize: audioBuffer.length,
-          status: TranscriptionStatus.PENDING,
-        }),
-      })
-    })
-
-    it('should throw error if FREE user exceeds transcription limit', async () => {
-      const audioBuffer = Buffer.from('fake-audio-data')
-
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: 'user-123',
-        email: 'test@test.com',
-        password: 'hashed',
-        name: 'Test',
-        role: 'USER',
-        emailVerified: true,
-        planType: PlanType.FREE,
-        language: 'fr',
-        stripeCustomerId: null,
-        subscriptionStatus: 'NONE',
-        subscriptionId: null,
-        currentPeriodEnd: null,
-        lastLoginAt: null,
-        lastLoginIp: null,
-        loginCount: 0,
-        deletedAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-
-      // FREE plan limit: 5 transcriptions
-      prismaMock.transcription.count.mockResolvedValue(5)
-
-      await expect(
-        transcriptionService.createTranscription('user-123', {
-          buffer: audioBuffer,
-          fileName: 'test.mp3',
-          mimeType: 'audio/mp3',
-        })
-      ).rejects.toThrow('Transcription limit reached')
-    })
-
     it('should reject FREE plan (feature not available)', async () => {
       const audioBuffer = Buffer.from('fake-audio-data')
 
@@ -224,13 +138,7 @@ describe('TranscriptionService', () => {
       prismaMock.transcription.findUnique.mockResolvedValue(mockTranscription)
 
       // Mock OpenAI Whisper API response
-      mockOpenAI.audio = {
-        transcriptions: {
-          create: jest.fn().mockResolvedValue({
-            text: transcribedText,
-          }),
-        },
-      } as any
+      mockCreate.mockResolvedValue(transcribedText)
 
       prismaMock.transcription.update.mockResolvedValue({
         ...mockTranscription,
@@ -286,11 +194,7 @@ describe('TranscriptionService', () => {
       prismaMock.transcription.findUnique.mockResolvedValue(mockTranscription)
 
       // Mock OpenAI API error
-      mockOpenAI.audio = {
-        transcriptions: {
-          create: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
-        },
-      } as any
+      mockCreate.mockRejectedValue(new Error('OpenAI API error'))
 
       prismaMock.transcription.update.mockResolvedValue({
         ...mockTranscription,

@@ -15,7 +15,6 @@ import { toast } from 'sonner'
 import { ArrowLeft, ChevronLeft, ChevronRight, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, GraduationCap } from 'lucide-react'
 import { SUMMARY_LIMITS, type PlanType } from '@/lib/constants/plan-limits'
 import type { SummaryStyle } from '@/lib/api/summaries'
-import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
 
 // Style badges configuration with icons (simplified)

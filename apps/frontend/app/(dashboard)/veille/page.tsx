@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
 import { ArrowLeft } from 'lucide-react'
 import type { GetArticlesParams } from '@/lib/api/articles'
-import { toast } from 'sonner'
 
 // Pagination constants
 const ARTICLES_PER_PAGE = 20
@@ -90,7 +89,7 @@ export default function VeillePage() {
       return
     }
     unsaveArticle.mutate(articleId)
-  }, [unsaveArticle, isAuthenticated, t, router])
+  }, [unsaveArticle, isAuthenticated])
 
   return (
     <div className="space-y-6">

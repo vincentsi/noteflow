@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
 import { useNotes, useCreateNote, useDeleteNote, useTogglePinned, useSearchNotes } from '@/lib/hooks/useNotes'
 import { NoteList } from '@/components/notes/NoteList'
+import { AudioUpload } from '@/components/transcriptions/AudioUpload'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -165,6 +166,21 @@ export default function NotesPage() {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Audio Upload - Hide when in my-only mode */}
+      {!showMyOnly && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">{t('transcriptions.uploadAudio')}</CardTitle>
+            <CardDescription className="text-sm">
+              {t('transcriptions.uploadDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AudioUpload />
+          </CardContent>
+        </Card>
       )}
 
       {/* Create Note Form - Hide when in my-only mode */}

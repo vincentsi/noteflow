@@ -41,7 +41,7 @@ export function validateAudioFile(file: { mimetype: string; size: number; filena
   error?: string
 } {
   // Check MIME type
-  if (!ALLOWED_AUDIO_TYPES.includes(file.mimetype as any)) {
+  if (!(ALLOWED_AUDIO_TYPES as readonly string[]).includes(file.mimetype)) {
     return {
       valid: false,
       error: `Invalid audio format. Allowed types: ${ALLOWED_AUDIO_TYPES.join(', ')}`,
