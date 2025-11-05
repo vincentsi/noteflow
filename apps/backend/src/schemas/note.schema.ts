@@ -32,9 +32,14 @@ export const searchNotesSchema = z.object({
 
 export const noteIdSchema = idParamSchema
 
+export const createNoteFromSummarySchema = z.object({
+  summaryId: z.string().cuid(),
+})
+
 // TypeScript types
 export type CreateNoteDTO = z.infer<typeof createNoteSchema>
 export type UpdateNoteDTO = z.infer<typeof updateNoteSchema>
 export type GetNotesDTO = z.infer<typeof getNotesSchema>
 export type SearchNotesDTO = z.infer<typeof searchNotesSchema>
 export type NoteIdDTO = z.infer<typeof noteIdSchema>
+export type CreateNoteFromSummaryDTO = z.infer<typeof createNoteFromSummarySchema>

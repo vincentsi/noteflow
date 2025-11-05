@@ -253,13 +253,17 @@
       "compression": "de compression",
       "originalChars": "Caractères originaux",
       "summarizedChars": "Caractères résumés",
-      "originalText": "Texte original"
+      "originalText": "Texte original",
+      "importSuccess": "Résumé importé dans les notes avec succès",
+      "importError": "Erreur lors de l'import du résumé dans les notes"
     },
     "buttons": {
       "showOriginal": "Voir l'original",
       "hideOriginal": "Masquer l'original",
       "copyText": "Copier le texte",
-      "copyLink": "Copier le lien"
+      "copyLink": "Copier le lien",
+      "importToNote": "Importer dans Notes",
+      "importing": "Import en cours..."
     }
   },
   "notes": {
@@ -300,6 +304,11 @@
       "unpin": "Désépingler",
       "convertToPost": "Convertir en post public",
       "viewPost": "Voir le post"
+    },
+    "summarize": {
+      "title": "Résumer avec l'IA",
+      "description": "Choisissez un style pour générer un résumé IA de votre note",
+      "action": "Générer le résumé"
     }
   },
   "profile": {

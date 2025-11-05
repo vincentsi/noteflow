@@ -27,3 +27,14 @@ export const getSummariesSchema = z.object({
 })
 
 export type GetSummariesDTO = z.infer<typeof getSummariesSchema>
+
+/**
+ * Schema for creating a summary from a note
+ */
+export const createSummaryFromNoteSchema = z.object({
+  noteId: z.string().cuid(),
+  style: z.nativeEnum(SummaryStyle),
+  language: z.enum(['fr', 'en']).optional(),
+})
+
+export type CreateSummaryFromNoteDTO = z.infer<typeof createSummaryFromNoteSchema>

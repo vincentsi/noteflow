@@ -253,13 +253,17 @@
       "compression": "compression",
       "originalChars": "Original characters",
       "summarizedChars": "Summarized characters",
-      "originalText": "Original text"
+      "originalText": "Original text",
+      "importSuccess": "Summary imported to Notes successfully",
+      "importError": "Failed to import summary to Notes"
     },
     "buttons": {
       "showOriginal": "Show original",
       "hideOriginal": "Hide original",
       "copyText": "Copy text",
-      "copyLink": "Copy link"
+      "copyLink": "Copy link",
+      "importToNote": "Import to Notes",
+      "importing": "Importing..."
     }
   },
   "notes": {
@@ -300,6 +304,11 @@
       "unpin": "Unpin",
       "convertToPost": "Convert to public post",
       "viewPost": "View post"
+    },
+    "summarize": {
+      "title": "Summarize with AI",
+      "description": "Choose a style to generate an AI-powered summary of your note",
+      "action": "Generate Summary"
     }
   },
   "profile": {

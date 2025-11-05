@@ -1,0 +1,204 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Copy, X, Edit, Save } from 'lucide-react'
+import { toast } from 'sonner'
+import { useI18n } from '@/lib/i18n/provider'
+import { useUpdateNote } from '@/lib/hooks/useNotes'
+import type { Note } from '@/lib/api/notes'
+
+// Lazy load the Markdown editor
+const NoteEditor = dynamic(
+  () => import('@/components/notes/NoteEditor').then(mod => ({ default: mod.NoteEditor })),
+  {
+    ssr: false,
+  }
+)
+
+export interface NoteDetailDialogProps {
+  note: Note | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogProps) {
+  const { t } = useI18n()
+  const updateNote = useUpdateNote()
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [tags, setTags] = useState('')
+
+  // Reset form when note changes
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title)
+      setContent(note.content)
+      setTags(note.tags.join(', '))
+      setIsEditing(false)
+    }
+  }, [note])
+
+  if (!note) return null
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(note.content)
+      toast.success(t('common.messages.copied'))
+    } catch {
+      toast.error(t('common.messages.error'))
+    }
+  }
+
+  const handleSave = async () => {
+    if (!title.trim() || !content.trim()) {
+      toast.error(t('common.messages.requiredField'))
+      return
+    }
+
+    try {
+      await updateNote.mutateAsync({
+        id: note.id,
+        data: {
+          title,
+          content,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        },
+      })
+      toast.success(t('common.messages.success'))
+      setIsEditing(false)
+    } catch {
+      toast.error(t('common.messages.error'))
+    }
+  }
+
+  const handleCancel = () => {
+    setTitle(note.title)
+    setContent(note.content)
+    setTags(note.tags.join(', '))
+    setIsEditing(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[700px] max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          {isEditing ? (
+            <div className="space-y-2">
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t('notes.editor.titlePlaceholder')}
+                className="text-xl font-bold"
+              />
+            </div>
+          ) : (
+            <>
+              <DialogTitle className="text-xl font-bold pr-8">{note.title}</DialogTitle>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  {new Date(note.updatedAt).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
+            </>
+          )}
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto py-4">
+          {isEditing ? (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">{t('notes.editor.contentPlaceholder')}</label>
+                <NoteEditor
+                  value={content}
+                  onChange={setContent}
+                  placeholder={t('notes.editor.contentPlaceholder')}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">{t('notes.editor.tagsPlaceholder')}</label>
+                <Input
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder={t('notes.editor.tagsPlaceholder')}
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <pre className="whitespace-pre-wrap text-sm bg-muted p-4 rounded-md font-mono leading-relaxed">
+                  {note.content}
+                </pre>
+              </div>
+
+              {note.tags.length > 0 && (
+                <div className="flex gap-2 flex-wrap mt-4">
+                  {note.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center px-2 py-1 rounded-sm text-xs font-medium border border-border bg-background"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-2 justify-between border-t pt-4">
+          <div className="flex gap-2">
+            {!isEditing && (
+              <Button variant="outline" size="sm" onClick={handleCopy}>
+                <Copy className="h-4 w-4 mr-2" />
+                {t('summaries.buttons.copyText')}
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button variant="outline" size="sm" onClick={handleCancel}>
+                  <X className="h-4 w-4 mr-2" />
+                  {t('common.actions.cancel')}
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={updateNote.isPending}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateNote.isPending ? t('notes.editor.saving') : t('notes.editor.saveButton')}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  {t('common.actions.edit')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+                  <X className="h-4 w-4 mr-2" />
+                  {t('common.actions.close')}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

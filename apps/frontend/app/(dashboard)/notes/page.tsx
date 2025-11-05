@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
 import { useNotes, useCreateNote, useDeleteNote, useTogglePinned, useSearchNotes } from '@/lib/hooks/useNotes'
 import { NoteList } from '@/components/notes/NoteList'
+import { NoteDetailDialog } from '@/components/notes/NoteDetailDialog'
+import { SummarizeDialog } from '@/components/notes/SummarizeDialog'
 import { AudioUpload } from '@/components/transcriptions/AudioUpload'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,7 +16,7 @@ import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
 import { Plus, ArrowLeft, Search, Eye, Code, ArrowUpDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
-import type { GetNotesParams } from '@/lib/api/notes'
+import type { GetNotesParams, Note } from '@/lib/api/notes'
 
 // Lazy load the Markdown editor (reduces initial bundle size by ~20-30 KB)
 const NoteEditor = dynamic(
@@ -35,6 +37,10 @@ export default function NotesPage() {
   const [content, setContent] = useState('')
   const [tags, setTags] = useState('')
   const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const [noteToSummarize, setNoteToSummarize] = useState<Note | null>(null)
+  const [showSummarizeDialog, setShowSummarizeDialog] = useState(false)
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
 
   // New state for features
   const [searchQuery, setSearchQuery] = useState('')
@@ -102,6 +108,21 @@ export default function NotesPage() {
     } catch {
       toast.error(t('common.messages.error'))
     }
+  }
+
+  const handleSummarize = (note: Note) => {
+    if (!isAuthenticated) {
+      setShowAuthDialog(true)
+      return
+    }
+
+    setNoteToSummarize(note)
+    setShowSummarizeDialog(true)
+  }
+
+  const handleNoteSelect = (note: Note) => {
+    setSelectedNote(note)
+    setShowDetailDialog(true)
   }
 
   const toggleSort = () => {
@@ -270,13 +291,29 @@ export default function NotesPage() {
         ) : (
           <NoteList
             notes={displayedNotes}
+            onSelect={handleNoteSelect}
             onDelete={handleDelete}
             onTogglePin={handleTogglePin}
+            onSummarize={handleSummarize}
             isDeleting={deleteNote.isPending}
             isTogglingPin={togglePinned.isPending}
           />
         )}
       </div>
+
+      {/* Note Detail Dialog */}
+      <NoteDetailDialog
+        note={selectedNote}
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+      />
+
+      {/* Summarize Dialog */}
+      <SummarizeDialog
+        note={noteToSummarize}
+        open={showSummarizeDialog}
+        onOpenChange={setShowSummarizeDialog}
+      />
 
       {/* Auth Required Dialog */}
       <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />

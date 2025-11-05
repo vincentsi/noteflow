@@ -99,3 +99,18 @@ export function useSearchNotes(query: string) {
     enabled: query.length > 0,
   })
 }
+
+/**
+ * Hook to create a note from a summary
+ */
+export function useCreateNoteFromSummary() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (summaryId: string) => notesApi.createNoteFromSummary(summaryId),
+    onSuccess: () => {
+      // Invalidate and refetch notes
+      queryClient.invalidateQueries({ queryKey: notesKeys.all })
+    },
+  })
+}

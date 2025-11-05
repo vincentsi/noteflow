@@ -117,4 +117,16 @@ export const summariesApi = {
     const response = await apiClient.delete<ApiResponse<{ message: string }>>(`/api/summaries/${id}`)
     return response.data
   },
+
+  /**
+   * Create a summary from an existing note
+   */
+  createSummaryFromNote: async (params: {
+    noteId: string
+    style: SummaryStyle
+    language?: 'fr' | 'en'
+  }): Promise<CreateSummaryResponse> => {
+    const response = await apiClient.post<CreateSummaryResponse>('/api/summaries/from-note', params)
+    return response.data
+  },
 }

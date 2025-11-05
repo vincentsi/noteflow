@@ -95,3 +95,13 @@ export function useDeleteSummary() {
     },
   })
 }
+
+/**
+ * Hook to create a summary from an existing note
+ */
+export function useCreateSummaryFromNote() {
+  return useMutation({
+    mutationFn: (params: { noteId: string; style: import('@/lib/api/summaries').SummaryStyle; language?: 'fr' | 'en' }) =>
+      summariesApi.createSummaryFromNote(params),
+  })
+}

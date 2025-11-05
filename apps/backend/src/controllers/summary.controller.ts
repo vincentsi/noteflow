@@ -149,6 +149,81 @@ export class SummaryController {
   }
 
   /**
+   * POST /api/summaries/from-note
+   * Create a summary from an existing note
+   */
+  async createSummaryFromNote(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = requireAuth(request)
+      const { noteId, style, language } = request.body as {
+        noteId: string
+        style: SummaryStyle
+        language?: 'fr' | 'en'
+      }
+
+      // Fetch the note
+      const note = await prisma.note.findFirst({
+        where: {
+          id: noteId,
+          userId,
+          deletedAt: null,
+        },
+      })
+
+      if (!note) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Not Found',
+          message: 'Note not found',
+        })
+      }
+
+      // Get user's language if not provided
+      let summaryLanguage = language
+      if (!summaryLanguage) {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { language: true },
+        })
+        summaryLanguage = (user?.language || 'fr') as 'fr' | 'en'
+      }
+
+      // Create summary using note content
+      const result = await summaryService.createSummary(
+        userId,
+        note.content,
+        style,
+        summaryLanguage
+      )
+
+      return reply.status(202).send({
+        success: true,
+        data: {
+          jobId: result.jobId,
+          message: 'Summary generation job created from note',
+        },
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply, {
+        'Summary limit reached': (err, reply) => {
+          return reply.status(403).send({
+            success: false,
+            error: 'Plan limit reached',
+            message: err.message,
+          })
+        },
+        'Note not found': (err, reply) => {
+          return reply.status(404).send({
+            success: false,
+            error: 'Not Found',
+            message: 'Note not found',
+          })
+        },
+      })
+    }
+  }
+
+  /**
    * GET /api/summaries/:jobId/status
    * Get summary job status
    */

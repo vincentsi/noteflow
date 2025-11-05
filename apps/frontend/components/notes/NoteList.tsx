@@ -3,18 +3,19 @@
 import type { Note } from '@/lib/api/notes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trash2, Pin } from 'lucide-react'
+import { Trash2, Pin, Sparkles } from 'lucide-react'
 
 export interface NoteListProps {
   notes: Note[]
   onSelect?: (note: Note) => void
   onDelete?: (id: string) => void
   onTogglePin?: (id: string) => void
+  onSummarize?: (note: Note) => void
   isDeleting?: boolean
   isTogglingPin?: boolean
 }
 
-export function NoteList({ notes, onSelect, onDelete, onTogglePin, isDeleting, isTogglingPin }: NoteListProps) {
+export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, isDeleting, isTogglingPin }: NoteListProps) {
   if (notes.length === 0) {
     return (
       <Card>
@@ -54,6 +55,16 @@ export function NoteList({ notes, onSelect, onDelete, onTogglePin, isDeleting, i
                 </CardDescription>
               </div>
               <div className="flex gap-2">
+                {onSummarize && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => onSummarize(note)}
+                    title="Résumer avec l'IA"
+                  >
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </Button>
+                )}
                 {onTogglePin && (
                   <Button
                     variant="ghost"

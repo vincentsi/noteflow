@@ -15,9 +15,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Copy, ChevronDown, ChevronUp, Trash2, Share2, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, BarChart3 } from 'lucide-react'
+import { Copy, ChevronDown, ChevronUp, Trash2, Share2, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, BarChart3, FileDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { useDeleteSummary } from '@/lib/hooks/useSummaries'
+import { useCreateNoteFromSummary } from '@/lib/hooks/useNotes'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
 
@@ -50,6 +51,7 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const router = useRouter()
   const deleteSummary = useDeleteSummary()
+  const createNote = useCreateNoteFromSummary()
   const { t } = useI18n()
 
   const handleCopy = async () => {
@@ -81,6 +83,18 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
       },
     })
     setShowDeleteDialog(false)
+  }
+
+  const handleImportToNote = () => {
+    createNote.mutate(summary.id, {
+      onSuccess: () => {
+        toast.success(t('summaries.messages.importSuccess'))
+        router.push('/notes')
+      },
+      onError: () => {
+        toast.error(t('summaries.messages.importError'))
+      },
+    })
   }
 
   // Calculate compression stats
@@ -220,6 +234,16 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
           >
             <Share2 className="h-4 w-4 mr-2" />
             {t('summaries.buttons.copyLink')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImportToNote}
+            disabled={createNote.isPending}
+            aria-label={t('summaries.buttons.importToNote')}
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            {createNote.isPending ? t('summaries.buttons.importing') : t('summaries.buttons.importToNote')}
           </Button>
         </div>
         <Button

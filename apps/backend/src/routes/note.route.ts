@@ -53,6 +53,48 @@ export const noteRoutes = createProtectedRoutes(async (fastify: FastifyInstance)
   )
 
   /**
+   * Create a note from a summary
+   * @route POST /api/notes/from-summary
+   * @access Private
+   * @rateLimit 30 requests/hour per user
+   */
+  fastify.post(
+    '/from-summary',
+    {
+      config:
+        env.NODE_ENV !== 'test'
+          ? {
+              rateLimit: {
+                max: env.NODE_ENV === 'production' ? 30 : 100,
+                timeWindow: '1 hour',
+                keyGenerator: request => {
+                  const userId = request.user?.userId || 'anonymous'
+                  return `note:from-summary:${userId}`
+                },
+              },
+            }
+          : {},
+      schema: {
+        tags: ['Notes'],
+        description: 'Create a note from an existing summary',
+        body: {
+          type: 'object',
+          properties: {
+            summaryId: { type: 'string' },
+          },
+          required: ['summaryId'],
+        },
+        response: {
+          ...createResponses({ type: 'object', additionalProperties: true }),
+          403: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    noteController.createNoteFromSummary.bind(noteController)
+  )
+
+  /**
    * Get user notes
    * @route GET /api/notes
    * @access Private

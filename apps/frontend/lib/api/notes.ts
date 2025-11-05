@@ -96,4 +96,14 @@ export const notesApi = {
     })
     return response.data.data.notes
   },
+
+  /**
+   * Create a note from a summary
+   */
+  createNoteFromSummary: async (summaryId: string): Promise<Note> => {
+    const response = await apiClient.post<NoteResponse>('/api/notes/from-summary', {
+      summaryId,
+    })
+    return response.data.data
+  },
 }

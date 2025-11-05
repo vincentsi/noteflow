@@ -74,6 +74,93 @@ export const summaryRoutes = createProtectedRoutes(
     )
 
     /**
+     * Create a summary from a note
+     * @route POST /api/summaries/from-note
+     * @access Private
+     * @rateLimit 10 requests/15 minutes per user (prevents OpenAI API abuse)
+     */
+    fastify.post(
+      '/from-note',
+      {
+        config:
+          env.NODE_ENV !== 'test'
+            ? {
+                rateLimit: {
+                  max: env.NODE_ENV === 'production' ? 10 : 100,
+                  timeWindow: '15 minutes',
+                  keyGenerator: request => {
+                    const userId = request.user?.userId || 'anonymous'
+                    return `summary:create:${userId}`
+                  },
+                  errorResponseBuilder: () => ({
+                    statusCode: 429,
+                    error: 'Too Many Requests',
+                    message:
+                      'You have reached the summary generation limit. Please try again in 15 minutes.',
+                  }),
+                },
+              }
+            : {},
+        schema: {
+          tags: ['Summaries'],
+          description: 'Create a summary from an existing note',
+          body: {
+            type: 'object',
+            properties: {
+              noteId: { type: 'string' },
+              style: {
+                type: 'string',
+                enum: [
+                  'SHORT',
+                  'TWEET',
+                  'THREAD',
+                  'BULLET_POINT',
+                  'TOP3',
+                  'MAIN_POINTS',
+                  'EDUCATIONAL',
+                ],
+              },
+              language: { type: 'string', enum: ['fr', 'en'] },
+            },
+            required: ['noteId', 'style'],
+          },
+          response: {
+            202: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                data: {
+                  type: 'object',
+                  properties: {
+                    jobId: { type: 'string' },
+                    message: { type: 'string' },
+                  },
+                },
+              },
+            },
+            403: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                error: { type: 'string' },
+                message: { type: 'string' },
+              },
+            },
+            404: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                error: { type: 'string' },
+                message: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      summaryController.createSummaryFromNote.bind(summaryController)
+    )
+
+    /**
      * Get summary job status
      * @route GET /api/summaries/:jobId/status
      * @access Private
