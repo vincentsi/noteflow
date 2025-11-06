@@ -57,34 +57,41 @@ describe('SummaryDisplay', () => {
   it('should have copy button', () => {
     render(<SummaryDisplay summary={mockSummary} />, { wrapper: Wrapper })
 
-    expect(screen.getByRole('button', { name: /copier/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /copier le texte/i })).toBeInTheDocument()
   })
 
   it('should toggle original text', () => {
     render(<SummaryDisplay summary={mockSummary} />, { wrapper: Wrapper })
 
-    // Original text should not be visible initially
-    expect(screen.queryByText('Long original text that should be toggled on and off.')).not.toBeInTheDocument()
+    // Find the animated container by looking for the element with transition classes
+    const originalTextElement = screen.getByText('Long original text that should be toggled on and off.')
+    const originalTextContainer = originalTextElement.closest('.transition-all')
 
-    const toggleButton = screen.getByRole('button', { name: /original/i })
+    // Container should be hidden initially (max-h-0)
+    expect(originalTextContainer).toHaveClass('max-h-0')
+
+    const toggleButton = screen.getByRole('button', { name: /voir.*original/i })
     fireEvent.click(toggleButton)
 
-    // Now it should be visible
-    expect(screen.getByText('Long original text that should be toggled on and off.')).toBeInTheDocument()
+    // Now it should be visible (max-h-[2000px])
+    expect(originalTextContainer).toHaveClass('max-h-[2000px]')
   })
 
   it('should hide original text when toggled off', () => {
     render(<SummaryDisplay summary={mockSummary} />, { wrapper: Wrapper })
 
-    const toggleButton = screen.getByRole('button', { name: /original/i })
+    const originalTextElement = screen.getByText('Long original text that should be toggled on and off.')
+    const originalTextContainer = originalTextElement.closest('.transition-all')
+    const toggleButton = screen.getByRole('button', { name: /voir.*original/i })
 
     // Show original text
     fireEvent.click(toggleButton)
-    expect(screen.getByText('Long original text that should be toggled on and off.')).toBeInTheDocument()
+    expect(originalTextContainer).toHaveClass('max-h-[2000px]')
 
     // Hide original text
-    fireEvent.click(toggleButton)
-    expect(screen.queryByText('Long original text that should be toggled on and off.')).not.toBeInTheDocument()
+    const hideButton = screen.getByRole('button', { name: /masquer.*original/i })
+    fireEvent.click(hideButton)
+    expect(originalTextContainer).toHaveClass('max-h-0')
   })
 
   it('should copy summary text to clipboard when copy button clicked', async () => {
@@ -97,7 +104,7 @@ describe('SummaryDisplay', () => {
 
     render(<SummaryDisplay summary={mockSummary} />, { wrapper: Wrapper })
 
-    const copyButton = screen.getByRole('button', { name: /copier/i })
+    const copyButton = screen.getByRole('button', { name: /copier le texte/i })
     fireEvent.click(copyButton)
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('This is a summary.')

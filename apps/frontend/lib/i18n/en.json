@@ -42,8 +42,8 @@
     "navigation": {
       "dashboard": "Dashboard",
       "veille": "AI Watch",
-      "summaries": "PowerPost",
-      "notes": "PowerNote",
+      "summaries": "SummaryAI",
+      "notes": "MyNote",
       "profile": "Profile",
       "settings": "Settings",
       "pricing": "Pricing",
@@ -171,7 +171,7 @@
     }
   },
   "summaries": {
-    "title": "PowerPost",
+    "title": "SummaryAI",
     "subtitle": "Generate AI summaries of your texts and documents",
     "mySummaries": "My summaries",
     "summariesThisMonth": "{{count}} summary this month",
@@ -271,7 +271,7 @@
     }
   },
   "notes": {
-    "title": "PowerNote",
+    "title": "MyNote",
     "subtitle": "Your Markdown notes",
     "myNotes": "My notes",
     "notesCount": "{{count}} note",
@@ -672,11 +672,11 @@
         "description": "Aggregate and filter articles from the best tech and AI RSS feeds. Save your favorites."
       },
       "powerpost": {
-        "title": "PowerPost",
+        "title": "SummaryAI",
         "description": "Summarize your texts and PDFs with AI. 6 styles available: short, tweet, thread, bullet points..."
       },
       "powernote": {
-        "title": "PowerNote",
+        "title": "MyNote",
         "description": "Take notes in Markdown with tags. Publish your best notes as public posts."
       }
     },

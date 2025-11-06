@@ -25,14 +25,14 @@ export default function DashboardPage() {
       color: 'text-foreground'
     },
     {
-      title: 'PowerPost',
+      title: t('common.navigation.summaries'),
       description: 'Generate AI summaries in 6 styles',
       icon: Sparkles,
       href: '/summaries',
       color: 'text-foreground'
     },
     {
-      title: 'PowerNote',
+      title: t('common.navigation.notes'),
       description: 'Write and organize markdown notes',
       icon: FileText,
       href: '/notes',

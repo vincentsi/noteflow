@@ -42,8 +42,8 @@
     "navigation": {
       "dashboard": "Tableau de bord",
       "veille": "Veille IA",
-      "summaries": "PowerPost",
-      "notes": "PowerNote",
+      "summaries": "ResumeIA",
+      "notes": "MyNote",
       "profile": "Profil",
       "settings": "Paramètres",
       "pricing": "Tarifs",
@@ -171,7 +171,7 @@
     }
   },
   "summaries": {
-    "title": "PowerPost",
+    "title": "ResumeIA",
     "subtitle": "Générez des résumés IA de vos textes et documents",
     "mySummaries": "Mes résumés",
     "summariesThisMonth": "{{count}} résumé ce mois",
@@ -271,7 +271,7 @@
     }
   },
   "notes": {
-    "title": "PowerNote",
+    "title": "MyNote",
     "subtitle": "Vos notes en Markdown",
     "myNotes": "Mes notes",
     "notesCount": "{{count}} note",
@@ -672,11 +672,11 @@
         "description": "Aggrégez et filtrez les articles des meilleurs flux RSS tech et IA. Sauvegardez vos favoris."
       },
       "powerpost": {
-        "title": "PowerPost",
+        "title": "ResumeIA",
         "description": "Résumez vos textes et PDFs avec l'IA. 6 styles disponibles : court, tweet, thread, bullet points..."
       },
       "powernote": {
-        "title": "PowerNote",
+        "title": "MyNote",
         "description": "Prenez des notes en Markdown avec tags. Publiez vos meilleures notes en posts publics."
       }
     },

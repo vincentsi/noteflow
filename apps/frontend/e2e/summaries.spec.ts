@@ -3,7 +3,7 @@ import { test as authTest } from './fixtures/auth.fixture'
 import { TEST_ROUTES, TEST_CONFIG } from './fixtures/test-data'
 
 /**
- * PowerPost (Summaries) E2E Tests
+ * ResumeIA/SummaryAI (Summaries) E2E Tests
  *
  * Tests the AI-powered content summarization feature:
  * - Create summary from text/URL/PDF
@@ -13,16 +13,16 @@ import { TEST_ROUTES, TEST_CONFIG } from './fixtures/test-data'
  * - Plan limit enforcement
  */
 
-authTest.describe.skip('PowerPost Feature', () => {
+authTest.describe.skip('ResumeIA/SummaryAI Feature', () => {
   authTest.beforeEach(async ({ page }) => {
-    // Navigate to PowerPost/Summaries page
+    // Navigate to ResumeIA/SummaryAI/Summaries page
     await page.goto(TEST_ROUTES.powerpost)
     await page.waitForLoadState('networkidle')
   })
 
-  authTest('should display powerpost page', async ({ page }) => {
+  authTest('should display summaryai page', async ({ page }) => {
     // Verify page heading
-    await expect(page.locator('h1, h2').first()).toContainText(/powerpost|summar|résumé/i, {
+    await expect(page.locator('h1, h2').first()).toContainText(/summaryai|resumeia|summar|résumé/i, {
       timeout: TEST_CONFIG.timeouts.short,
     })
 

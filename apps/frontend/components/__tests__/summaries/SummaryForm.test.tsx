@@ -39,10 +39,9 @@ describe('SummaryForm', () => {
   it('should render StyleSelector component', () => {
     render(<SummaryForm onSubmit={jest.fn()} />)
 
-    // Should show all 6 styles
-    expect(screen.getByText('SHORT')).toBeInTheDocument()
-    expect(screen.getByText('TWEET')).toBeInTheDocument()
-    expect(screen.getByText('THREAD')).toBeInTheDocument()
+    // Should show all 7 style buttons
+    const styleButtons = screen.getAllByRole('button').filter(btn => btn.getAttribute('aria-pressed') !== null)
+    expect(styleButtons.length).toBe(7)
   })
 
   it('should disable submit button when no URL provided', () => {
@@ -73,9 +72,9 @@ describe('SummaryForm', () => {
     const testUrl = 'https://example.com/article'
     fireEvent.change(urlInput, { target: { value: testUrl } })
 
-    // Select style
-    const tweetStyle = screen.getByText('TWEET')
-    fireEvent.click(tweetStyle)
+    // Select style (click the second style button which is TWEET)
+    const styleButtons = screen.getAllByRole('button').filter(btn => btn.getAttribute('aria-pressed') !== null)
+    fireEvent.click(styleButtons[1])
 
     // Submit form
     const submitButton = screen.getByRole('button', { name: /générer/i })

@@ -17,8 +17,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 NoteFlow is an AI-powered platform for developers with three main features:
 
 1. **Veille IA (AI Watch)** - RSS feed aggregation for dev/AI content with save functionality
-2. **PowerPost** - AI-powered content summarization (text/PDF/URL) with 6 styles
-3. **PowerNote** - Markdown note-taking with tag organization and public post conversion
+2. **ResumeIA (SummaryAI)** - AI-powered content summarization (text/PDF/URL) with 6 styles
+3. **MyNote** - Markdown note-taking with tag organization and public post conversion
 
 **Tech Stack:** Turborepo monorepo, Fastify 5 backend, Next.js 15 frontend, Prisma 6 + PostgreSQL 16, Redis 7, BullMQ, OpenAI
 

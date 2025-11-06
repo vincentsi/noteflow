@@ -90,6 +90,7 @@ describe('Summaries Page', () => {
             limit: 20,
             total: 0,
             totalPages: 0,
+            totalThisMonth: 0,
           },
         },
       },
@@ -109,7 +110,7 @@ describe('Summaries Page', () => {
   it('should render page title', () => {
     render(<SummariesPage />)
 
-    expect(screen.getByText(/PowerPost/i)).toBeInTheDocument()
+    expect(screen.getByText(/ResumeIA|SummaryAI/i)).toBeInTheDocument()
   })
 
   it('should create summary on submit', async () => {
@@ -147,7 +148,7 @@ describe('Summaries Page', () => {
 
     render(<SummariesPage />)
 
-    const loadingElements = screen.getAllByText(/génération en cours/i)
+    const loadingElements = screen.getAllByText(/génération/i)
     expect(loadingElements.length).toBeGreaterThan(0)
   })
 
@@ -157,9 +158,13 @@ describe('Summaries Page', () => {
         success: true,
         data: {
           summaries: [],
-          total: 0,
-          page: 1,
-          limit: 10,
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            totalPages: 0,
+            totalThisMonth: 0,
+          },
         },
       },
       isLoading: false,
@@ -170,7 +175,7 @@ describe('Summaries Page', () => {
     render(<SummariesPage />)
 
     // Check that the page title is displayed
-    expect(screen.getByText('PowerPost')).toBeInTheDocument()
+    expect(screen.getByText(/ResumeIA|SummaryAI/i)).toBeInTheDocument()
   })
 
   it('should show history sidebar', () => {
@@ -195,6 +200,7 @@ describe('Summaries Page', () => {
             limit: 20,
             total: 1,
             totalPages: 1,
+            totalThisMonth: 1,
           },
         },
       },

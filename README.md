@@ -11,8 +11,8 @@
 NoteFlow is a comprehensive platform designed for developers that combines:
 
 - **AI Watch (Veille IA)** - Automated RSS feed aggregation for dev/AI content
-- **PowerPost** - AI-powered content summarization with 6 styles (SHORT, TWEET, THREAD, BULLET_POINT, TOP3, MAIN_POINTS)
-- **PowerNote** - Markdown-based note-taking with the ability to publish notes publicly
+- **ResumeIA (SummaryAI)** - AI-powered content summarization with 6 styles (SHORT, TWEET, THREAD, BULLET_POINT, TOP3, MAIN_POINTS)
+- **MyNote** - Markdown-based note-taking with the ability to publish notes publicly
 
 ## Features
 
@@ -22,13 +22,13 @@ NoteFlow is a comprehensive platform designed for developers that combines:
 - Save favorite articles
 - Plan-based limits (FREE: 10, STARTER: 50, PRO: unlimited)
 
-### PowerPost (AI Summaries)
+### ResumeIA / SummaryAI (AI Summaries)
 - Support for text, PDF, and web URLs
 - 6 summary styles powered by OpenAI (SHORT, TWEET, THREAD, BULLET_POINT, TOP3, MAIN_POINTS)
 - Async processing with BullMQ
 - Monthly limits (FREE: 5, STARTER: 20, PRO: unlimited)
 
-### PowerNote
+### MyNote
 - Markdown editor with live preview
 - Tag-based organization
 - Create, edit, delete notes
