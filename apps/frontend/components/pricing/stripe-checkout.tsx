@@ -1,6 +1,6 @@
 'use client'
 
-import { useCheckout } from '@/lib/stripe/hooks-react-query'
+import { useCheckout, useBillingPortal } from '@/lib/stripe/hooks-react-query'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/lib/i18n/provider'
 import { useAuth } from '@/providers/auth.provider'
@@ -28,19 +28,32 @@ export function StripeCheckout({
   variant = 'outline',
 }: StripeCheckoutProps) {
   const { t } = useI18n()
-  const { isAuthenticated } = useAuth()
-  const { mutate: createCheckout, isPending, isError } = useCheckout()
+  const { isAuthenticated, user } = useAuth()
+  const { mutate: createCheckout, isPending: isCheckoutPending, isError: isCheckoutError } = useCheckout()
+  const { mutate: openBillingPortal, isPending: isPortalPending } = useBillingPortal()
+
+  // Check if user has an active subscription (STARTER or PRO)
+  const hasActiveSubscription = user?.planType && user.planType !== 'FREE'
 
   const handleUpgrade = () => {
     if (!priceId) return
-    createCheckout({
-      priceId,
-      planType: planName as 'PRO' | 'BUSINESS',
-    })
+
+    // If user has an active subscription, redirect to billing portal to manage/upgrade
+    if (hasActiveSubscription) {
+      openBillingPortal()
+    } else {
+      // New subscription - create checkout session
+      createCheckout({
+        priceId,
+        planType: planName as 'PRO' | 'BUSINESS',
+      })
+    }
   }
 
+  const isPending = isCheckoutPending || isPortalPending
+
   // Show error if checkout fails
-  if (isError) {
+  if (isCheckoutError) {
     return (
       <Button className="w-full" variant="destructive" disabled>
         {t('pricing.error')}
