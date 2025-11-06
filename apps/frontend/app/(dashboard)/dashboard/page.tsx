@@ -205,7 +205,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {t('dashboard.subscription.currentPlan', { plan: 'FREE' })}
+                {t('dashboard.subscription.currentPlan', { plan: user?.planType || 'FREE' })}
               </p>
             )}
 
