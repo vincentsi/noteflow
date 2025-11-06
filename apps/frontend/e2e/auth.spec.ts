@@ -278,24 +278,24 @@ baseTest.describe('Authentication Flow', () => {
 
 baseTest.describe('Protected Routes', () => {
   baseTest('should redirect unauthenticated user to login', async ({ page }) => {
-    // Try to access protected dashboard without logging in
-    await page.goto(TEST_ROUTES.dashboard)
+    // Try to access protected profile page without logging in
+    await page.goto('/profile')
 
-    // Should redirect to login
+    // Should redirect to login with redirect parameter
     await expect(page).toHaveURL(/\/login/, { timeout: TEST_CONFIG.timeouts.medium })
   })
 
   // Use fixture for authenticated test
-  authTest('should allow authenticated user to access dashboard', async ({ authenticatedPage }) => {
+  authTest('should allow authenticated user to access protected routes', async ({ authenticatedPage }) => {
     // User is already logged in via fixture
 
-    // Navigate to dashboard
-    await authenticatedPage.goto(TEST_ROUTES.dashboard)
+    // Navigate to profile (protected route)
+    await authenticatedPage.goto('/profile')
 
-    // Should be on dashboard (not redirected)
-    await expect(authenticatedPage).toHaveURL(TEST_ROUTES.dashboard)
+    // Should be on profile page (not redirected)
+    await expect(authenticatedPage).toHaveURL('/profile')
 
-    // Should see logout button (confirms user is authenticated and on dashboard)
+    // Should see logout button (confirms user is authenticated)
     await expect(authenticatedPage.getByTestId('nav-logout-button')).toBeVisible()
   })
 })
