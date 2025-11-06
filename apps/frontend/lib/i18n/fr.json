@@ -136,6 +136,9 @@
   "dashboard": {
     "title": "Tableau de bord",
     "welcome": "Bienvenue {{name}}",
+    "loginPrompt": "Connectez-vous pour accéder à votre tableau de bord personnalisé",
+    "loginPromptTitle": "Accédez à votre tableau de bord",
+    "loginPromptDescription": "Connectez-vous pour voir vos statistiques d'utilisation, gérer votre abonnement et accéder à toutes les fonctionnalités de NoteFlow.",
     "planUsage": {
       "title": "Utilisation du plan",
       "description": "Votre utilisation actuelle des ressources",

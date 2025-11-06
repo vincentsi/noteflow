@@ -11,7 +11,7 @@ import { Rss, Sparkles, FileText, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const router = useRouter()
   const { data: stats, isLoading } = useUserStats()
   const { t } = useI18n()
@@ -39,6 +39,71 @@ export default function DashboardPage() {
       color: 'text-foreground'
     }
   ]
+
+  // Show login prompt for non-authenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+            {t('dashboard.title')}
+          </h1>
+          <p className="mt-2 text-base text-muted-foreground">
+            {t('dashboard.loginPrompt')}
+          </p>
+        </div>
+
+        {/* Login Prompt Card */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-8 space-y-4">
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">
+                  {t('dashboard.loginPromptTitle')}
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  {t('dashboard.loginPromptDescription')}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button onClick={() => router.push('/login')}>
+                  {t('common.navigation.login')}
+                </Button>
+                <Button variant="outline" onClick={() => router.push('/register')}>
+                  {t('common.navigation.signup')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions - Show preview */}
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <Link key={action.title} href={action.href}>
+                  <Card className="group cursor-pointer">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <Icon className={`h-5 w-5 ${action.color}`} />
+                        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <CardTitle className="text-lg">{action.title}</CardTitle>
+                      <CardDescription>{action.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">

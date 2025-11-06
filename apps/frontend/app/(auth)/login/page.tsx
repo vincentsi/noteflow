@@ -3,12 +3,14 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { useI18n } from '@/lib/i18n/provider'
 import { loginSchema, type LoginFormData } from '@/lib/validators/auth'
 import { useFormSubmit } from '@/lib/hooks/use-form-submit'
 import { ERROR_MESSAGES } from '@/lib/constants/errors'
 import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -30,6 +32,7 @@ import { Input } from '@/components/ui/input'
 export default function LoginPage() {
   const { login } = useAuth()
   const { t } = useI18n()
+  const router = useRouter()
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -52,6 +55,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/')}
+            className="mb-2 -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('common.actions.back')}
+          </Button>
           <CardTitle className="text-2xl font-bold">{t('auth.login.title')}</CardTitle>
           <CardDescription className="text-sm">
             {t('auth.login.subtitle')}

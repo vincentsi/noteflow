@@ -136,6 +136,9 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome {{name}}",
+    "loginPrompt": "Log in to access your personalized dashboard",
+    "loginPromptTitle": "Access Your Dashboard",
+    "loginPromptDescription": "Log in to view your usage statistics, manage your subscription, and access all NoteFlow features.",
     "planUsage": {
       "title": "Plan Usage",
       "description": "Your current resource usage",
