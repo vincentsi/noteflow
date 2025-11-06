@@ -39,6 +39,8 @@ export function useCreateNote() {
     onSuccess: () => {
       // Invalidate and refetch notes
       queryClient.invalidateQueries({ queryKey: notesKeys.all })
+      // Invalidate user stats to update dashboard
+      queryClient.invalidateQueries({ queryKey: ['user-stats'] })
     },
   })
 }
@@ -85,6 +87,8 @@ export function useDeleteNote() {
     onSuccess: () => {
       // Invalidate and refetch notes
       queryClient.invalidateQueries({ queryKey: notesKeys.all })
+      // Invalidate user stats to update dashboard
+      queryClient.invalidateQueries({ queryKey: ['user-stats'] })
     },
   })
 }
@@ -111,6 +115,8 @@ export function useCreateNoteFromSummary() {
     onSuccess: () => {
       // Invalidate and refetch notes
       queryClient.invalidateQueries({ queryKey: notesKeys.all })
+      // Invalidate user stats to update dashboard
+      queryClient.invalidateQueries({ queryKey: ['user-stats'] })
     },
   })
 }

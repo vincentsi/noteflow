@@ -263,8 +263,10 @@ export class TranscriptionService {
       },
     })
 
-    const limit = TRANSCRIPTION_LIMITS[user.planType]
-    const remaining = limit === Infinity ? Infinity : Math.max(0, limit - count)
+    const rawLimit = TRANSCRIPTION_LIMITS[user.planType]
+    // Convert Infinity to -1 for JSON serialization (PRO plan = unlimited)
+    const limit = rawLimit === Infinity ? -1 : rawLimit
+    const remaining = rawLimit === Infinity ? -1 : Math.max(0, rawLimit - count)
 
     return {
       count,

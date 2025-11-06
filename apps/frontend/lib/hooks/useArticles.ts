@@ -69,6 +69,8 @@ export function useSaveArticle() {
     onSuccess: () => {
       // Invalidate all saved articles queries to refetch
       queryClient.invalidateQueries({ queryKey: articlesKeys.all })
+      // Invalidate user stats to update dashboard
+      queryClient.invalidateQueries({ queryKey: ['user-stats'] })
     },
   })
 }
@@ -85,6 +87,8 @@ export function useUnsaveArticle() {
     onSuccess: () => {
       // Invalidate all saved articles queries to refetch
       queryClient.invalidateQueries({ queryKey: articlesKeys.all })
+      // Invalidate user stats to update dashboard
+      queryClient.invalidateQueries({ queryKey: ['user-stats'] })
     },
   })
 }

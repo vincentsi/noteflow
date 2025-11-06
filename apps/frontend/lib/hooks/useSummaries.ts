@@ -59,6 +59,7 @@ export function useSummaryStatus(jobId: string | null): UseQueryResult<SummarySt
     if (query.data?.data.status === 'completed' && !hasInvalidatedRef.current) {
       hasInvalidatedRef.current = true
       void queryClient.invalidateQueries({ queryKey: ['summaries'] })
+      void queryClient.invalidateQueries({ queryKey: ['user-stats'] })
     }
   }, [query.data?.data.status, queryClient])
 

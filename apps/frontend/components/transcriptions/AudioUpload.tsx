@@ -111,7 +111,9 @@ export function AudioUpload({ onTranscriptionComplete }: AudioUploadProps) {
           {t('transcriptions.uploadDescription')}
           {usage && (
             <span className="block mt-1 text-xs">
-              {t('transcriptions.usageInfo', { count: usage.count, limit: usage.limit })}
+              {usage.limit === -1
+                ? t('transcriptions.usageUnlimited', { count: usage.count })
+                : t('transcriptions.usageInfo', { count: usage.count, limit: usage.limit })}
             </span>
           )}
         </CardDescription>

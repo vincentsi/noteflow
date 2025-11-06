@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AuthRequiredDialog } from '@/components/ui/confirm-dialog'
-import { Plus, ArrowLeft, Search, Eye, Code, ArrowUpDown } from 'lucide-react'
+import { Plus, ArrowLeft, Search, Eye, Code, ArrowUpDown, Mic } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
 import type { GetNotesParams, Note } from '@/lib/api/notes'
@@ -27,7 +27,7 @@ const NoteEditor = dynamic(
 )
 
 export default function NotesPage() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -47,6 +47,7 @@ export default function NotesPage() {
   const [splitView, setSplitView] = useState(false)
   const [sortBy, setSortBy] = useState<'updatedAt' | 'createdAt' | 'title'>('updatedAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [showAudioUpload, setShowAudioUpload] = useState(false)
 
   const params: GetNotesParams = { sortBy, sortOrder }
   const { data: notes = [], isLoading } = useNotes(params)
@@ -129,6 +130,28 @@ export default function NotesPage() {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
   }
 
+  const handleAudioUploadToggle = () => {
+    if (!isAuthenticated) {
+      setShowAuthDialog(true)
+      return
+    }
+
+    // Check if user has FREE plan
+    const userPlanType = (user as { planType?: string })?.planType
+    if (userPlanType === 'FREE') {
+      toast.error(t('transcriptions.requiresUpgrade'), {
+        description: t('transcriptions.upgradeDescription'),
+        action: {
+          label: t('common.navigation.pricing'),
+          onClick: () => router.push('/pricing'),
+        },
+      })
+      return
+    }
+
+    setShowAudioUpload(prev => !prev)
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -191,17 +214,33 @@ export default function NotesPage() {
 
       {/* Audio Upload - Hide when in my-only mode */}
       {!showMyOnly && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">{t('transcriptions.uploadAudio')}</CardTitle>
-            <CardDescription className="text-sm">
-              {t('transcriptions.uploadDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AudioUpload />
-          </CardContent>
-        </Card>
+        <>
+          <div className="flex items-center justify-center">
+            <Button
+              onClick={handleAudioUploadToggle}
+              variant={showAudioUpload ? 'secondary' : 'default'}
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              <Mic className="h-5 w-5 mr-2" />
+              {showAudioUpload ? t('transcriptions.hideUpload') : t('transcriptions.showUpload')}
+            </Button>
+          </div>
+
+          {showAudioUpload && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">{t('transcriptions.uploadAudio')}</CardTitle>
+                <CardDescription className="text-sm">
+                  {t('transcriptions.uploadDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AudioUpload />
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Create Note Form - Hide when in my-only mode */}

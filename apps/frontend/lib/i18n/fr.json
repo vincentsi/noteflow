@@ -47,6 +47,7 @@
       "profile": "Profil",
       "settings": "Paramètres",
       "pricing": "Tarifs",
+      "contact": "Contact",
       "admin": "Administration",
       "logout": "Déconnexion",
       "login": "Connexion",
@@ -309,6 +310,10 @@
       "title": "Résumer avec l'IA",
       "description": "Choisissez un style pour générer un résumé IA de votre note",
       "action": "Générer le résumé"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Supprimer la note ?",
+      "deleteConfirmMessage": "Cette action est irréversible. La note sera définitivement supprimée."
     }
   },
   "profile": {
@@ -626,6 +631,7 @@
     "uploadAudio": "Transcrire un audio",
     "uploadDescription": "Uploadez un fichier audio pour le transcrire en texte avec l'IA",
     "usageInfo": "{{count}} / {{limit}} transcriptions ce mois",
+    "usageUnlimited": "{{count}} transcriptions ce mois (illimité)",
     "uploading": "Upload en cours...",
     "processing": "Transcription en cours...",
     "uploadSuccess": "Transcription réussie! Une note a été créée.",
@@ -635,6 +641,10 @@
     "maxSize": "Taille max: 25 MB",
     "limitReached": "Limite de transcriptions atteinte",
     "upgradeMessage": "Passez à STARTER ou PRO pour continuer à transcrire",
+    "showUpload": "Transcrire un audio",
+    "hideUpload": "Masquer la transcription",
+    "requiresUpgrade": "Plan STARTER ou PRO requis",
+    "upgradeDescription": "La transcription audio nécessite un plan STARTER (6€/mois) ou PRO (15€/mois)",
     "errors": {
       "fileTooLarge": "Fichier trop volumineux. Maximum 25 MB.",
       "invalidFormat": "Format audio non supporté. Utilisez MP3, WAV, M4A, WebM, OGG ou FLAC."
@@ -673,6 +683,38 @@
     },
     "footer": {
       "text": "NoteFlow - Propulsé par l'IA pour les développeurs"
+    }
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Une question, un problème ou une suggestion ? Nous sommes là pour vous aider.",
+    "card": {
+      "title": "Envoyez-nous un email",
+      "description": "Nous répondons généralement sous 24-48 heures"
+    },
+    "emailPrompt": "Écrivez-nous à",
+    "sendEmail": "Envoyer un email",
+    "canHelpWith": "Nous pouvons vous aider avec",
+    "reasons": {
+      "bugs": {
+        "title": "Problèmes techniques",
+        "description": "Signalez des bugs ou des problèmes rencontrés sur le site"
+      },
+      "suggestions": {
+        "title": "Suggestions",
+        "description": "Proposez de nouvelles fonctionnalités ou améliorations"
+      },
+      "feedback": {
+        "title": "Retours d'expérience",
+        "description": "Partagez votre avis sur NoteFlow"
+      }
+    },
+    "responseTime": "⏱️ Nous répondons généralement sous 24-48 heures (jours ouvrables)",
+    "beforeContact": {
+      "title": "Avant de nous contacter",
+      "tip1": "Décrivez le problème de manière détaillée (captures d'écran bienvenues)",
+      "tip2": "Indiquez votre navigateur et système d'exploitation si c'est un bug",
+      "tip3": "Pour les suggestions, expliquez le cas d'usage et les bénéfices attendus"
     }
   }
 }

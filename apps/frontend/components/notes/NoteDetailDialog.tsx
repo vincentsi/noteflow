@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Copy, X, Edit, Save } from 'lucide-react'
@@ -89,18 +89,27 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] flex flex-col">
         <DialogHeader>
           {isEditing ? (
-            <div className="space-y-2">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t('notes.editor.titlePlaceholder')}
-                className="text-xl font-bold"
-              />
-            </div>
+            <>
+              <DialogTitle className="sr-only">{t('common.actions.edit')}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {t('notes.editor.contentPlaceholder')}
+              </DialogDescription>
+              <div className="space-y-2">
+                <label htmlFor="edit-note-title" className="sr-only">{t('notes.editor.titlePlaceholder')}</label>
+                <Input
+                  id="edit-note-title"
+                  name="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={t('notes.editor.titlePlaceholder')}
+                  className="text-xl font-bold"
+                />
+              </div>
+            </>
           ) : (
             <>
               <DialogTitle className="text-xl font-bold pr-8">{note.title}</DialogTitle>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <DialogDescription className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>
                   {new Date(note.updatedAt).toLocaleDateString('fr-FR', {
                     day: 'numeric',
@@ -108,7 +117,7 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
                     year: 'numeric',
                   })}
                 </span>
-              </div>
+              </DialogDescription>
             </>
           )}
         </DialogHeader>
@@ -117,8 +126,9 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
           {isEditing ? (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">{t('notes.editor.contentPlaceholder')}</label>
+                <label htmlFor="edit-note-content" className="text-sm font-medium mb-2 block">{t('notes.editor.contentPlaceholder')}</label>
                 <NoteEditor
+                  id="edit-note-content"
                   value={content}
                   onChange={setContent}
                   placeholder={t('notes.editor.contentPlaceholder')}
@@ -126,8 +136,10 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">{t('notes.editor.tagsPlaceholder')}</label>
+                <label htmlFor="edit-note-tags" className="text-sm font-medium mb-2 block">{t('notes.editor.tagsPlaceholder')}</label>
                 <Input
+                  id="edit-note-tags"
+                  name="tags"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder={t('notes.editor.tagsPlaceholder')}

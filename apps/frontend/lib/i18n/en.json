@@ -47,6 +47,7 @@
       "profile": "Profile",
       "settings": "Settings",
       "pricing": "Pricing",
+      "contact": "Contact",
       "admin": "Admin",
       "logout": "Logout",
       "login": "Login",
@@ -309,6 +310,10 @@
       "title": "Summarize with AI",
       "description": "Choose a style to generate an AI-powered summary of your note",
       "action": "Generate Summary"
+    },
+    "messages": {
+      "deleteConfirmTitle": "Delete note?",
+      "deleteConfirmMessage": "This action is irreversible. The note will be permanently deleted."
     }
   },
   "profile": {
@@ -626,6 +631,7 @@
     "uploadAudio": "Transcribe Audio",
     "uploadDescription": "Upload an audio file to transcribe it to text with AI",
     "usageInfo": "{{count}} / {{limit}} transcriptions this month",
+    "usageUnlimited": "{{count}} transcriptions this month (unlimited)",
     "uploading": "Uploading...",
     "processing": "Transcribing...",
     "uploadSuccess": "Transcription successful! A note has been created.",
@@ -635,6 +641,10 @@
     "maxSize": "Max size: 25 MB",
     "limitReached": "Transcription limit reached",
     "upgradeMessage": "Upgrade to STARTER or PRO to continue transcribing",
+    "showUpload": "Transcribe Audio",
+    "hideUpload": "Hide Transcription",
+    "requiresUpgrade": "STARTER or PRO plan required",
+    "upgradeDescription": "Audio transcription requires a STARTER ($6/month) or PRO ($15/month) plan",
     "errors": {
       "fileTooLarge": "File too large. Maximum 25 MB.",
       "invalidFormat": "Unsupported audio format. Use MP3, WAV, M4A, WebM, OGG or FLAC."
@@ -673,6 +683,38 @@
     },
     "footer": {
       "text": "NoteFlow - Powered by AI for developers"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have a question, issue, or suggestion? We're here to help.",
+    "card": {
+      "title": "Send us an email",
+      "description": "We typically respond within 24-48 hours"
+    },
+    "emailPrompt": "Write to us at",
+    "sendEmail": "Send Email",
+    "canHelpWith": "We can help you with",
+    "reasons": {
+      "bugs": {
+        "title": "Technical Issues",
+        "description": "Report bugs or problems encountered on the site"
+      },
+      "suggestions": {
+        "title": "Suggestions",
+        "description": "Propose new features or improvements"
+      },
+      "feedback": {
+        "title": "Feedback",
+        "description": "Share your thoughts about NoteFlow"
+      }
+    },
+    "responseTime": "⏱️ We typically respond within 24-48 hours (business days)",
+    "beforeContact": {
+      "title": "Before contacting us",
+      "tip1": "Describe the issue in detail (screenshots are welcome)",
+      "tip2": "Include your browser and operating system if it's a bug",
+      "tip3": "For suggestions, explain the use case and expected benefits"
     }
   }
 }

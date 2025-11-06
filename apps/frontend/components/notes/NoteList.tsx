@@ -1,9 +1,21 @@
 'use client'
 
+import { useState } from 'react'
 import type { Note } from '@/lib/api/notes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Trash2, Pin, Sparkles } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/provider'
 
 export interface NoteListProps {
   notes: Note[]
@@ -16,6 +28,16 @@ export interface NoteListProps {
 }
 
 export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, isDeleting, isTogglingPin }: NoteListProps) {
+  const { t } = useI18n()
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null)
+
+  const handleDeleteConfirm = () => {
+    if (noteToDelete && onDelete) {
+      onDelete(noteToDelete)
+      setNoteToDelete(null)
+    }
+  }
+
   if (notes.length === 0) {
     return (
       <Card>
@@ -60,7 +82,7 @@ export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, 
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => onSummarize(note)}
-                    title="Résumer avec l'IA"
+                    title={t('notes.summarize.title')}
                   >
                     <Sparkles className="h-4 w-4 text-primary" />
                   </Button>
@@ -79,7 +101,7 @@ export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, 
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => onDelete(note.id)}
+                    onClick={() => setNoteToDelete(note.id)}
                     disabled={isDeleting}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
@@ -109,6 +131,27 @@ export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, 
           </CardContent>
         </Card>
       ))}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!noteToDelete} onOpenChange={(open) => !open && setNoteToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('notes.messages.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('notes.messages.deleteConfirmMessage')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('common.actions.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

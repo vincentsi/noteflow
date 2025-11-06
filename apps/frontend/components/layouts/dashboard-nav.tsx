@@ -21,6 +21,7 @@ export function DashboardNav() {
     { href: '/summaries', label: t('common.navigation.summaries') },
     { href: '/notes', label: t('common.navigation.notes') },
     { href: '/pricing', label: t('common.navigation.pricing') },
+    { href: '/contact', label: t('common.navigation.contact') },
     ...(isAuthenticated ? [{ href: '/settings', label: t('common.navigation.settings') }] : []),
   ]
 
