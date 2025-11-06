@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import {
   STRIPE_PRO_PRICE_ID,
 } from '@/lib/constants/stripe'
 import { useI18n } from '@/lib/i18n/provider'
+import { useQueryClient } from '@tanstack/react-query'
 
 // Lazy load heavy components (reduces initial bundle)
 const StripeCheckout = dynamic(
@@ -24,7 +25,28 @@ const StripeCheckout = dynamic(
 export default function PricingPage() {
   const { t } = useI18n()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const currentPlan = user?.planType || 'FREE'
+
+  // Auto-refresh user data when returning from Stripe billing portal
+  // This ensures plan changes are reflected immediately in the UI
+  useEffect(() => {
+    // Check if user just returned from billing portal by detecting navigation timing
+    // The billing portal redirects back to /pricing after subscription changes
+    const hasNavigated = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+
+    // If user navigated to this page (not initial load or reload), refresh user data
+    if (hasNavigated && hasNavigated.type === 'navigate' && document.referrer.includes('stripe.com')) {
+      setIsRefreshing(true)
+
+      // Wait 3 seconds to allow Stripe webhook to process
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['me'] })
+        setIsRefreshing(false)
+      }, 3000)
+    }
+  }, [queryClient])
 
   const PLANS = [
     {
