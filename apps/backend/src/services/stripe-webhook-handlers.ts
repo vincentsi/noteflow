@@ -86,9 +86,7 @@ export class StripeWebhookHandlers {
   /**
    * Converts Stripe status to database status
    */
-  mapStripeStatus(
-    stripeStatus: Stripe.Subscription.Status
-  ): SubscriptionStatus {
+  mapStripeStatus(stripeStatus: Stripe.Subscription.Status): SubscriptionStatus {
     const statusMap: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
       active: SubscriptionStatus.ACTIVE,
       past_due: SubscriptionStatus.PAST_DUE,
@@ -164,7 +162,9 @@ export class StripeWebhookHandlers {
     // Metadata is valid
     return {
       userId: validationResult.data.userId,
-      ...(includePlanType && validationResult.data.planType ? { planType: validationResult.data.planType } : {}),
+      ...(includePlanType && validationResult.data.planType
+        ? { planType: validationResult.data.planType }
+        : {}),
     }
   }
 
@@ -173,15 +173,11 @@ export class StripeWebhookHandlers {
    * Creates a new subscription in database
    * PUBLIC: Called by webhook queue worker
    */
-  async handleCheckoutCompleted(
-    session: Stripe.Checkout.Session
-  ): Promise<void> {
+  async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
     const validationResult = checkoutMetadataSchema.safeParse(session.metadata)
 
     if (!validationResult.success) {
-      throw new Error(
-        `Invalid checkout metadata: ${validationResult.error.message}`
-      )
+      throw new Error(`Invalid checkout metadata: ${validationResult.error.message}`)
     }
 
     const { userId, planType } = validationResult.data
@@ -190,14 +186,12 @@ export class StripeWebhookHandlers {
       throw new Error('No subscription in checkout session')
     }
 
-    const subscriptionId = typeof session.subscription === 'string'
-      ? session.subscription
-      : session.subscription.id
+    const subscriptionId =
+      typeof session.subscription === 'string' ? session.subscription : session.subscription.id
 
     // Get customer ID from session
-    const customerId = typeof session.customer === 'string'
-      ? session.customer
-      : session.customer?.id
+    const customerId =
+      typeof session.customer === 'string' ? session.customer : session.customer?.id
 
     if (!customerId) {
       throw new Error('No customer ID in checkout session')
@@ -257,24 +251,48 @@ export class StripeWebhookHandlers {
   }
 
   /**
+   * Maps Stripe price ID to plan type
+   * CRITICAL: This is the source of truth for plan detection from webhooks
+   * When user upgrades in billing portal, metadata isn't updated but priceId is
+   */
+  private getPlanTypeFromPriceId(priceId: string): PlanType {
+    // Get price IDs from environment variables
+    const starterPriceId = process.env.STRIPE_STARTER_PRICE_ID
+    const proPriceId = process.env.STRIPE_PRO_PRICE_ID
+
+    if (priceId === starterPriceId) {
+      return PlanType.STARTER
+    }
+    if (priceId === proPriceId) {
+      return PlanType.PRO
+    }
+
+    // Log warning if price ID doesn't match any known plans
+    logger.warn(
+      { priceId, starterPriceId, proPriceId },
+      'Unknown price ID in subscription - defaulting to STARTER'
+    )
+
+    return PlanType.STARTER
+  }
+
+  /**
    * Handles customer.subscription.updated event
    * Updates subscription in database (renewal, plan change)
    * PUBLIC: Called by webhook queue worker
    */
-  async handleSubscriptionUpdated(
-    stripeSubscription: Stripe.Subscription
-  ): Promise<void> {
+  async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription): Promise<void> {
     if (!isStripeSubscriptionData(stripeSubscription)) {
       throw new Error('Invalid Stripe subscription structure')
     }
 
     const subscription = stripeSubscription
 
-    // Extract userId and planType with database fallback
-    const { userId, planType } = await this.extractUserIdFromWebhook(
+    // Extract userId (ignore metadata planType, it's not updated on plan changes)
+    const { userId } = await this.extractUserIdFromWebhook(
       subscription.metadata,
       subscription.id,
-      true // Include planType
+      false // Don't use metadata planType
     )
 
     const priceId = subscription.items.data[0]?.price.id
@@ -282,6 +300,9 @@ export class StripeWebhookHandlers {
     if (!priceId) {
       throw new Error('No price ID found in subscription')
     }
+
+    // Detect plan type from price ID (handles upgrades/downgrades in billing portal)
+    const detectedPlanType = this.getPlanTypeFromPriceId(priceId)
 
     // Validate required fields
     if (!subscription.current_period_start || !subscription.current_period_end) {
@@ -303,14 +324,12 @@ export class StripeWebhookHandlers {
         },
         data: {
           status: this.mapStripeStatus(subscription.status),
-          planType: planType || undefined,
+          planType: detectedPlanType,
           stripePriceId: priceId,
           currentPeriodStart: periodStart,
           currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          canceledAt: subscription.canceled_at
-            ? new Date(subscription.canceled_at * 1000)
-            : null,
+          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
         },
       })
 
@@ -318,7 +337,7 @@ export class StripeWebhookHandlers {
         where: { id: userId },
         data: {
           subscriptionStatus: this.mapStripeStatus(subscription.status),
-          planType: planType || undefined,
+          planType: detectedPlanType,
           currentPeriodEnd: periodEnd,
         },
       })
@@ -333,9 +352,7 @@ export class StripeWebhookHandlers {
    * Marks subscription as canceled
    * PUBLIC: Called by webhook queue worker
    */
-  async handleSubscriptionDeleted(
-    subscription: Stripe.Subscription
-  ): Promise<void> {
+  async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
     const { userId } = await this.extractUserIdFromWebhook(
       subscription.metadata,
       subscription.id,
@@ -380,9 +397,7 @@ export class StripeWebhookHandlers {
       return
     }
 
-    const stripeSubscription = await this.stripe.subscriptions.retrieve(
-      invoice.subscription
-    )
+    const stripeSubscription = await this.stripe.subscriptions.retrieve(invoice.subscription)
 
     if (!isStripeSubscriptionData(stripeSubscription)) {
       throw new Error('Invalid Stripe subscription structure')
