@@ -181,12 +181,20 @@ const envSchema = z.object({
     })
     .refine(
       val => {
-        if (process.env.NODE_ENV === 'production' && val.length === 0) {
-          return false
+        // In production, require at least one valid IP address
+        if (process.env.NODE_ENV === 'production') {
+          if (val.length === 0) return false
+
+          // Validate IP format (basic IPv4 or CIDR notation)
+          const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/
+          return val.every(ip => ipRegex.test(ip))
         }
         return true
       },
-      { message: 'STRIPE_WEBHOOK_ALLOWED_IPS is required in production for security' }
+      {
+        message:
+          'STRIPE_WEBHOOK_ALLOWED_IPS must contain at least one valid IP address in production (format: 1.2.3.4 or 1.2.3.0/24)',
+      }
     ),
 
   // Test Routes Security (development only)
