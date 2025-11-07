@@ -73,7 +73,7 @@ function ResetPasswordContent() {
     setError(null)
 
     try {
-      await authApi.resetPassword({ token, newPassword: data.password })
+      await authApi.resetPassword({ token, password: data.password })
       setIsSuccess(true)
 
       // Redirect to login after 2 seconds

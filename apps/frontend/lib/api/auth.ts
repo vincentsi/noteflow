@@ -24,7 +24,7 @@ export type ForgotPasswordDTO = {
 
 export type ResetPasswordDTO = {
   token: string
-  newPassword: string
+  password: string
 }
 
 /**
