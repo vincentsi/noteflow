@@ -24,11 +24,10 @@ const resetPasswordSchema = (t: (key: string) => string) => z
   .object({
     password: z
       .string()
-      .min(12, t('auth.resetPassword.passwordMinLength'))
+      .min(8, t('auth.resetPassword.passwordMinLength'))
       .regex(/[A-Z]/, t('auth.resetPassword.passwordUppercase'))
       .regex(/[a-z]/, t('auth.resetPassword.passwordLowercase'))
-      .regex(/[0-9]/, t('auth.resetPassword.passwordNumber'))
-      .regex(/[^A-Za-z0-9]/, t('auth.resetPassword.passwordSpecial')),
+      .regex(/[0-9]/, t('auth.resetPassword.passwordNumber')),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

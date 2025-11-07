@@ -115,11 +115,10 @@
       "invalidLinkMessage": "This password reset link is invalid or has expired.",
       "requestNewLink": "Request New Link",
       "passwordMismatch": "Passwords don't match",
-      "passwordMinLength": "Password must be at least 12 characters",
+      "passwordMinLength": "Password must be at least 8 characters",
       "passwordUppercase": "Password must contain at least one uppercase letter",
       "passwordLowercase": "Password must contain at least one lowercase letter",
       "passwordNumber": "Password must contain at least one number",
-      "passwordSpecial": "Password must contain at least one special character",
       "errorMessage": "Failed to reset password. The link may have expired."
     },
     "verifyEmail": {
