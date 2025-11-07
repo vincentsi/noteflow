@@ -540,10 +540,10 @@ export const resetPasswordSchema = {
   tags: ['password-reset'],
   body: {
     type: 'object',
-    required: ['token', 'newPassword'],
+    required: ['token', 'password'],
     properties: {
       token: { type: 'string', description: 'Password reset token' },
-      newPassword: {
+      password: {
         type: 'string',
         minLength: 8,
         pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)',
