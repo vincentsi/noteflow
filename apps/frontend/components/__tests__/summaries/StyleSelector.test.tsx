@@ -2,8 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { StyleSelector } from '../../summaries/StyleSelector'
 
 describe('StyleSelector', () => {
-  const allStyles = ['SHORT', 'TWEET', 'THREAD', 'BULLET_POINT', 'TOP3', 'MAIN_POINTS', 'EDUCATIONAL']
-
   it('should render all 7 summary styles', () => {
     render(<StyleSelector value="SHORT" onChange={jest.fn()} />)
 

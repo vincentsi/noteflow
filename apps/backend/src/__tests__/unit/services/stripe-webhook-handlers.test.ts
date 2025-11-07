@@ -1,4 +1,7 @@
-import { StripeWebhookHandlers, isStripeSubscriptionData } from '../../../services/stripe-webhook-handlers'
+import {
+  StripeWebhookHandlers,
+  isStripeSubscriptionData,
+} from '../../../services/stripe-webhook-handlers'
 import { prisma } from '../../../config/prisma'
 import { PlanType, SubscriptionStatus } from '@prisma/client'
 import Stripe from 'stripe'
@@ -59,7 +62,7 @@ describe('StripeWebhookHandlers', () => {
     handlers = new StripeWebhookHandlers(mockStripe, mockInvalidateCache)
 
     // Mock transaction to execute callback immediately
-    ;(prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+    ;(prisma.$transaction as jest.Mock).mockImplementation(async callback => {
       return await callback(prisma)
     })
   })
@@ -366,21 +369,33 @@ describe('StripeWebhookHandlers', () => {
         } as Stripe.ApiList<Stripe.SubscriptionItem>,
       } as unknown as Stripe.Subscription
 
-      await expect(
-        handlers.handleSubscriptionUpdated(noPriceSub)
-      ).rejects.toThrow('Invalid Stripe subscription structure')
+      await expect(handlers.handleSubscriptionUpdated(noPriceSub)).rejects.toThrow(
+        'Invalid Stripe subscription structure'
+      )
     })
 
-    it('should throw error if period dates missing', async () => {
+    it('should handle missing period dates gracefully', async () => {
       const noPeriodSub = {
         ...mockSubscription,
         current_period_start: undefined,
         current_period_end: undefined,
       }
 
-      await expect(
-        handlers.handleSubscriptionUpdated(noPeriodSub as Stripe.Subscription)
-      ).rejects.toThrow('Missing period dates in subscription')
+      await handlers.handleSubscriptionUpdated(noPeriodSub as Stripe.Subscription)
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith({
+        where: { stripeSubscriptionId: 'sub_123' },
+        data: expect.objectContaining({
+          status: SubscriptionStatus.ACTIVE,
+          planType: PlanType.STARTER,
+          stripePriceId: 'price_123',
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+          // Period dates should NOT be in the update when missing
+        }),
+      })
+
+      expect(prisma.user.update).toHaveBeenCalled()
     })
   })
 
@@ -489,9 +504,9 @@ describe('StripeWebhookHandlers', () => {
     it('should throw error if subscription structure invalid', async () => {
       ;(mockStripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({ id: 'sub_123' })
 
-      await expect(
-        handlers.handlePaymentFailed(mockInvoice as Stripe.Invoice)
-      ).rejects.toThrow('Invalid Stripe subscription structure')
+      await expect(handlers.handlePaymentFailed(mockInvoice as Stripe.Invoice)).rejects.toThrow(
+        'Invalid Stripe subscription structure'
+      )
     })
   })
 

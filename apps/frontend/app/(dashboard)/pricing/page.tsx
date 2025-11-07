@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -26,7 +26,6 @@ export default function PricingPage() {
   const { t } = useI18n()
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const currentPlan = user?.planType || 'FREE'
 
   // Auto-refresh user data when returning from Stripe billing portal
@@ -38,12 +37,9 @@ export default function PricingPage() {
 
     // If user navigated to this page (not initial load or reload), refresh user data
     if (hasNavigated && hasNavigated.type === 'navigate' && document.referrer.includes('stripe.com')) {
-      setIsRefreshing(true)
-
       // Wait 3 seconds to allow Stripe webhook to process
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['me'] })
-        setIsRefreshing(false)
       }, 3000)
     }
   }, [queryClient])

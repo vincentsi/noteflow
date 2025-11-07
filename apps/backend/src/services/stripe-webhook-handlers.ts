@@ -1,6 +1,6 @@
 import { logger } from '@/utils/logger'
 import { prisma } from '@/config/prisma'
-import { PlanType, SubscriptionStatus } from '@prisma/client'
+import { PlanType, SubscriptionStatus, Prisma } from '@prisma/client'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { invalidatePlanCache } from '@/middlewares/load-plan.middleware'
@@ -322,7 +322,7 @@ export class StripeWebhookHandlers {
 
     await prisma.$transaction(async tx => {
       // Build update data conditionally
-      const subscriptionUpdateData: any = {
+      const subscriptionUpdateData: Prisma.SubscriptionUpdateInput = {
         status: this.mapStripeStatus(subscription.status),
         planType: detectedPlanType,
         stripePriceId: priceId,
@@ -342,7 +342,7 @@ export class StripeWebhookHandlers {
       })
 
       // Build user update data conditionally
-      const userUpdateData: any = {
+      const userUpdateData: Prisma.UserUpdateInput = {
         subscriptionStatus: this.mapStripeStatus(subscription.status),
         planType: detectedPlanType,
       }
