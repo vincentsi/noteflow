@@ -304,42 +304,55 @@ export class StripeWebhookHandlers {
     // Detect plan type from price ID (handles upgrades/downgrades in billing portal)
     const detectedPlanType = this.getPlanTypeFromPriceId(priceId)
 
-    // Validate required fields
-    if (!subscription.current_period_start || !subscription.current_period_end) {
-      throw new Error(`Missing period dates in subscription ${subscription.id}`)
+    // Parse period dates if available (may be missing during plan changes)
+    const periodStart = subscription.current_period_start
+      ? new Date(subscription.current_period_start * 1000)
+      : null
+    const periodEnd = subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000)
+      : null
+
+    // Validate dates if present
+    if (periodStart && isNaN(periodStart.getTime())) {
+      throw new Error(`Invalid period start date in subscription ${subscription.id}`)
     }
-
-    const periodStart = new Date(subscription.current_period_start * 1000)
-    const periodEnd = new Date(subscription.current_period_end * 1000)
-
-    // Validate dates are valid
-    if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
-      throw new Error(`Invalid period dates in subscription ${subscription.id}`)
+    if (periodEnd && isNaN(periodEnd.getTime())) {
+      throw new Error(`Invalid period end date in subscription ${subscription.id}`)
     }
 
     await prisma.$transaction(async tx => {
+      // Build update data conditionally
+      const subscriptionUpdateData: any = {
+        status: this.mapStripeStatus(subscription.status),
+        planType: detectedPlanType,
+        stripePriceId: priceId,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+      }
+
+      // Only update period dates if they're available
+      if (periodStart) subscriptionUpdateData.currentPeriodStart = periodStart
+      if (periodEnd) subscriptionUpdateData.currentPeriodEnd = periodEnd
+
       await tx.subscription.update({
         where: {
           stripeSubscriptionId: subscription.id,
         },
-        data: {
-          status: this.mapStripeStatus(subscription.status),
-          planType: detectedPlanType,
-          stripePriceId: priceId,
-          currentPeriodStart: periodStart,
-          currentPeriodEnd: periodEnd,
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
-        },
+        data: subscriptionUpdateData,
       })
+
+      // Build user update data conditionally
+      const userUpdateData: any = {
+        subscriptionStatus: this.mapStripeStatus(subscription.status),
+        planType: detectedPlanType,
+      }
+
+      // Only update period end if available
+      if (periodEnd) userUpdateData.currentPeriodEnd = periodEnd
 
       await tx.user.update({
         where: { id: userId },
-        data: {
-          subscriptionStatus: this.mapStripeStatus(subscription.status),
-          planType: detectedPlanType,
-          currentPeriodEnd: periodEnd,
-        },
+        data: userUpdateData,
       })
     })
 
