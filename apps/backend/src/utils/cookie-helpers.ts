@@ -55,7 +55,7 @@ export function setAuthCookies(
   // Access Token - JWT for authentication
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true, // Not accessible via JavaScript (XSS protection)
-    secure: true, // Always HTTPS (required for sameSite: none)
+    secure: isProduction, // HTTPS in production, HTTP allowed in dev
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
@@ -64,7 +64,7 @@ export function setAuthCookies(
   // Refresh Token - JWT to renew access token
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: true, // Always HTTPS (required for sameSite: none)
+    secure: isProduction, // HTTPS in production, HTTP allowed in dev
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
@@ -73,7 +73,7 @@ export function setAuthCookies(
   // CSRF Token - httpOnly prevents XSS, token also returned in response body
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: true,
-    secure: true,
+    secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
@@ -100,17 +100,17 @@ export function clearAuthCookies(reply: FastifyReply): void {
   reply.clearCookie('accessToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
-    secure: true,
+    secure: isProduction,
   })
   reply.clearCookie('refreshToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
-    secure: true,
+    secure: isProduction,
   })
   reply.clearCookie('csrfToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
-    secure: true,
+    secure: isProduction,
   })
 }
 
@@ -140,7 +140,7 @@ export function refreshSessionCookies(
   // Renew access token
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: true,
+    secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
@@ -149,7 +149,7 @@ export function refreshSessionCookies(
   // Renew CSRF token
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: true,
-    secure: true,
+    secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
@@ -176,7 +176,7 @@ export function setRefreshTokenCookie(reply: FastifyReply, refreshToken: string)
 
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
@@ -204,7 +204,7 @@ export function setCsrfTokenCookie(reply: FastifyReply, csrfToken: string): void
 
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: true,
-    secure: true,
+    secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
