@@ -181,8 +181,11 @@ const envSchema = z.object({
     })
     .refine(
       val => {
-        // In production, require at least one valid IP address
-        if (process.env.NODE_ENV === 'production') {
+        // In production with Railway/actual deployment, require at least one valid IP address
+        // Skip validation during CI builds (GitHub Actions sets CI=true)
+        const isActualProduction = process.env.NODE_ENV === 'production' && !process.env.CI
+
+        if (isActualProduction) {
           if (val.length === 0) return false
 
           // Validate IP format (basic IPv4 or CIDR notation)
