@@ -93,12 +93,12 @@ baseTest.describe('Password Reset Flow', () => {
     // Navigate to reset password page with a token
     await page.goto(`${TEST_ROUTES.resetPassword}?token=test-token`)
 
-    // Try weak password (less than 12 characters)
+    // Try weak password (less than 8 characters)
     await page.fill('input[name="password"], input[type="password"]', 'weak')
     await page.click('button[type="submit"]')
 
     // Should show validation error about password complexity (French or English)
-    const errorMessage = page.locator('text=/at least 12|12 characters|12 caractères|too short|complexity/i')
+    const errorMessage = page.locator('text=/at least 8|8 characters|8 caractères|too short|complexity/i')
     await expect(errorMessage).toBeVisible({ timeout: TEST_CONFIG.timeouts.short })
   })
 
