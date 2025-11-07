@@ -204,9 +204,22 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                {t('dashboard.subscription.currentPlan', { plan: user?.planType || 'FREE' })}
-              </p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {t('dashboard.subscription.currentPlan', { plan: user?.planType || 'FREE' })}
+                </p>
+                {user?.currentPeriodEnd && user?.planType !== 'FREE' && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('dashboard.planUsage.renewsOn', {
+                      date: new Date(user.currentPeriodEnd).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                    })}
+                  </p>
+                )}
+              </div>
             )}
 
             <Button
