@@ -6,12 +6,7 @@ import { env } from '../config/env'
  */
 type ResendClient = {
   emails: {
-    send: (options: {
-      from: string
-      to: string
-      subject: string
-      html: string
-    }) => Promise<unknown>
+    send: (options: { from: string; to: string; subject: string; html: string }) => Promise<unknown>
   }
 }
 
@@ -54,10 +49,7 @@ export class EmailService {
    * @param email - Recipient email
    * @param token - Verification token
    */
-  static async sendVerificationEmail(
-    email: string,
-    token: string
-  ): Promise<void> {
+  static async sendVerificationEmail(email: string, token: string): Promise<void> {
     const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${token}`
 
     if (env.NODE_ENV === 'development') {
@@ -73,9 +65,7 @@ export class EmailService {
 
     const resend = await getResendClient()
     if (!resend) {
-      const error = new Error(
-        'Email service not configured - RESEND_API_KEY missing'
-      )
+      const error = new Error('Email service not configured - RESEND_API_KEY missing')
       logger.error({ error: error }, '❌')
 
       if (env.NODE_ENV === 'production') {
@@ -134,10 +124,7 @@ export class EmailService {
    * @param email - Recipient email
    * @param token - Reset token
    */
-  static async sendPasswordResetEmail(
-    email: string,
-    token: string
-  ): Promise<void> {
+  static async sendPasswordResetEmail(email: string, token: string): Promise<void> {
     const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`
 
     if (env.NODE_ENV === 'development') {
@@ -153,9 +140,7 @@ export class EmailService {
 
     const resend = await getResendClient()
     if (!resend) {
-      const error = new Error(
-        'Email service not configured - RESEND_API_KEY missing'
-      )
+      const error = new Error('Email service not configured - RESEND_API_KEY missing')
       logger.error({ error: error }, '❌')
 
       if (env.NODE_ENV === 'production') {
@@ -211,6 +196,109 @@ export class EmailService {
     } catch (error) {
       logger.error({ error: error }, '❌ Failed to send password reset email:')
       throw new Error('Failed to send password reset email')
+    }
+  }
+
+  /**
+   * Sends subscription confirmation email
+   * @param email - Recipient email
+   * @param planType - Subscription plan (STARTER or PRO)
+   * @param amount - Subscription amount
+   */
+  static async sendSubscriptionConfirmationEmail(
+    email: string,
+    planType: string,
+    amount: string
+  ): Promise<void> {
+    if (env.NODE_ENV === 'development') {
+      logger.info('\n📧 ═══════════════════════════════════════════')
+      logger.info('   SUBSCRIPTION CONFIRMATION EMAIL')
+      logger.info('═══════════════════════════════════════════')
+      logger.info(`To: ${email}`)
+      logger.info(`Plan: ${planType}`)
+      logger.info(`Amount: ${amount}`)
+      logger.info('═══════════════════════════════════════════\n')
+      return
+    }
+
+    const resend = await getResendClient()
+    if (!resend) {
+      const error = new Error('Email service not configured - RESEND_API_KEY missing')
+      logger.error({ error: error }, '❌')
+
+      if (env.NODE_ENV === 'production') {
+        throw error
+      }
+
+      logger.warn(`⚠️  Email not sent to: ${email} (dev/staging mode)`)
+      return
+    }
+
+    try {
+      await resend.emails.send({
+        from: env.EMAIL_FROM,
+        to: email,
+        subject: `Welcome to ${planType} Plan - Subscription Confirmed`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+              <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <h1 style="color: #10b981; margin: 0;">🎉 Welcome to ${planType}!</h1>
+                </div>
+
+                <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                  Thank you for subscribing to NoteFlow ${planType} plan!
+                </p>
+
+                <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 30px 0;">
+                  <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 18px;">Subscription Details</h2>
+                  <table style="width: 100%; color: #374151;">
+                    <tr>
+                      <td style="padding: 8px 0;"><strong>Plan:</strong></td>
+                      <td style="padding: 8px 0; text-align: right;">${planType}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0;"><strong>Amount:</strong></td>
+                      <td style="padding: 8px 0; text-align: right;">${amount}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0;"><strong>Billing:</strong></td>
+                      <td style="padding: 8px 0; text-align: right;">Monthly</td>
+                    </tr>
+                  </table>
+                </div>
+
+                <p style="color: #666; line-height: 1.6; margin: 20px 0;">
+                  Your subscription is now active and you have access to all ${planType} features!
+                </p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${env.FRONTEND_URL}/dashboard"
+                     style="display: inline-block; background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    Go to Dashboard
+                  </a>
+                </div>
+
+                <p style="color: #999; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                  You can manage your subscription anytime from your account settings.<br>
+                  Questions? Contact us at support@noteflow.com
+                </p>
+              </div>
+            </body>
+          </html>
+        `,
+      })
+
+      logger.info(`✅ Subscription confirmation email sent to ${email} (${planType})`)
+    } catch (error) {
+      logger.error({ error: error }, '❌ Failed to send subscription confirmation email:')
+      throw new Error('Failed to send subscription confirmation email')
     }
   }
 }

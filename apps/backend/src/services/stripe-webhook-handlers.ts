@@ -4,6 +4,7 @@ import { PlanType, SubscriptionStatus, Prisma } from '@prisma/client'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { invalidatePlanCache } from '@/middlewares/load-plan.middleware'
+import { EmailService } from './email.service'
 
 /**
  * Interface for typing Stripe Subscription objects correctly
@@ -210,6 +211,16 @@ export class StripeWebhookHandlers {
       throw new Error('No price ID found in checkout session')
     }
 
+    // Get user email for confirmation email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    })
+
+    if (!user) {
+      throw new Error(`User not found: ${userId}`)
+    }
+
     await prisma.$transaction(async tx => {
       await tx.subscription.upsert({
         where: {
@@ -248,6 +259,12 @@ export class StripeWebhookHandlers {
 
     await this.invalidateCache(userId)
     await invalidatePlanCache(userId)
+
+    // Send confirmation email (non-blocking - don't fail webhook if email fails)
+    const amount = planType === 'PRO' ? '€15/month' : '€6/month'
+    EmailService.sendSubscriptionConfirmationEmail(user.email, planType, amount).catch(error => {
+      logger.error({ error, userId, planType }, '❌ Failed to send subscription confirmation email')
+    })
   }
 
   /**
