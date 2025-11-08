@@ -17,6 +17,7 @@ jest.mock('../../../config/prisma', () => ({
       update: jest.fn(),
     },
     user: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
   },
@@ -35,6 +36,12 @@ jest.mock('../../../utils/logger', () => ({
     error: jest.fn(),
     warn: jest.fn(),
     info: jest.fn(),
+  },
+}))
+
+jest.mock('../../../services/email.service', () => ({
+  EmailService: {
+    sendSubscriptionConfirmationEmail: jest.fn().mockResolvedValue(undefined),
   },
 }))
 
@@ -178,6 +185,9 @@ describe('StripeWebhookHandlers', () => {
       ;(mockStripe.checkout.sessions.listLineItems as jest.Mock).mockResolvedValue({
         data: [{ price: { id: 'price_123' } }],
       })
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'test@example.com',
+      })
     })
 
     it('should create subscription for new checkout', async () => {
@@ -283,6 +293,14 @@ describe('StripeWebhookHandlers', () => {
       await expect(
         handlers.handleCheckoutCompleted(mockSession as Stripe.Checkout.Session)
       ).rejects.toThrow('No price ID found in checkout session')
+    })
+
+    it('should throw error if user not found', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+
+      await expect(
+        handlers.handleCheckoutCompleted(mockSession as Stripe.Checkout.Session)
+      ).rejects.toThrow('User not found: cm123456789')
     })
   })
 
