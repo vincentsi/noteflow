@@ -137,7 +137,7 @@
     "welcome": "Welcome {{name}}",
     "loginPrompt": "Log in to access your personalized dashboard",
     "loginPromptTitle": "Access Your Dashboard",
-    "loginPromptDescription": "Log in to view your usage statistics, manage your subscription, and access all NoteFlow features.",
+    "loginPromptDescription": "Log in to view your usage statistics, manage your subscription, and access all NotePostFlow features.",
     "planUsage": {
       "title": "Plan Usage",
       "description": "Your current resource usage",
@@ -684,7 +684,7 @@
       "link": "View pricing"
     },
     "footer": {
-      "text": "NoteFlow - Powered by AI for developers"
+      "text": "NotePostFlow - Powered by AI for developers"
     }
   },
   "contact": {
@@ -708,7 +708,7 @@
       },
       "feedback": {
         "title": "Feedback",
-        "description": "Share your thoughts about NoteFlow"
+        "description": "Share your thoughts about NotePostFlow"
       }
     },
     "responseTime": "⏱️ We typically respond within 24-48 hours (business days)",

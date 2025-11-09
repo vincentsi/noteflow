@@ -92,7 +92,7 @@ export class EmailService {
               <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <h1 style="color: #333; margin-bottom: 20px;">Verify your email</h1>
                 <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-                  Thank you for signing up! Click the button below to verify your email address:
+                  Thank you for signing up to NotePostFlow! Click the button below to verify your email address:
                 </p>
                 <a href="${verificationUrl}"
                    style="display: inline-block; background-color: #007bff; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0;">
@@ -167,7 +167,7 @@ export class EmailService {
               <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <h1 style="color: #333; margin-bottom: 20px;">Password Reset</h1>
                 <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-                  You requested a password reset. Click the button below to create a new password:
+                  You requested a password reset for your NotePostFlow account. Click the button below to create a new password:
                 </p>
                 <a href="${resetUrl}"
                    style="display: inline-block; background-color: #dc3545; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0;">
@@ -253,7 +253,7 @@ export class EmailService {
                 </div>
 
                 <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-                  Thank you for subscribing to NoteFlow ${planType} plan!
+                  Thank you for subscribing to NotePostFlow ${planType} plan!
                 </p>
 
                 <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 30px 0;">
@@ -287,7 +287,7 @@ export class EmailService {
 
                 <p style="color: #999; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                   You can manage your subscription anytime from your account settings.<br>
-                  Questions? Contact us at support@noteflow.com
+                  Questions? Contact us at vincent.si.dev@gmail.com
                 </p>
               </div>
             </body>

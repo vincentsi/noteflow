@@ -1,4 +1,4 @@
-# NoteFlow
+# NotePostFlow
 
 > AI-powered platform for developers combining AI Watch, intelligent summaries, and collaborative note-taking.
 
@@ -6,9 +6,9 @@
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## What is NoteFlow?
+## What is NotePostFlow?
 
-NoteFlow is a comprehensive platform designed for developers that combines:
+NotePostFlow is a comprehensive platform designed for developers that combines:
 
 - **AI Watch (Veille IA)** - Automated RSS feed aggregation for dev/AI content
 - **ResumeIA (SummaryAI)** - AI-powered content summarization with 6 styles (SHORT, TWEET, THREAD, BULLET_POINT, TOP3, MAIN_POINTS)

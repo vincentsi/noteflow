@@ -137,7 +137,7 @@
     "welcome": "Bienvenue {{name}}",
     "loginPrompt": "Connectez-vous pour accéder à votre tableau de bord personnalisé",
     "loginPromptTitle": "Accédez à votre tableau de bord",
-    "loginPromptDescription": "Connectez-vous pour voir vos statistiques d'utilisation, gérer votre abonnement et accéder à toutes les fonctionnalités de NoteFlow.",
+    "loginPromptDescription": "Connectez-vous pour voir vos statistiques d'utilisation, gérer votre abonnement et accéder à toutes les fonctionnalités de NotePostFlow.",
     "planUsage": {
       "title": "Utilisation du plan",
       "description": "Votre utilisation actuelle des ressources",
@@ -684,7 +684,7 @@
       "link": "Voir les tarifs"
     },
     "footer": {
-      "text": "NoteFlow - Propulsé par l'IA pour les développeurs"
+      "text": "NotePostFlow - Propulsé par l'IA pour les développeurs"
     }
   },
   "contact": {
@@ -708,7 +708,7 @@
       },
       "feedback": {
         "title": "Retours d'expérience",
-        "description": "Partagez votre avis sur NoteFlow"
+        "description": "Partagez votre avis sur NotePostFlow"
       }
     },
     "responseTime": "⏱️ Nous répondons généralement sous 24-48 heures (jours ouvrables)",

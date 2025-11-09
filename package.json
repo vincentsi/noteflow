@@ -1,7 +1,7 @@
 {
-  "name": "noteflow",
+  "name": "notepostflow",
   "version": "0.1.0",
-  "description": "NoteFlow - AI-powered note-taking and content summarization platform",
+  "description": "NotePostFlow - AI-powered note-taking and content summarization platform",
   "private": true,
   "packageManager": "npm@10.9.3",
   "workspaces": [
