@@ -321,55 +321,75 @@ export class StripeWebhookHandlers {
     // Detect plan type from price ID (handles upgrades/downgrades in billing portal)
     const detectedPlanType = this.getPlanTypeFromPriceId(priceId)
 
-    // Parse period dates if available (may be missing during plan changes)
-    const periodStart = subscription.current_period_start
-      ? new Date(subscription.current_period_start * 1000)
-      : null
-    const periodEnd = subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000)
-      : null
+    // CRITICAL: Always fetch fresh subscription data from Stripe API
+    // Webhook events may have stale or missing period dates during plan changes
+    // This ensures we always have accurate billing cycle information
+    let periodStart: Date
+    let periodEnd: Date
 
-    // Validate dates if present
-    if (periodStart && isNaN(periodStart.getTime())) {
-      throw new Error(`Invalid period start date in subscription ${subscription.id}`)
-    }
-    if (periodEnd && isNaN(periodEnd.getTime())) {
-      throw new Error(`Invalid period end date in subscription ${subscription.id}`)
+    try {
+      const freshSubscriptionResponse = await this.stripe.subscriptions.retrieve(subscription.id)
+      const freshSubscription = freshSubscriptionResponse as unknown as StripeSubscriptionData
+
+      if (!isStripeSubscriptionData(freshSubscription)) {
+        throw new Error('Invalid fresh subscription data structure')
+      }
+
+      periodStart = new Date(freshSubscription.current_period_start * 1000)
+      periodEnd = new Date(freshSubscription.current_period_end * 1000)
+
+      // Validate dates
+      if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
+        throw new Error('Invalid dates in fresh subscription data')
+      }
+
+      logger.info(
+        {
+          subscriptionId: subscription.id,
+          periodStart: periodStart.toISOString(),
+          periodEnd: periodEnd.toISOString(),
+          planType: detectedPlanType,
+        },
+        'Retrieved fresh subscription dates from Stripe API'
+      )
+    } catch (error) {
+      // Fallback to webhook data if API call fails
+      logger.error(
+        { error, subscriptionId: subscription.id },
+        'Failed to fetch fresh subscription - using webhook data'
+      )
+
+      periodStart = subscription.current_period_start
+        ? new Date(subscription.current_period_start * 1000)
+        : new Date()
+      periodEnd = subscription.current_period_end
+        ? new Date(subscription.current_period_end * 1000)
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default: +30 days
     }
 
     await prisma.$transaction(async tx => {
-      // Build update data conditionally
-      const subscriptionUpdateData: Prisma.SubscriptionUpdateInput = {
-        status: this.mapStripeStatus(subscription.status),
-        planType: detectedPlanType,
-        stripePriceId: priceId,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
-      }
-
-      // Only update period dates if they're available
-      if (periodStart) subscriptionUpdateData.currentPeriodStart = periodStart
-      if (periodEnd) subscriptionUpdateData.currentPeriodEnd = periodEnd
-
       await tx.subscription.update({
         where: {
           stripeSubscriptionId: subscription.id,
         },
-        data: subscriptionUpdateData,
+        data: {
+          status: this.mapStripeStatus(subscription.status),
+          planType: detectedPlanType,
+          stripePriceId: priceId,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+        },
       })
-
-      // Build user update data conditionally
-      const userUpdateData: Prisma.UserUpdateInput = {
-        subscriptionStatus: this.mapStripeStatus(subscription.status),
-        planType: detectedPlanType,
-      }
-
-      // Only update period end if available
-      if (periodEnd) userUpdateData.currentPeriodEnd = periodEnd
 
       await tx.user.update({
         where: { id: userId },
-        data: userUpdateData,
+        data: {
+          subscriptionStatus: this.mapStripeStatus(subscription.status),
+          planType: detectedPlanType,
+          currentPeriodEnd: periodEnd,
+        },
       })
     })
 
