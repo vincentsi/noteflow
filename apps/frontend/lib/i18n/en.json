@@ -378,6 +378,9 @@
     "free": "Free",
     "loading": "Loading...",
     "upgrade": "Upgrade to plan",
+    "manageSubscription": "Manage subscription",
+    "betterPlanActive": "Better plan active",
+    "contactSupport": "Contact us",
     "signUp": "Sign up",
     "error": "Error - Retry",
     "plans": {

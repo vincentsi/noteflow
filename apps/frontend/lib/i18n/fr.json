@@ -378,6 +378,9 @@
     "free": "Gratuit",
     "loading": "Chargement...",
     "upgrade": "Passer au plan",
+    "manageSubscription": "Gérer l'abonnement",
+    "betterPlanActive": "Meilleur plan actif",
+    "contactSupport": "Nous contacter",
     "signUp": "S'inscrire",
     "error": "Erreur - Réessayer",
     "plans": {

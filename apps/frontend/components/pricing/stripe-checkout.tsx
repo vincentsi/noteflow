@@ -35,6 +35,9 @@ export function StripeCheckout({
   // Check if user has an active subscription (STARTER or PRO)
   const hasActiveSubscription = user?.planType && user.planType !== 'FREE'
 
+  // Check if user is trying to downgrade (e.g., PRO -> STARTER)
+  const isDowngrade = user?.planType === 'PRO' && planName === 'STARTER'
+
   const handleUpgrade = () => {
     if (!priceId) return
 
@@ -91,6 +94,20 @@ export function StripeCheckout({
     return (
       <Button className="w-full" variant="outline" disabled>
         {t('pricing.free')}
+      </Button>
+    )
+  }
+
+  // If user is trying to downgrade, disable the button
+  // User must cancel their current subscription first via billing portal
+  if (isDowngrade) {
+    return (
+      <Button
+        className="w-full"
+        disabled
+        variant="outline"
+      >
+        {t('pricing.betterPlanActive')}
       </Button>
     )
   }
