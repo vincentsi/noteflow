@@ -1,5 +1,6 @@
 import type { MultipartFile } from '@fastify/multipart'
 import { pipeline } from 'node:stream/promises'
+import { Transform } from 'node:stream'
 import { createWriteStream, createReadStream, unlinkSync } from 'node:fs'
 import { unlink, mkdir } from 'node:fs/promises'
 import { join, extname, basename } from 'node:path'
@@ -126,12 +127,54 @@ export function validatePDFFile(file: MultipartFile, buffer?: Buffer): void {
 }
 
 /**
+ * Create a Transform stream that validates file size and PDF magic bytes
+ * Throws synchronously if validation fails, preventing further upload
+ *
+ * @param file - Multipart file for metadata
+ * @param maxSize - Maximum file size in bytes
+ * @returns Transform stream with validation
+ */
+function createSizeValidationStream(file: MultipartFile, maxSize: number): Transform {
+  let bytesRead = 0
+  let firstChunk: Buffer | null = null
+
+  return new Transform({
+    transform(chunk: Buffer, encoding, callback) {
+      bytesRead += chunk.length
+
+      // Capture first chunk for PDF magic byte validation
+      if (!firstChunk && chunk.length >= 4) {
+        firstChunk = chunk
+        try {
+          // Validate PDF magic bytes from first chunk
+          validatePDFFile(file, firstChunk)
+        } catch (error) {
+          // Synchronously reject if magic bytes are invalid
+          return callback(error as Error)
+        }
+      }
+
+      // Check size limit BEFORE passing chunk downstream
+      if (bytesRead > maxSize) {
+        const error = new Error(`File size exceeds limit of ${maxSize / (1024 * 1024)}MB`)
+        // Destroy stream immediately - no more data will be written
+        this.destroy(error)
+        return callback(error)
+      }
+
+      // Pass chunk downstream if all validations pass
+      callback(null, chunk)
+    },
+  })
+}
+
+/**
  * Stream uploaded file to disk with size limit
  *
  * @param file - Multipart file from Fastify
  * @param maxSize - Maximum file size in bytes (default 10MB)
  * @returns Temporary file path
- * @throws Error if file exceeds max size
+ * @throws Error if file exceeds max size or has invalid PDF signature
  */
 export async function streamFileToDisk(
   file: MultipartFile,
@@ -146,41 +189,21 @@ export async function streamFileToDisk(
   const tempFilename = `${randomUUID()}.pdf`
   const tempPath = join(UPLOAD_DIR, tempFilename)
 
-  let bytesWritten = 0
-  let firstChunk: Buffer | null = null
-
-  // Create write stream
+  // Create validation stream and write stream
+  const validationStream = createSizeValidationStream(file, maxSize)
   const writeStream = createWriteStream(tempPath)
 
-  // Track file size, enforce limit, and capture first chunk for magic byte validation
-  file.file.on('data', (chunk: Buffer) => {
-    bytesWritten += chunk.length
-
-    // Capture first chunk for magic byte validation
-    if (!firstChunk && chunk.length >= 4) {
-      firstChunk = chunk
-      // Validate PDF magic bytes from first chunk
-      validatePDFFile(file, firstChunk)
-    }
-
-    if (bytesWritten > maxSize) {
-      // Destroy streams and throw error
-      file.file.destroy()
-      writeStream.destroy()
-      throw new Error(`File size exceeds limit of ${maxSize / (1024 * 1024)}MB`)
-    }
-  })
-
   try {
-    // Stream file to disk
-    await pipeline(file.file, writeStream)
+    // Pipeline: Upload -> Validation -> Disk
+    // If validation fails, pipeline rejects and stops writing
+    await pipeline(file.file, validationStream, writeStream)
 
     // Track file for cleanup on process exit
     activeTempFiles.add(tempPath)
 
     return tempPath
   } catch (error) {
-    // Cleanup on error
+    // Cleanup on error (size limit exceeded or invalid PDF)
     await cleanupTempFile(tempPath)
     throw error
   }
