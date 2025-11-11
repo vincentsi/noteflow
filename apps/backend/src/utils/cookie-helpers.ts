@@ -12,31 +12,6 @@ const TOKEN_EXPIRY = {
 } as const
 
 /**
- * Get cookie domain restriction for production environments
- * Prevents cookies from being sent to arbitrary domains
- *
- * @returns Domain restriction string (e.g., ".noteflow.com") or undefined for dev
- */
-function getCookieDomain(): string | undefined {
-  const isProduction = env.NODE_ENV === 'production'
-
-  if (!isProduction) return undefined
-
-  try {
-    // Parse backend domain from FRONTEND_URL (first origin if comma-separated)
-    const frontendOrigin = env.FRONTEND_URL?.split(',')[0]?.trim()
-    if (!frontendOrigin) return undefined
-
-    const hostname = new URL(frontendOrigin).hostname
-    // Extract root domain (e.g., "noteflow.com" from "app.noteflow.com")
-    const parts = hostname.split('.')
-    return parts.length >= 2 ? `.${parts.slice(-2).join('.')}` : hostname
-  } catch {
-    return undefined
-  }
-}
-
-/**
  * Set all authentication cookies
  * Centralizes cookie configuration to avoid duplication
  *
@@ -76,14 +51,12 @@ export function setAuthCookies(
   csrfToken: string
 ): void {
   const isProduction = env.NODE_ENV === 'production'
-  const domain = getCookieDomain()
 
   // Access Token - JWT for authentication
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true, // Not accessible via JavaScript (XSS protection)
     secure: isProduction, // HTTPS in production, HTTP allowed in dev
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
-    domain, // Restrict to specific domain in production
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -93,7 +66,6 @@ export function setAuthCookies(
     httpOnly: true,
     secure: isProduction, // HTTPS in production, HTTP allowed in dev
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
-    domain, // Restrict to specific domain in production
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -103,7 +75,6 @@ export function setAuthCookies(
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    domain, // Restrict to specific domain in production
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
@@ -125,25 +96,21 @@ export function setAuthCookies(
  */
 export function clearAuthCookies(reply: FastifyReply): void {
   const isProduction = env.NODE_ENV === 'production'
-  const domain = getCookieDomain()
 
   reply.clearCookie('accessToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    domain,
   })
   reply.clearCookie('refreshToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    domain,
   })
   reply.clearCookie('csrfToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    domain,
   })
 }
 
@@ -169,14 +136,12 @@ export function refreshSessionCookies(
   csrfToken: string
 ): void {
   const isProduction = env.NODE_ENV === 'production'
-  const domain = getCookieDomain()
 
   // Renew access token
   reply.setCookie('accessToken', accessToken, {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    domain,
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -186,7 +151,6 @@ export function refreshSessionCookies(
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    domain,
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
@@ -209,13 +173,11 @@ export function refreshSessionCookies(
  */
 export function setRefreshTokenCookie(reply: FastifyReply, refreshToken: string): void {
   const isProduction = env.NODE_ENV === 'production'
-  const domain = getCookieDomain()
 
   reply.setCookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    domain,
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -239,13 +201,11 @@ export function setRefreshTokenCookie(reply: FastifyReply, refreshToken: string)
  */
 export function setCsrfTokenCookie(reply: FastifyReply, csrfToken: string): void {
   const isProduction = env.NODE_ENV === 'production'
-  const domain = getCookieDomain()
 
   reply.setCookie('csrfToken', csrfToken, {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    domain,
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
