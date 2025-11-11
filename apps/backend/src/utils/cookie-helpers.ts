@@ -83,7 +83,7 @@ export function setAuthCookies(
     httpOnly: true, // Not accessible via JavaScript (XSS protection)
     secure: isProduction, // HTTPS in production, HTTP allowed in dev
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
-    ...(domain && { domain }), // Only set domain if it's defined
+    domain, // Restrict to specific domain in production
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -93,7 +93,7 @@ export function setAuthCookies(
     httpOnly: true,
     secure: isProduction, // HTTPS in production, HTTP allowed in dev
     sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site (Vercel <-> Railway)
-    ...(domain && { domain }), // Only set domain if it's defined
+    domain, // Restrict to specific domain in production
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -103,7 +103,7 @@ export function setAuthCookies(
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    ...(domain && { domain }), // Only set domain if it's defined
+    domain, // Restrict to specific domain in production
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
@@ -131,19 +131,19 @@ export function clearAuthCookies(reply: FastifyReply): void {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    ...(domain && { domain }),
+    domain,
   })
   reply.clearCookie('refreshToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    ...(domain && { domain }),
+    domain,
   })
   reply.clearCookie('csrfToken', {
     path: '/',
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    ...(domain && { domain }),
+    domain,
   })
 }
 
@@ -176,7 +176,7 @@ export function refreshSessionCookies(
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    ...(domain && { domain }),
+    domain,
     maxAge: TOKEN_EXPIRY.ACCESS_TOKEN,
     path: '/',
   })
@@ -186,7 +186,7 @@ export function refreshSessionCookies(
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    ...(domain && { domain }),
+    domain,
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
@@ -215,7 +215,7 @@ export function setRefreshTokenCookie(reply: FastifyReply, refreshToken: string)
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    ...(domain && { domain }),
+    domain,
     maxAge: TOKEN_EXPIRY.REFRESH_TOKEN,
     path: '/',
   })
@@ -245,7 +245,7 @@ export function setCsrfTokenCookie(reply: FastifyReply, csrfToken: string): void
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
-    ...(domain && { domain }),
+    domain,
     maxAge: TOKEN_EXPIRY.CSRF_TOKEN,
     path: '/',
   })
