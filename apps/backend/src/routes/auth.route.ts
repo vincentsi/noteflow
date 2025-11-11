@@ -84,7 +84,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
    * POST /api/auth/login
    * Authenticate user with email + password
    *
-   * Rate limit: 3 requests/15min per IP+email (disabled in dev/test)
+   * Rate limit: 10 requests/15min per IP+email (disabled in dev/test)
    * Prevents: Brute force attacks, credential stuffing
    */
   app.post(
@@ -96,7 +96,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         env.NODE_ENV !== 'test'
           ? {
               rateLimit: {
-                max: env.NODE_ENV === 'production' ? 3 : 100,
+                max: env.NODE_ENV === 'production' ? 10 : 100,
                 timeWindow: '15 minutes',
                 keyGenerator: request => {
                   const body = request.body as { email?: string }
