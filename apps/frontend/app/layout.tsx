@@ -8,6 +8,7 @@ import { I18nProvider } from "@/lib/i18n/provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { env } from "@/lib/env";
 
 export const dynamic = 'force-dynamic'
@@ -82,6 +83,7 @@ export default async function RootLayout({
                   {children}
                   <OfflineIndicator />
                   <Toaster />
+                  <Analytics />
                 </AuthProvider>
               </QueryProvider>
             </I18nProvider>
