@@ -80,6 +80,9 @@ export default async function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head>
         {/* Nonce is already set in CSP headers via middleware.ts */}
+        {/* PWA manifest and theme */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#000000" />
         {/* Schema.org Structured Data for SEO */}
         <OrganizationSchema />
         <WebsiteSchema />

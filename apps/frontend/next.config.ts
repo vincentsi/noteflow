@@ -1,10 +1,26 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 import withBundleAnalyzer from '@next/bundle-analyzer'
+import withPWA from '@ducanh2912/next-pwa'
 
 // Enable bundle analyzer with: ANALYZE=true npm run build
 const bundleAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
+})
+
+// PWA configuration
+const pwa = withPWA({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  sw: '/sw.js',
+  workboxOptions: {
+    disableDevLogs: true,
+  },
 })
 
 const nextConfig: NextConfig = {
@@ -120,6 +136,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' data:",
               "connect-src 'self' https://api.stripe.com https://sentry.io https://*.sentry.io https://noteflow-backend-production.up.railway.app http://localhost:3001 ws://localhost:3001",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+              "manifest-src 'self'",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -166,5 +183,5 @@ const sentryWebpackPluginOptions = {
   disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
 }
 
-// Wrap config with Sentry and Bundle Analyzer
-export default withSentryConfig(bundleAnalyzer(nextConfig), sentryWebpackPluginOptions)
+// Wrap config with PWA, Sentry and Bundle Analyzer
+export default withSentryConfig(pwa(bundleAnalyzer(nextConfig)), sentryWebpackPluginOptions)
