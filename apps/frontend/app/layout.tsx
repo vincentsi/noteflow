@@ -10,6 +10,7 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { env } from "@/lib/env";
+import { OrganizationSchema, WebsiteSchema, SoftwareApplicationSchema } from "@/components/seo/schema-markup";
 
 export const dynamic = 'force-dynamic'
 
@@ -26,25 +27,35 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: {
-    default: "NoteFlow - AI-Powered Note Taking & Content Summarization",
-    template: "%s | NoteFlow"
+    default: "NotePostFlow - Veille IA, Résumés AI & Notes pour Développeurs",
+    template: "%s | NotePostFlow"
   },
-  description: "NoteFlow combines AI-powered content summarization, markdown note-taking, and RSS feed aggregation for developers. Save time with intelligent summaries and organized notes.",
-  keywords: ["AI", "note-taking", "summarization", "RSS", "markdown", "developers", "productivity", "OpenAI"],
+  description: "Plateforme tout-en-un pour développeurs : veille technologique RSS, résumés de contenu par IA (texte, PDF, URL), et prise de notes Markdown avec tags. Gagnez du temps avec l'intelligence artificielle.",
+  keywords: ["veille technologique", "résumé IA", "OpenAI", "RSS feed", "agrégateur", "prise de notes", "markdown", "développeurs", "productivité", "intelligence artificielle", "summarization", "NotePostFlow"],
   authors: [{ name: "Vincent SI" }],
   creator: "Vincent SI",
   openGraph: {
     type: "website",
     locale: "fr_FR",
     url: env.NEXT_PUBLIC_SITE_URL,
-    title: "NoteFlow - AI-Powered Note Taking & Content Summarization",
-    description: "NoteFlow combines AI-powered content summarization, markdown note-taking, and RSS feed aggregation for developers.",
-    siteName: "Fullstack Boilerplate",
+    title: "NotePostFlow - Veille IA, Résumés AI & Notes pour Développeurs",
+    description: "Plateforme tout-en-un pour développeurs : veille technologique RSS, résumés de contenu par IA, et prise de notes Markdown. Gagnez du temps avec l'intelligence artificielle.",
+    siteName: "NotePostFlow",
+    images: [
+      {
+        url: `${env.NEXT_PUBLIC_SITE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "NotePostFlow - Veille IA et Résumés pour Développeurs",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fullstack Boilerplate - SaaS Starter Kit",
-    description: "Production-ready SaaS boilerplate with authentication, payments, RBAC, and enterprise-grade features.",
+    title: "NotePostFlow - Veille IA, Résumés AI & Notes pour Développeurs",
+    description: "Plateforme tout-en-un pour développeurs : veille technologique RSS, résumés de contenu par IA, et prise de notes Markdown.",
+    images: [`${env.NEXT_PUBLIC_SITE_URL}/og-image.png`],
+    creator: "@VincentSI_dev",
   },
   robots: {
     index: true,
@@ -53,6 +64,9 @@ export const metadata: Metadata = {
       index: true,
       follow: true,
     },
+  },
+  alternates: {
+    canonical: env.NEXT_PUBLIC_SITE_URL,
   },
 };
 
@@ -66,6 +80,10 @@ export default async function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head>
         {/* Nonce is already set in CSP headers via middleware.ts */}
+        {/* Schema.org Structured Data for SEO */}
+        <OrganizationSchema />
+        <WebsiteSchema />
+        <SoftwareApplicationSchema />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
