@@ -200,19 +200,51 @@ export class StripeService {
   async createBillingPortalSession(userId: string): Promise<{ url: string }> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { stripeCustomerId: true },
+      select: { stripeCustomerId: true, email: true },
     })
 
-    if (!user?.stripeCustomerId) {
-      throw new Error('No Stripe customer found for this user')
+    if (!user) {
+      throw new Error('User not found')
     }
 
-    const session = await this.stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
-      return_url: `${env.FRONTEND_URL}/dashboard/billing`,
-    })
+    let customerId = user.stripeCustomerId
 
-    return { url: session.url }
+    // If customer doesn't exist or is invalid, create a new one
+    if (!customerId) {
+      customerId = await this.getOrCreateCustomer(userId, user.email)
+    }
+
+    try {
+      const session = await this.stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${env.FRONTEND_URL}/dashboard/billing`,
+      })
+
+      return { url: session.url }
+    } catch (error) {
+      // If customer doesn't exist in Stripe (deleted or invalid), recreate it
+      if (error instanceof Error && error.message.includes('No such customer')) {
+        logger.warn({ userId, oldCustomerId: customerId }, 'Stripe customer not found, recreating')
+
+        // Clear invalid customer ID and create new one
+        await prisma.user.update({
+          where: { id: userId },
+          data: { stripeCustomerId: null },
+        })
+
+        customerId = await this.getOrCreateCustomer(userId, user.email)
+
+        // Retry billing portal session creation
+        const session = await this.stripe.billingPortal.sessions.create({
+          customer: customerId,
+          return_url: `${env.FRONTEND_URL}/dashboard/billing`,
+        })
+
+        return { url: session.url }
+      }
+
+      throw error
+    }
   }
 
   /**
