@@ -22,6 +22,14 @@ const StripeCheckout = dynamic(
   }
 )
 
+const ManageSubscriptionButton = dynamic(
+  () => import('@/components/pricing/manage-subscription-button').then(mod => ({ default: mod.ManageSubscriptionButton })),
+  {
+    loading: () => <Skeleton className="h-10 w-64" />,
+    ssr: false,
+  }
+)
+
 export default function PricingPage() {
   const { t } = useI18n()
   const { user } = useAuth()
@@ -159,6 +167,15 @@ export default function PricingPage() {
           )
         })}
       </div>
+
+      {/* Manage Subscription Button for paid users */}
+      {(currentPlan === 'STARTER' || currentPlan === 'PRO') && (
+        <div className="flex justify-center">
+          <Suspense fallback={<Skeleton className="h-10 w-64" />}>
+            <ManageSubscriptionButton />
+          </Suspense>
+        </div>
+      )}
 
       <div className="text-center text-sm text-muted-foreground">
         <p>{t('pricing.footer.moneyBack')}</p>
