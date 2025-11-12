@@ -49,3 +49,15 @@ public/sw.js
 public/workbox-*.js
 public/sw.js.map
 public/workbox-*.js.map
+
+# Android / TWA files
+*.keystore
+*.jks
+*.apk
+*.aab
+*.idsig
+.gradle/
+app/
+build/
+twa/
+local.properties
