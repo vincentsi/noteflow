@@ -57,7 +57,13 @@ public/workbox-*.js.map
 *.aab
 *.idsig
 .gradle/
-app/
-build/
+build.gradle
+settings.gradle
+gradlew
+gradlew.bat
+gradle/
+android-app/
 twa/
 local.properties
+manifest-checksum.txt
+twa-manifest.json

@@ -42,15 +42,16 @@ plan/
 AUDIT-REPORT.md
 
 # Android / TWA files (root level duplicates from Bubblewrap)
+# Note: Do NOT ignore apps/frontend/app/ (Next.js App Router)
 .gradle/
-app/
-build/
-gradle/
-gradlew
-gradlew.bat
-build.gradle
-settings.gradle
-gradle.properties
-twa-manifest.json
-manifest-checksum.txt
-store_icon.png
+/app/
+/build/
+/gradle/
+/gradlew
+/gradlew.bat
+/build.gradle
+/settings.gradle
+/gradle.properties
+/twa-manifest.json
+/manifest-checksum.txt
+/store_icon.png
