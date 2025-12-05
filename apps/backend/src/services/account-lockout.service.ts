@@ -53,7 +53,7 @@ export class AccountLockoutService {
       })
       //Do not expose exact unlock time to prevent timing attacks
       throw new Error(
-        'Too many failed login attempts. Your account is temporarily locked. Please try again later or reset your password.'
+        'Too many failed login attempts. Please try again later or reset your password.'
       )
     }
 
@@ -67,7 +67,7 @@ export class AccountLockoutService {
       })
       //Do not expose exact unlock time to prevent timing attacks
       throw new Error(
-        'Too many failed login attempts from your IP address. Please try again later.'
+        'Too many failed login attempts. Please try again later or reset your password.'
       )
     }
   }

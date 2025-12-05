@@ -34,7 +34,7 @@ describe('AccountLockoutService', () => {
       })
 
       await expect(AccountLockoutService.checkLockout(testEmail, testIp)).rejects.toThrow(
-        'Too many failed login attempts. Your account is temporarily locked. Please try again later or reset your password.'
+        'Too many failed login attempts. Please try again later or reset your password.'
       )
     })
 
@@ -49,7 +49,7 @@ describe('AccountLockoutService', () => {
         })
 
       await expect(AccountLockoutService.checkLockout(testEmail, testIp)).rejects.toThrow(
-        'Too many failed login attempts from your IP'
+        'Too many failed login attempts. Please try again later or reset your password.'
       )
     })
 
