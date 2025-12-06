@@ -67,3 +67,6 @@ twa/
 local.properties
 manifest-checksum.txt
 twa-manifest.json
+
+# Asset links with certificate fingerprint (security sensitive)
+public/.well-known/assetlinks.json

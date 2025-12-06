@@ -19,7 +19,7 @@
     "path": "android.keystore",
     "alias": "android"
   },
-  "appVersionName": "NotePostFlow",
+  "appVersionName": "2.0",
   "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
