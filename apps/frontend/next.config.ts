@@ -32,8 +32,11 @@ const nextConfig: NextConfig = {
    * - Only includes necessary dependencies
    *
    * Required for Dockerfile production stage (COPY --from=builder .next/standalone)
+   *
+   * Note: Disabled on Windows due to Next.js 16 bug with node:inspector filenames
+   * https://github.com/vercel/next.js/issues/73880
    */
-  output: 'standalone',
+  output: process.platform === 'win32' ? undefined : 'standalone',
 
   /**
    * Bundle optimization strategies
@@ -184,4 +187,8 @@ const sentryWebpackPluginOptions = {
 }
 
 // Wrap config with PWA, Sentry and Bundle Analyzer
-export default withSentryConfig(pwa(bundleAnalyzer(nextConfig)), sentryWebpackPluginOptions)
+// Type assertion needed for Next.js 16 compatibility with plugin wrappers
+export default withSentryConfig(
+  pwa(bundleAnalyzer(nextConfig)),
+  sentryWebpackPluginOptions
+) as typeof nextConfig
