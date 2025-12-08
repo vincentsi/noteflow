@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.notepostflow.twa",
+      "sha256_cert_fingerprints": [
+        "AD:5A:88:8F:8D:17:41:3A:A6:37:0C:55:5F:43:96:F4:18:EB:4E:74:32:76:59:59:15:68:BC:B8:06:1A:57:C3"
+      ]
+    }
+  }
+]
