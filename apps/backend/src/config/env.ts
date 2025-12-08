@@ -122,9 +122,6 @@ const envSchema = z.object({
       { message: 'OPENAI_API_KEY must be at least 20 characters' }
     ),
 
-  // Unsplash API (optional - for cover image generation)
-  UNSPLASH_ACCESS_KEY: z.string().min(20).optional(),
-
   // Redis (optional but validated if provided)
   REDIS_URL: z.string().url().optional().or(z.literal('')),
 

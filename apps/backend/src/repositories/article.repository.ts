@@ -140,7 +140,6 @@ export class ArticleRepository {
       update: {
         title: data.title,
         excerpt: data.excerpt,
-        imageUrl: data.imageUrl,
         source: data.source,
         tags: data.tags,
         publishedAt: data.publishedAt,

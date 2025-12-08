@@ -6,7 +6,6 @@ export type SummaryStyle = 'SHORT' | 'TWEET' | 'THREAD' | 'BULLET_POINT' | 'TOP3
 export type Summary = {
   id: string
   title: string | null
-  coverImage: string | null
   originalText: string
   summaryText: string
   style: SummaryStyle

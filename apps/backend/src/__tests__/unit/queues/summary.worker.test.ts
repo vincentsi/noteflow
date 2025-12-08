@@ -22,7 +22,6 @@ describe('Summary Worker', () => {
       const mockAIService = {
         generateSummary: jest.fn().mockResolvedValue('This is a short summary.'),
         generateTitle: jest.fn().mockResolvedValue('Generated Title'),
-        generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
       }
 
       ;(AIService as jest.MockedClass<typeof AIService>).mockImplementation(
@@ -53,7 +52,6 @@ describe('Summary Worker', () => {
         data: {
           userId: 'user-123',
           title: 'Generated Title',
-          coverImage: 'https://example.com/image.jpg',
           originalText: 'Long article text to summarize...',
           summaryText: 'This is a short summary.',
           style: SummaryStyle.SHORT,
@@ -74,7 +72,6 @@ describe('Summary Worker', () => {
       const mockAIService = {
         generateSummary: jest.fn().mockResolvedValue('Résumé en tweet.'),
         generateTitle: jest.fn().mockResolvedValue('Generated Title'),
-        generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
       }
 
       ;(AIService as jest.MockedClass<typeof AIService>).mockImplementation(
@@ -115,7 +112,6 @@ describe('Summary Worker', () => {
       const mockAIService = {
         generateSummary: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
         generateTitle: jest.fn().mockResolvedValue('Generated Title'),
-        generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
       }
 
       ;(AIService as jest.MockedClass<typeof AIService>).mockImplementation(
@@ -138,7 +134,6 @@ describe('Summary Worker', () => {
       const mockAIService = {
         generateSummary: jest.fn().mockResolvedValue('Summary text.'),
         generateTitle: jest.fn().mockResolvedValue('Generated Title'),
-        generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
       }
 
       ;(AIService as jest.MockedClass<typeof AIService>).mockImplementation(
@@ -174,7 +169,6 @@ describe('Summary Worker', () => {
         const mockAIService = {
           generateSummary: jest.fn().mockResolvedValue(`${style} summary`),
           generateTitle: jest.fn().mockResolvedValue('Generated Title'),
-          generateCoverImage: jest.fn().mockResolvedValue('https://example.com/image.jpg'),
         }
 
         ;(AIService as jest.MockedClass<typeof AIService>).mockImplementation(

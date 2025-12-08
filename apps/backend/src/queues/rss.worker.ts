@@ -42,14 +42,11 @@ export async function processRSSFeeds(prisma: PrismaClient = defaultPrisma): Pro
 
           await prisma.article.upsert({
             where: { url: article.url },
-            update: {
-              imageUrl: article.imageUrl, // Update imageUrl if article already exists
-            },
+            update: {},
             create: {
               title: article.title,
               url: article.url,
               excerpt: article.excerpt,
-              imageUrl: article.imageUrl,
               source: article.source,
               tags: feed.tags, // Use feed tags
               publishedAt: article.publishedAt,

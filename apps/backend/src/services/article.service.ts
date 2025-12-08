@@ -23,7 +23,6 @@ export interface CreateArticleData {
   title: string
   url: string
   excerpt: string
-  imageUrl?: string
   source: string
   tags: string[]
   publishedAt: Date
@@ -90,7 +89,6 @@ export class ArticleService {
           title: true,
           url: true,
           excerpt: true,
-          imageUrl: true,
           source: true,
           tags: true,
           publishedAt: true,
@@ -143,7 +141,6 @@ export class ArticleService {
               title: true,
               url: true,
               excerpt: true,
-              imageUrl: true,
               source: true,
               tags: true,
               publishedAt: true,

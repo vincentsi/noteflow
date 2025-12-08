@@ -126,7 +126,6 @@ describe('ArticleService', () => {
         title: 'Test Article',
         url: 'https://test.com/article',
         excerpt: 'Test excerpt',
-        imageUrl: null,
         source: 'Test Source',
         tags: [],
         publishedAt: new Date(),
@@ -183,7 +182,6 @@ describe('ArticleService', () => {
         title: 'Test Article',
         url: 'https://test.com/article',
         excerpt: 'Test excerpt',
-        imageUrl: null,
         source: 'Test Source',
         tags: [],
         publishedAt: new Date(),
@@ -227,7 +225,6 @@ describe('ArticleService', () => {
         title: 'Test Article',
         url: 'https://test.com/article',
         excerpt: 'Test excerpt',
-        imageUrl: null,
         source: 'Test Source',
         tags: [],
         publishedAt: new Date(),
@@ -272,7 +269,6 @@ describe('ArticleService', () => {
         title: 'Test Article',
         url: 'https://test.com/article',
         excerpt: 'Test excerpt',
-        imageUrl: null,
         source: 'Test Source',
         tags: [],
         publishedAt: new Date(),
@@ -317,7 +313,6 @@ describe('ArticleService', () => {
       prismaMock.article.upsert.mockResolvedValue({
         id: 'article-1',
         ...articleData,
-        imageUrl: null,
         createdAt: new Date(),
       })
 

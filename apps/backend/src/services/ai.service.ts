@@ -1,7 +1,6 @@
 import OpenAI from 'openai'
 import { SummaryStyle } from '@prisma/client'
 import { extractText } from 'unpdf'
-import axios from 'axios'
 import { env } from '@/config/env'
 import { readFile } from 'node:fs/promises'
 
@@ -256,46 +255,6 @@ export class AIService {
     })
 
     return response.choices[0]?.message?.content || ''
-  }
-
-  async generateCoverImage(title: string): Promise<string | null> {
-    try {
-      // Extract keywords from title for image search
-      const keywords = title
-        .toLowerCase()
-        .replace(/[^\w\s]/g, '')
-        .split(' ')
-        .filter(word => word.length > 3)
-        .slice(0, 3)
-        .join(',')
-
-      // Use Unsplash API (gratuit avec limite de 50 requêtes/heure)
-      const unsplashAccessKey = env.UNSPLASH_ACCESS_KEY
-
-      if (!unsplashAccessKey) {
-        // Fallback: return Picsum Photos placeholder (800x400, random image based on seed)
-        const seed = Math.floor(Math.random() * 1000)
-        return `https://picsum.photos/seed/${seed}/800/400`
-      }
-
-      const response = await axios.get('https://api.unsplash.com/photos/random', {
-        params: {
-          query: keywords || 'abstract',
-          orientation: 'landscape',
-          content_filter: 'high',
-        },
-        headers: {
-          Authorization: `Client-ID ${unsplashAccessKey}`,
-        },
-        timeout: 5000,
-      })
-
-      return response.data?.urls?.regular || null
-    } catch {
-      // Fallback to Picsum Photos
-      const seed = Math.floor(Math.random() * 1000)
-      return `https://picsum.photos/seed/${seed}/800/400`
-    }
   }
 
   async extractTextFromPDF(buffer: Buffer): Promise<string> {

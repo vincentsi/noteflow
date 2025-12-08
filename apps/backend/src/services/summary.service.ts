@@ -164,7 +164,6 @@ export class SummaryService extends BaseCrudService<Summary> {
     const summaryData = {
       id: summary.id,
       title: summary.title,
-      coverImage: summary.coverImage,
       originalText: summary.originalText,
       summaryText: summary.summaryText,
       style: summary.style,

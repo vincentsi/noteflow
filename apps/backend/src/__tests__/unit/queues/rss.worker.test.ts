@@ -45,7 +45,6 @@ describe('RSS Worker', () => {
       title: 'New Article',
       url: 'https://example.com/new',
       excerpt: 'Test excerpt',
-      imageUrl: null,
       source: 'TechCrunch',
       tags: ['tech', 'ai'],
       publishedAt: new Date(), // Use current date
@@ -63,9 +62,7 @@ describe('RSS Worker', () => {
       where: { active: true },
     })
 
-    expect(RSSService.prototype.parseFeed).toHaveBeenCalledWith(
-      'https://techcrunch.com/feed'
-    )
+    expect(RSSService.prototype.parseFeed).toHaveBeenCalledWith('https://techcrunch.com/feed')
 
     expect(prismaMock.article.upsert).toHaveBeenCalledWith({
       where: { url: 'https://example.com/new' },
@@ -164,7 +161,6 @@ describe('RSS Worker', () => {
       title: 'Article from working feed',
       url: 'https://example.com/article',
       excerpt: 'Test',
-      imageUrl: null,
       source: 'Working Feed',
       tags: ['dev'],
       publishedAt: new Date(),

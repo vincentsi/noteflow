@@ -305,7 +305,6 @@ export class SummaryController {
     return {
       id: summary.id,
       title: summary.title,
-      coverImage: summary.coverImage,
       originalText: summary.originalText,
       summaryText: summary.summaryText,
       style: summary.style,

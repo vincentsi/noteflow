@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,7 +38,6 @@ export interface SummaryDisplayProps {
     originalText: string
     style: string
     title: string | null
-    coverImage: string | null
     source: string | null
     language: string
     createdAt: string
@@ -122,17 +120,6 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
 
   return (
     <Card className="overflow-hidden">
-      {summary.coverImage && (
-        <div className="relative w-full h-64 overflow-hidden">
-          <Image
-            src={summary.coverImage}
-            alt={summary.title || 'Summary cover'}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
-      )}
       <CardHeader className="border-b">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-2">

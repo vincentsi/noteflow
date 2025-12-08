@@ -183,7 +183,6 @@ model Article {
   title       String
   url         String   @unique
   excerpt     String // Short description from RSS feed
-  imageUrl    String? // Article image from RSS feed or Open Graph
   source      String // RSS feed name
   tags        String[] // Tags for filtering/categorization
   publishedAt DateTime
@@ -220,7 +219,6 @@ model Summary {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title        String?
-  coverImage   String? // Cover image URL
   originalText String       @db.Text // Original content (text, URL or PDF)
   summaryText  String       @db.Text // Generated summary
   style        SummaryStyle // SHORT, TWEET, THREAD, etc.

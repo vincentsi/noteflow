@@ -34,7 +34,6 @@ const mockSummary = {
   originalText: 'Long original text that should be toggled on and off.',
   style: 'SHORT' as const,
   title: null,
-  coverImage: null,
   source: null,
   language: 'fr',
   createdAt: '2025-01-15T10:00:00.000Z',

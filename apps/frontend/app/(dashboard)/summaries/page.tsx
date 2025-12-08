@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useAuth } from '@/providers/auth.provider'
 import { useCreateSummary, useSummaries } from '@/lib/hooks/useSummaries'
 import { SummaryForm } from '@/components/summaries/SummaryForm'
@@ -217,17 +216,6 @@ export default function SummariesPage() {
                         className="group block w-full text-left p-3 rounded-md border border-border hover:border-primary bg-card transition-all duration-150 hover:-translate-y-0.5"
                       >
                         <div className="flex items-start gap-3">
-                          {summary.coverImage && (
-                            <div className="relative w-16 h-16 rounded-sm overflow-hidden flex-shrink-0">
-                              <Image
-                                src={summary.coverImage}
-                                alt={summary.title || 'Summary cover'}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            </div>
-                          )}
                           <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0 space-y-1">
                               <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
