@@ -70,7 +70,7 @@ describe('AIService', () => {
           messages: expect.arrayContaining([
             expect.objectContaining({
               role: 'system',
-              content: expect.stringContaining('Résume'),
+              content: expect.stringContaining('expert en résumé'),
             }),
             expect.objectContaining({
               role: 'user',
@@ -118,8 +118,7 @@ describe('AIService', () => {
         choices: [
           {
             message: {
-              content:
-                '1/5 Premier tweet\n2/5 Deuxième tweet\n3/5 Troisième tweet',
+              content: '1/5 Premier tweet\n2/5 Deuxième tweet\n3/5 Troisième tweet',
             },
           },
         ],
@@ -127,11 +126,7 @@ describe('AIService', () => {
 
       mockOpenAI.chat.completions.create.mockResolvedValue(mockResponse)
 
-      const result = await aiService.generateSummary(
-        'Long text...',
-        SummaryStyle.THREAD,
-        'fr'
-      )
+      const result = await aiService.generateSummary('Long text...', SummaryStyle.THREAD, 'fr')
 
       expect(result).toContain('1/')
       expect(mockOpenAI.chat.completions.create).toHaveBeenCalled()
@@ -173,11 +168,7 @@ describe('AIService', () => {
 
       mockOpenAI.chat.completions.create.mockResolvedValue(mockResponse)
 
-      const result = await aiService.generateSummary(
-        'Long text...',
-        SummaryStyle.TOP3,
-        'en'
-      )
+      const result = await aiService.generateSummary('Long text...', SummaryStyle.TOP3, 'en')
 
       expect(result).toContain('1.')
       expect(result).toContain('2.')
@@ -198,24 +189,18 @@ describe('AIService', () => {
 
       mockOpenAI.chat.completions.create.mockResolvedValue(mockResponse)
 
-      const result = await aiService.generateSummary(
-        'Long text...',
-        SummaryStyle.MAIN_POINTS,
-        'fr'
-      )
+      const result = await aiService.generateSummary('Long text...', SummaryStyle.MAIN_POINTS, 'fr')
 
       expect(result).toBeTruthy()
       expect(mockOpenAI.chat.completions.create).toHaveBeenCalled()
     })
 
     it('should throw error if OpenAI fails', async () => {
-      mockOpenAI.chat.completions.create.mockRejectedValue(
-        new Error('OpenAI API error')
-      )
+      mockOpenAI.chat.completions.create.mockRejectedValue(new Error('OpenAI API error'))
 
-      await expect(
-        aiService.generateSummary('Text', SummaryStyle.SHORT, 'fr')
-      ).rejects.toThrow('OpenAI API error')
+      await expect(aiService.generateSummary('Text', SummaryStyle.SHORT, 'fr')).rejects.toThrow(
+        'OpenAI API error'
+      )
     })
 
     it('should handle empty response from OpenAI', async () => {
@@ -231,11 +216,7 @@ describe('AIService', () => {
 
       mockOpenAI.chat.completions.create.mockResolvedValue(mockResponse)
 
-      const result = await aiService.generateSummary(
-        'Text',
-        SummaryStyle.SHORT,
-        'fr'
-      )
+      const result = await aiService.generateSummary('Text', SummaryStyle.SHORT, 'fr')
 
       expect(result).toBe('')
     })

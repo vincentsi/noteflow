@@ -1,6 +1,6 @@
 import { logger } from '@/utils/logger'
 import { prisma } from '@/config/prisma'
-import { PlanType, SubscriptionStatus, Prisma } from '@prisma/client'
+import { PlanType, SubscriptionStatus } from '@prisma/client'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { invalidatePlanCache } from '@/middlewares/load-plan.middleware'
