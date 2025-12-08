@@ -12,7 +12,7 @@ const translations: Record<Language, Translations> = {
 
 // Simple i18n implementation without external dependencies
 class I18n {
-  private currentLanguage: Language = 'fr'
+  private currentLanguage: Language = 'en'
 
   changeLanguage(lang: Language) {
     this.currentLanguage = lang

@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   creator: "Vincent SI",
   openGraph: {
     type: "website",
-    locale: "fr_FR",
+    locale: "en_US",
     url: env.NEXT_PUBLIC_SITE_URL,
     title: "NotePostFlow - Veille IA, Résumés AI & Notes pour Développeurs",
     description: "Plateforme tout-en-un pour développeurs : veille technologique RSS, résumés de contenu par IA, et prise de notes Markdown. Gagnez du temps avec l'intelligence artificielle.",
