@@ -17,7 +17,7 @@ model User {
   name          String?
   role          Role    @default(USER)
   emailVerified Boolean @default(false)
-  language      String  @default("fr")
+  language      String  @default("en")
 
   // Stripe fields
   stripeCustomerId   String?            @unique

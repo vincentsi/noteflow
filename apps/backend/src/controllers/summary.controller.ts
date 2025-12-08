@@ -122,7 +122,7 @@ export class SummaryController {
           where: { id: userId },
           select: { language: true },
         })
-        language = (user?.language as 'fr' | 'en') || 'fr'
+        language = (user?.language as 'fr' | 'en') || 'en'
       }
 
       // Create summary job
@@ -185,7 +185,7 @@ export class SummaryController {
           where: { id: userId },
           select: { language: true },
         })
-        summaryLanguage = (user?.language || 'fr') as 'fr' | 'en'
+        summaryLanguage = (user?.language || 'en') as 'fr' | 'en'
       }
 
       // Create summary using note content

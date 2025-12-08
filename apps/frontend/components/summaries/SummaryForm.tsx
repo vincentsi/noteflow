@@ -17,6 +17,7 @@ export interface SummaryFormData {
   file?: File
   style: SummaryStyle
   source: SourceType
+  language?: 'fr' | 'en'
 }
 
 export interface SummaryFormProps {
@@ -28,7 +29,7 @@ export interface SummaryFormProps {
 const MIN_URL_LENGTH = 10
 
 export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: SummaryFormProps) {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const [source, setSource] = useState<SourceType>('url')
   const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -54,6 +55,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
     const formData: SummaryFormData = {
       style,
       source,
+      language: language as 'fr' | 'en',
     }
 
     if (source === 'url') {

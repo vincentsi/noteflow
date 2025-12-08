@@ -19,8 +19,7 @@ export interface SummarizeDialogProps {
 }
 
 export function SummarizeDialog({ note, open, onOpenChange }: SummarizeDialogProps) {
-  const { t } = useI18n()
-  const { user } = useAuth()
+  const { t, language } = useI18n()
   const router = useRouter()
   const [selectedStyle, setSelectedStyle] = useState<SummaryStyle>('SHORT')
   const createSummary = useCreateSummaryFromNote()
@@ -32,7 +31,7 @@ export function SummarizeDialog({ note, open, onOpenChange }: SummarizeDialogPro
       const result = await createSummary.mutateAsync({
         noteId: note.id,
         style: selectedStyle,
-        language: user?.language as 'fr' | 'en' | undefined,
+        language: language as 'fr' | 'en',
       })
 
       toast.success(t('summaries.jobCreated'))
