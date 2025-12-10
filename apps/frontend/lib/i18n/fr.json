@@ -224,6 +224,13 @@
       "characters": "caractères",
       "styleTitle": "Style de résumé",
       "styleDescription": "Choisissez le format de votre résumé",
+      "preview": {
+        "invalidUrl": "URL invalide",
+        "success": "Aperçu chargé avec succès",
+        "error": "Erreur lors du chargement de l'aperçu",
+        "words": "mots",
+        "chars": "caractères"
+      },
       "errors": {
         "planLimitReached": "Limite du plan atteinte. Veuillez mettre à niveau votre plan.",
         "creationFailed": "Erreur lors de la création du résumé",

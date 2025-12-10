@@ -7,9 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Link, Upload, FileText } from 'lucide-react'
+import { Link, Upload, FileText, Eye, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
+import { summariesApi } from '@/lib/api/summaries'
+import { toast } from 'sonner'
 
 type SourceType = 'url' | 'pdf' | 'text'
 
@@ -37,6 +39,16 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
   const [file, setFile] = useState<File | null>(null)
   const [style, setStyle] = useState<SummaryStyle>('SHORT')
 
+  // Preview state
+  const [showPreview, setShowPreview] = useState(false)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+  const [preview, setPreview] = useState<{
+    title: string
+    content: string
+    wordCount: number
+    charCount: number
+  } | null>(null)
+
   // Update URL when initialUrl changes
   useEffect(() => {
     if (initialUrl) {
@@ -50,6 +62,31 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile)
     }
+  }
+
+  const handlePreviewURL = async () => {
+    if (!url || url.trim().length < MIN_URL_LENGTH) {
+      toast.error(t('summaries.form.preview.invalidUrl'))
+      return
+    }
+
+    setIsLoadingPreview(true)
+    try {
+      const response = await summariesApi.previewURL(url)
+      setPreview(response.data)
+      setShowPreview(true)
+      toast.success(t('summaries.form.preview.success'))
+    } catch (error) {
+      toast.error(t('summaries.form.preview.error'))
+      console.error('Preview error:', error)
+    } finally {
+      setIsLoadingPreview(false)
+    }
+  }
+
+  const closePreview = () => {
+    setShowPreview(false)
+    setPreview(null)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -168,16 +205,58 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
               className="resize-none font-mono text-sm"
             />
           ) : source === 'url' ? (
-            <Input
-              id="url-input"
-              name="url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder={t('summaries.form.urlPlaceholder')}
-              disabled={isLoading}
-              aria-label={t('summaries.form.urlAriaLabel')}
-            />
+            <>
+              <div className="flex gap-2">
+                <Input
+                  id="url-input"
+                  name="url"
+                  type="url"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value)
+                    setShowPreview(false)
+                    setPreview(null)
+                  }}
+                  placeholder={t('summaries.form.urlPlaceholder')}
+                  disabled={isLoading}
+                  aria-label={t('summaries.form.urlAriaLabel')}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePreviewURL}
+                  disabled={isLoading || isLoadingPreview || url.trim().length < MIN_URL_LENGTH}
+                >
+                  {isLoadingPreview ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              {showPreview && preview && (
+                <div className="mt-4 p-4 border rounded-md bg-muted/50 relative">
+                  <button
+                    type="button"
+                    onClick={closePreview}
+                    className="absolute top-2 right-2 p-1 hover:bg-background rounded-sm"
+                    aria-label="Close preview"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-sm">{preview.title}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {preview.wordCount} {t('summaries.form.preview.words')} • {preview.charCount} {t('summaries.form.preview.chars')}
+                    </p>
+                    <div className="max-h-[200px] overflow-y-auto">
+                      <p className="text-sm text-foreground/80 whitespace-pre-wrap">{preview.content}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-4">

@@ -47,11 +47,25 @@ export type GetSummaryByIdResponse = ApiResponse<{
   summary: Summary
 }>
 
+export type PreviewURLResponse = ApiResponse<{
+  title: string
+  content: string
+  wordCount: number
+  charCount: number
+}>
+
 /**
  * Summaries API client
  * Manages AI-powered summary generation
  */
 export const summariesApi = {
+  /**
+   * Preview URL content before creating summary
+   */
+  previewURL: async (url: string): Promise<PreviewURLResponse> => {
+    const response = await apiClient.post<PreviewURLResponse>('/api/summaries/preview', { url })
+    return response.data
+  },
   /**
    * Create a new summary generation job
    */

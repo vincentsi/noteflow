@@ -21,6 +21,8 @@ import {
 } from '@/utils/streaming-upload'
 import { PlanType } from '@prisma/client'
 import { requireAuth } from '@/utils/require-auth'
+import { fetchURLContentPreview, isURL } from '@/utils/url-content-fetcher'
+import { sanitizeText } from '@/utils/sanitize'
 
 /**
  * Summary controller
@@ -484,6 +486,53 @@ export class SummaryController {
       })
     } catch (error) {
       return handleControllerError(error, request, reply)
+    }
+  }
+
+  /**
+   * POST /api/summaries/preview
+   * Preview URL content before creating summary
+   */
+  async previewURLContent(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      requireAuth(request)
+
+      const { url } = request.body as { url: string }
+
+      // Validate URL format
+      if (!url || typeof url !== 'string' || !isURL(url)) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Bad Request',
+          message: 'Invalid URL provided',
+        })
+      }
+
+      // Fetch and extract content preview
+      const { content, title } = await fetchURLContentPreview(url)
+
+      // SECURITY: Sanitize content to prevent XSS
+      const sanitizedContent = sanitizeText(content)
+
+      return reply.status(200).send({
+        success: true,
+        data: {
+          title,
+          content: sanitizedContent,
+          wordCount: sanitizedContent.split(/\s+/).filter(Boolean).length,
+          charCount: sanitizedContent.length,
+        },
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply, {
+        'Failed to fetch URL content': (err, reply) => {
+          return reply.status(400).send({
+            success: false,
+            error: 'Bad Request',
+            message: err.message,
+          })
+        },
+      })
     }
   }
 }

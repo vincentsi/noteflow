@@ -10,6 +10,54 @@ import { env } from '@/config/env'
 export const summaryRoutes = createProtectedRoutes(
   async (fastify: FastifyInstance): Promise<void> => {
     /**
+     * Preview URL content
+     * @route POST /api/summaries/preview
+     * @access Private
+     */
+    fastify.post(
+      '/preview',
+      {
+        schema: {
+          tags: ['Summaries'],
+          description: 'Preview URL content before creating a summary',
+          body: {
+            type: 'object',
+            properties: {
+              url: { type: 'string', format: 'uri' },
+            },
+            required: ['url'],
+          },
+          response: {
+            200: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                data: {
+                  type: 'object',
+                  properties: {
+                    title: { type: 'string' },
+                    content: { type: 'string' },
+                    wordCount: { type: 'number' },
+                    charCount: { type: 'number' },
+                  },
+                },
+              },
+            },
+            400: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                error: { type: 'string' },
+                message: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      summaryController.previewURLContent.bind(summaryController)
+    )
+
+    /**
      * Create a summary
      * @route POST /api/summaries
      * @access Private

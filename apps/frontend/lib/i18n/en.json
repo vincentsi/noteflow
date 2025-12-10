@@ -224,6 +224,13 @@
       "characters": "characters",
       "styleTitle": "Summary style",
       "styleDescription": "Choose the format of your summary",
+      "preview": {
+        "invalidUrl": "Invalid URL",
+        "success": "Preview loaded successfully",
+        "error": "Error loading preview",
+        "words": "words",
+        "chars": "characters"
+      },
       "errors": {
         "planLimitReached": "Plan limit reached. Please upgrade your plan.",
         "creationFailed": "Error creating summary",
