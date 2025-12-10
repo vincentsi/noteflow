@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Link, Upload } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { Link, Upload, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
 
-type SourceType = 'url' | 'pdf'
+type SourceType = 'url' | 'pdf' | 'text'
 
 export interface SummaryFormData {
   text?: string
@@ -30,8 +31,9 @@ const MIN_URL_LENGTH = 10
 
 export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: SummaryFormProps) {
   const { t, language } = useI18n()
-  const [source, setSource] = useState<SourceType>('url')
+  const [source, setSource] = useState<SourceType>('text')
   const [url, setUrl] = useState('')
+  const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [style, setStyle] = useState<SummaryStyle>('SHORT')
 
@@ -39,6 +41,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
   useEffect(() => {
     if (initialUrl) {
       setUrl(initialUrl)
+      setSource('url')
     }
   }, [initialUrl])
 
@@ -60,6 +63,8 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
 
     if (source === 'url') {
       formData.text = url
+    } else if (source === 'text') {
+      formData.text = text
     } else {
       formData.file = file || undefined
     }
@@ -67,9 +72,10 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
     onSubmit(formData)
   }
 
-  const isValid = source === 'url'
-    ? url.trim().length >= MIN_URL_LENGTH
-    : file !== null
+  const isValid =
+    source === 'url' ? url.trim().length >= MIN_URL_LENGTH :
+    source === 'text' ? text.trim().length >= 10 :
+    file !== null
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -80,7 +86,24 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
           <CardDescription className="text-sm">{t('summaries.form.sourceDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => setSource('text')}
+              className={cn(
+                'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+                'hover:border-primary hover:-translate-y-0.5',
+                source === 'text'
+                  ? 'border-primary bg-background'
+                  : 'border-border bg-background'
+              )}
+            >
+              <FileText className={cn('h-5 w-5', source === 'text' ? 'text-primary' : 'text-foreground')} />
+              <span className={cn('font-medium text-sm', source === 'text' ? 'text-foreground' : 'text-foreground')}>
+                {t('summaries.form.textLabel')}
+              </span>
+            </button>
+
             <button
               type="button"
               onClick={() => setSource('url')}
@@ -123,13 +146,28 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
         <CardHeader>
           <CardTitle className="text-base font-semibold">{t('summaries.form.contentTitle')}</CardTitle>
           <CardDescription className="text-sm">
-            {source === 'url'
-              ? t('summaries.form.contentDescriptionUrl')
-              : t('summaries.form.contentDescriptionPdf')}
+            {source === 'text'
+              ? t('summaries.form.contentDescriptionText')
+              : source === 'url'
+                ? t('summaries.form.contentDescriptionUrl')
+                : t('summaries.form.contentDescriptionPdf')}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {source === 'url' ? (
+          {source === 'text' ? (
+            <Textarea
+              id="text-input"
+              name="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={t('summaries.form.textPlaceholder')}
+              disabled={isLoading}
+              aria-label={t('summaries.form.textAriaLabel')}
+              rows={10}
+              maxLength={50000}
+              className="resize-none font-mono text-sm"
+            />
+          ) : source === 'url' ? (
             <Input
               id="url-input"
               name="url"
@@ -166,6 +204,11 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
                 </p>
               )}
             </div>
+          )}
+          {source === 'text' && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {text.length} / 50,000 {t('summaries.form.characters')}
+            </p>
           )}
         </CardContent>
       </Card>
