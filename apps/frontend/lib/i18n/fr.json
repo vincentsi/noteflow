@@ -262,7 +262,13 @@
       "summarizedChars": "Caractères résumés",
       "originalText": "Texte original",
       "importSuccess": "Résumé importé dans les notes avec succès",
-      "importError": "Erreur lors de l'import du résumé dans les notes"
+      "importError": "Erreur lors de l'import du résumé dans les notes",
+      "exportSuccess": "Résumé exporté en Markdown avec succès",
+      "untitled": "Sans titre",
+      "style": "Style",
+      "date": "Date",
+      "summary": "Résumé",
+      "generatedBy": "Généré par"
     },
     "buttons": {
       "showOriginal": "Voir l'original",
@@ -270,7 +276,8 @@
       "copyText": "Copier le texte",
       "copyLink": "Copier le lien",
       "importToNote": "Importer dans Notes",
-      "importing": "Import en cours..."
+      "importing": "Import en cours...",
+      "exportMarkdown": "Exporter en Markdown"
     }
   },
   "notes": {

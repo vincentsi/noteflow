@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Copy, ChevronDown, ChevronUp, Trash2, Share2, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, BarChart3, FileDown } from 'lucide-react'
+import { Copy, ChevronDown, ChevronUp, Trash2, Share2, FileText, MessageSquare, List, Trophy, Lightbulb, Hash, BarChart3, FileDown, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { useDeleteSummary } from '@/lib/hooks/useSummaries'
 import { useCreateNoteFromSummary } from '@/lib/hooks/useNotes'
@@ -93,6 +93,35 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
         toast.error(t('summaries.messages.importError'))
       },
     })
+  }
+
+  const handleExportMarkdown = () => {
+    const markdown = `# ${summary.title || t('summaries.messages.untitled')}
+
+**${t('summaries.messages.style')}**: ${styleLabel}
+**${t('summaries.messages.date')}**: ${formatDate(summary.createdAt)}
+**${t('summaries.messages.compression')}**: ${compressionRate}%
+
+## ${t('summaries.messages.summary')}
+
+${summary.summaryText}
+
+## ${t('summaries.messages.originalText')}
+
+${summary.originalText}
+
+---
+*${t('summaries.messages.generatedBy')} NoteFlow*
+`
+
+    const blob = new Blob([markdown], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${summary.title || 'summary'}-${new Date().getTime()}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success(t('summaries.messages.exportSuccess'))
   }
 
   // Calculate compression stats
@@ -231,6 +260,15 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
           >
             <FileDown className="h-4 w-4 mr-2" />
             {createNote.isPending ? t('summaries.buttons.importing') : t('summaries.buttons.importToNote')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportMarkdown}
+            aria-label={t('summaries.buttons.exportMarkdown')}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {t('summaries.buttons.exportMarkdown')}
           </Button>
         </div>
         <Button
