@@ -225,6 +225,10 @@ model Summary {
   source       String? // URL or filename
   language     String       @default("fr") // fr | en
 
+  // Public sharing
+  shareToken String?  @unique // Unique token for public sharing
+  isPublic   Boolean  @default(false) // If true, summary is accessible via shareToken
+
   createdAt DateTime  @default(now())
   deletedAt DateTime? // Soft delete - null = active, not null = deleted
 
@@ -233,6 +237,7 @@ model Summary {
   @@index([userId, createdAt])
   @@index([userId, deletedAt]) // Optimizes soft delete queries
   @@index([userId, deletedAt, createdAt(sort: Desc)]) // PERF-002: Pagination with soft delete
+  @@index([shareToken]) // Performance: public share lookups
   @@index([userId, style, createdAt(sort: Desc)]) // Optimizes filtered queries
   @@index([userId, deletedAt, style, createdAt(sort: Desc)]) // Optimizes queries with deletedAt + style filter
   @@map("summaries")

@@ -142,4 +142,20 @@ export const summariesApi = {
     const response = await apiClient.post<CreateSummaryResponse>('/api/summaries/from-note', params)
     return response.data
   },
+
+  /**
+   * Enable public sharing for a summary
+   */
+  enableSharing: async (id: string): Promise<ApiResponse<{ shareToken: string; shareUrl: string }>> => {
+    const response = await apiClient.post<ApiResponse<{ shareToken: string; shareUrl: string }>>(`/api/summaries/${id}/share`)
+    return response.data
+  },
+
+  /**
+   * Get public summary by share token (no auth required)
+   */
+  getPublicSummary: async (token: string): Promise<ApiResponse<{ summary: Summary }>> => {
+    const response = await apiClient.get<ApiResponse<{ summary: Summary }>>(`/api/public/summaries/${token}`)
+    return response.data
+  },
 }

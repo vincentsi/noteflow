@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import type { Summary } from '@prisma/client'
+import { randomBytes } from 'node:crypto'
 import { summaryService } from '@/services/summary.service'
 import { aiService } from '@/services/ai.service'
 import { CacheService } from '@/services/cache.service'
@@ -534,6 +535,104 @@ export class SummaryController {
         },
       })
     }
+  }
+
+  /**
+   * POST /api/summaries/:id/share
+   * Enable public sharing for a summary
+   */
+  async enablePublicSharing(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const userId = requireAuth(request)
+      const { id } = request.params as { id: string }
+
+      // Check if summary exists and belongs to user
+      const summary = await prisma.summary.findFirst({
+        where: {
+          id,
+          userId,
+          deletedAt: null,
+        },
+      })
+
+      if (!summary) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Not Found',
+          message: 'Summary not found',
+        })
+      }
+
+      // Generate shareToken if not exists
+      const shareToken = summary.shareToken || this.generateShareToken()
+
+      // Update summary to enable public sharing
+      const updatedSummary = await prisma.summary.update({
+        where: { id },
+        data: {
+          shareToken,
+          isPublic: true,
+        },
+      })
+
+      return reply.status(200).send({
+        success: true,
+        data: {
+          shareToken: updatedSummary.shareToken,
+          shareUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/share/${updatedSummary.shareToken}`,
+        },
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
+
+  /**
+   * GET /api/public/summaries/:token
+   * Get public summary by share token (no auth required)
+   */
+  async getPublicSummary(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { token } = request.params as { token: string }
+
+      const summary = await prisma.summary.findFirst({
+        where: {
+          shareToken: token,
+          isPublic: true,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          title: true,
+          summaryText: true,
+          style: true,
+          language: true,
+          createdAt: true,
+        },
+      })
+
+      if (!summary) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Not Found',
+          message: 'Summary not found or not public',
+        })
+      }
+
+      return reply.status(200).send({
+        success: true,
+        data: { summary },
+      })
+    } catch (error) {
+      return handleControllerError(error, request, reply)
+    }
+  }
+
+  /**
+   * Generate a unique share token
+   */
+  private generateShareToken(): string {
+    return randomBytes(16).toString('hex')
   }
 }
 

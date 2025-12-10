@@ -133,11 +133,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'none'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://browser.sentry-cdn.com https://vercel.live",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://browser.sentry-cdn.com https://vercel.live https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.unsplash.com https://*.pixabay.com https://*.amazonaws.com https://*.amazonws.com https://*.cloudfront.net https://*.googleusercontent.com https://images.unsplash.com https://source.unsplash.com https://files.smashing.media https://sg.dev https://news.ycombinator.com https://hnrss.org https://media.dev.to https://media2.dev.to https://res.cloudinary.com https://picsum.photos https://www.01net.com https://platform.theverge.com https://cdn.thenewstack.io https://*.lestechnophiles.com https://www.docker.com https://www.developpez.com https://files.realpython.com https://freecodecamp.org https://stackoverflow.blog https://reactjs.org https://news.vuejs.org https://blog.angular.io https://svelte.dev https://nextjs.org https://nodejs.org https://devblogs.microsoft.com https://go.dev https://blog.rust-lang.org https://openai.com https://www.anthropic.com https://feeds.feedburner.com https://deepmind.google https://huggingface.co https://machinelearningmastery.com https://towardsdatascience.com https://kubernetes.io https://www.cncf.io https://aws.amazon.com https://cloudblog.withgoogle.com https://thenewstack.io https://reactnative.dev https://medium.com https://www.hackingwithswift.com https://css-tricks.com https://www.smashingmagazine.com https://alistapart.com https://tympanus.net https://github.blog https://netflixtechblog.com https://vercel.com https://stripe.com https://www.theverge.com https://feeds.arstechnica.com https://www.technologyreview.com https://www.numerama.com https://www.nextinpact.com https://www.frenchweb.fr",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.stripe.com https://sentry.io https://*.sentry.io https://noteflow-backend-production.up.railway.app http://localhost:3001 ws://localhost:3001",
+              "connect-src 'self' https://api.stripe.com https://sentry.io https://*.sentry.io https://noteflow-backend-production.up.railway.app http://localhost:3001 ws://localhost:3001 https://vitals.vercel-insights.com",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
               "manifest-src 'self'",
               "object-src 'none'",

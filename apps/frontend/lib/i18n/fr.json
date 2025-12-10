@@ -257,6 +257,7 @@
     },
     "messages": {
       "linkCopied": "Lien copié dans le presse-papiers",
+      "publicLinkCopied": "Lien public copié ! Partageable sans connexion",
       "linkCopyError": "Erreur lors de la copie du lien",
       "summaryCopied": "Résumé copié dans le presse-papiers",
       "summaryCopyError": "Erreur lors de la copie",
@@ -282,6 +283,7 @@
       "hideOriginal": "Masquer l'original",
       "copyText": "Copier le texte",
       "copyLink": "Copier le lien",
+      "sharing": "Génération du lien...",
       "importToNote": "Importer dans Notes",
       "importing": "Import en cours...",
       "exportMarkdown": "Exporter en Markdown"

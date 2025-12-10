@@ -20,6 +20,8 @@ import { useDeleteSummary } from '@/lib/hooks/useSummaries'
 import { useCreateNoteFromSummary } from '@/lib/hooks/useNotes'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/provider'
+import { summariesApi } from '@/lib/api/summaries'
+import { useState as useReactState } from 'react'
 
 // Style badges configuration with icons (simplified, no colors)
 const STYLE_ICON_CONFIG = {
@@ -47,6 +49,7 @@ export interface SummaryDisplayProps {
 export function SummaryDisplay({ summary }: SummaryDisplayProps) {
   const [showOriginal, setShowOriginal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isSharing, setIsSharing] = useReactState(false)
   const router = useRouter()
   const deleteSummary = useDeleteSummary()
   const createNote = useCreateNoteFromSummary()
@@ -63,10 +66,14 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href)
-      toast.success(t('summaries.messages.linkCopied'))
+      setIsSharing(true)
+      const response = await summariesApi.enableSharing(summary.id)
+      await navigator.clipboard.writeText(response.data.shareUrl)
+      toast.success(t('summaries.messages.publicLinkCopied'))
     } catch {
       toast.error(t('summaries.messages.linkCopyError'))
+    } finally {
+      setIsSharing(false)
     }
   }
 
@@ -102,13 +109,7 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
 **${t('summaries.messages.date')}**: ${formatDate(summary.createdAt)}
 **${t('summaries.messages.compression')}**: ${compressionRate}%
 
-## ${t('summaries.messages.summary')}
-
 ${summary.summaryText}
-
-## ${t('summaries.messages.originalText')}
-
-${summary.originalText}
 
 ---
 *${t('summaries.messages.generatedBy')} NoteFlow*
@@ -246,10 +247,11 @@ ${summary.originalText}
             variant="outline"
             size="sm"
             onClick={handleShare}
+            disabled={isSharing}
             aria-label={t('summaries.buttons.copyLink')}
           >
             <Share2 className="h-4 w-4 mr-2" />
-            {t('summaries.buttons.copyLink')}
+            {isSharing ? t('summaries.buttons.sharing') : t('summaries.buttons.copyLink')}
           </Button>
           <Button
             variant="outline"

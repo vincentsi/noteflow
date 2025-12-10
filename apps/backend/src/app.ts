@@ -25,6 +25,7 @@ import { testSetupRoutes } from '@/routes/test-setup.route'
 import { userRoutes } from '@/routes/user.routes'
 import { articleRoutes } from '@/routes/article.route'
 import { summaryRoutes } from '@/routes/summary.route'
+import { publicSummaryRoutes } from '@/routes/public-summary.route'
 import { noteRoutes } from '@/routes/note.route'
 import { transcriptionRoutes } from '@/routes/transcription.route'
 
@@ -158,9 +159,8 @@ export async function createApp(): Promise<FastifyInstance> {
   await registerSecurityMiddlewares(app)
 
   // Register security headers middleware
-  const { securityHeadersMiddleware, contentSecurityPolicyMiddleware } = await import(
-    '@/middlewares/security-headers.middleware'
-  )
+  const { securityHeadersMiddleware, contentSecurityPolicyMiddleware } =
+    await import('@/middlewares/security-headers.middleware')
   app.addHook('onRequest', securityHeadersMiddleware)
   app.addHook('onRequest', contentSecurityPolicyMiddleware)
 
@@ -195,6 +195,7 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(userRoutes, { prefix: '/api/users' })
   await app.register(articleRoutes, { prefix: '/api/articles' })
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
+  await app.register(publicSummaryRoutes, { prefix: '/api/public/summaries' }) // Public routes (no auth)
   await app.register(noteRoutes, { prefix: '/api/notes' })
   await app.register(transcriptionRoutes, { prefix: '/api/transcriptions' })
 

@@ -257,6 +257,7 @@
     },
     "messages": {
       "linkCopied": "Link copied to clipboard",
+      "publicLinkCopied": "Public link copied! Shareable without login",
       "linkCopyError": "Error copying link",
       "summaryCopied": "Summary copied to clipboard",
       "summaryCopyError": "Error copying",
@@ -284,7 +285,8 @@
       "copyLink": "Copy link",
       "importToNote": "Import to Notes",
       "importing": "Importing...",
-      "exportMarkdown": "Export as Markdown"
+      "exportMarkdown": "Export as Markdown",
+      "sharing": "Generating link..."
     }
   },
   "notes": {

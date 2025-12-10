@@ -360,6 +360,52 @@ export const summaryRoutes = createProtectedRoutes(
     )
 
     /**
+     * Enable public sharing for a summary
+     * @route POST /api/summaries/:id/share
+     * @access Private
+     */
+    fastify.post(
+      '/:id/share',
+      {
+        schema: {
+          tags: ['Summaries'],
+          description: 'Enable public sharing for a summary',
+          params: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+            },
+            required: ['id'],
+          },
+          response: {
+            200: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                data: {
+                  type: 'object',
+                  properties: {
+                    shareToken: { type: 'string' },
+                    shareUrl: { type: 'string' },
+                  },
+                },
+              },
+            },
+            404: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                error: { type: 'string' },
+                message: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      summaryController.enablePublicSharing.bind(summaryController)
+    )
+
+    /**
      * Delete a summary
      * @route DELETE /api/summaries/:id
      * @access Private
