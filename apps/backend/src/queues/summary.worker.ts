@@ -7,6 +7,7 @@ import type { SummaryJob } from './summary.queue'
 import { getSummaryUsageCacheKey } from '@/utils/cache-key-helpers'
 import { WorkerRateLimiter } from '@/utils/worker-rate-limiter'
 import { validateUrlForFetch } from '@/utils/url-validator'
+import { sanitizeText } from '@/utils/sanitize'
 
 /**
  * Check if text is a URL
@@ -88,6 +89,10 @@ export async function processSummary(
     logger.info(`Fetching content from URL: ${text}`)
     contentToSummarize = await fetchURLContent(text)
   }
+
+  // SECURITY: Sanitize text to prevent XSS attacks
+  // Remove all HTML tags and potentially malicious content
+  contentToSummarize = sanitizeText(contentToSummarize)
 
   // Generate summary with AI (rate limited)
   const summaryText = await aiService.generateSummary(contentToSummarize, style, language)
