@@ -7,12 +7,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react'
 
 const CREATION_STEPS = [
-  { id: 'fetching', label: 'Fetching post', duration: 1500 },
-  { id: 'analyzing', label: 'Analyzing post', duration: 2000 },
-  { id: 'creating', label: 'Creating Power Post', duration: 7000 },
+  { id: 'fetching', label: 'Fetching content', duration: 1500 },
+  { id: 'analyzing', label: 'Analyzing content', duration: 2000 },
+  { id: 'creating', label: 'Creating summary', duration: 7000 },
   { id: 'finding', label: 'Finding title', duration: 2500 },
-  { id: 'generating', label: 'Generating cover', duration: 3000 },
-  { id: 'publishing', label: 'Publishing post', duration: 20000 },
+  { id: 'publishing', label: 'Publishing summary', duration: 20000 },
 ]
 
 export default function SummaryCreatePage() {
@@ -89,7 +88,7 @@ export default function SummaryCreatePage() {
       <Card className="w-full max-w-2xl">
         <CardContent className="pt-8 pb-8">
           <h2 className="text-2xl font-bold text-center mb-8">
-            We are creating the Power Post for you...
+            We are creating your summary...
           </h2>
 
           <div className="space-y-4">
@@ -108,7 +107,7 @@ export default function SummaryCreatePage() {
                       isCompleted || isCurrent ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                   }}
                 >
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <Icon
                       className={`h-6 w-6 ${
                         isCompleted
