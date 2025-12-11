@@ -7,7 +7,7 @@ import { useAuth } from '@/providers/auth.provider'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageSwitcher } from '@/components/language-switcher'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { LogOut, User, Menu, X } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/provider'
 import { cn } from '@/lib/utils'
@@ -42,6 +42,9 @@ export function DashboardNav() {
             <SheetContent side="left" className="w-[280px] sm:w-[350px]">
               <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
+                <SheetDescription>
+                  Navigate through the application
+                </SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-4 mt-6">
                 {navLinks.map((link) => {
