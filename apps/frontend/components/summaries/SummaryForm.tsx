@@ -139,12 +139,12 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
           <CardDescription className="text-sm">{t('summaries.form.sourceDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => setSource('text')}
               className={cn(
-                'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+                'flex flex-col items-center gap-2 p-4 min-h-[44px] rounded-md border transition-all duration-150',
                 'hover:border-primary hover:-translate-y-0.5',
                 source === 'text'
                   ? 'border-primary bg-background'
@@ -161,7 +161,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
               type="button"
               onClick={() => setSource('url')}
               className={cn(
-                'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+                'flex flex-col items-center gap-2 p-4 min-h-[44px] rounded-md border transition-all duration-150',
                 'hover:border-primary hover:-translate-y-0.5',
                 source === 'url'
                   ? 'border-primary bg-background'
@@ -178,7 +178,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
               type="button"
               onClick={() => setSource('pdf')}
               className={cn(
-                'flex flex-col items-center gap-2 p-4 rounded-md border transition-all duration-150',
+                'flex flex-col items-center gap-2 p-4 min-h-[44px] rounded-md border transition-all duration-150',
                 'hover:border-primary hover:-translate-y-0.5',
                 source === 'pdf'
                   ? 'border-primary bg-background'

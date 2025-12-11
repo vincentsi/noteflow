@@ -1,12 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/providers/auth.provider'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageSwitcher } from '@/components/language-switcher'
-import { LogOut, User } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { LogOut, User, Menu, X } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/provider'
 import { cn } from '@/lib/utils'
 
@@ -14,6 +16,7 @@ export function DashboardNav() {
   const { user, logout, isAuthenticated } = useAuth()
   const { t } = useI18n()
   const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navLinks = [
     { href: '/dashboard', label: t('common.navigation.dashboard') },
@@ -28,7 +31,57 @@ export function DashboardNav() {
   return (
     <nav className="sticky top-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto h-full px-4 flex items-center justify-between">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-8">
+          {/* Mobile Menu Toggle */}
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" aria-label="Toggle menu">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] sm:w-[350px]">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-4 mt-6">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || pathname?.startsWith(link.href + '/')
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-colors',
+                        isActive
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-foreground hover:bg-muted'
+                      )}
+                      prefetch
+                    >
+                      {link.label}
+                    </Link>
+                  )
+                })}
+                {user?.role === 'ADMIN' && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-md transition-colors',
+                      pathname?.startsWith('/admin')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-primary hover:bg-primary/5'
+                    )}
+                    prefetch
+                  >
+                    {t('common.navigation.admin')}
+                  </Link>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <Link href="/" className="text-lg font-bold text-foreground" prefetch>
             NoteFlow
           </Link>

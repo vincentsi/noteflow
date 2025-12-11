@@ -267,7 +267,7 @@ export default function NotesPage() {
             <div>
               <label htmlFor="note-content" className="text-sm font-medium mb-2 block">{t('notes.editor.contentPlaceholder')}</label>
               {splitView ? (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <NoteEditor
                     id="note-content"
                     value={content}
