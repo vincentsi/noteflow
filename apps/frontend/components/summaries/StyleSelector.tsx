@@ -67,9 +67,7 @@ export function StyleSelector({ value, onChange, selectedTemplateId }: StyleSele
   const templates = templatesData?.data.templates?.filter((t: SummaryTemplate) => !t.isDefault) || []
 
   const handleSelect = (styleOrTemplateId: SummaryStyle | string) => {
-    if (styleOrTemplateId !== value) {
-      onChange(styleOrTemplateId)
-    }
+    onChange(styleOrTemplateId)
   }
 
   return (
@@ -80,7 +78,7 @@ export function StyleSelector({ value, onChange, selectedTemplateId }: StyleSele
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {styleOptions.map((option) => {
             const Icon = option.icon
-            const isSelected = value === option.value && !selectedTemplateId
+            const isSelected = !selectedTemplateId && value === option.value
 
             return (
               <button

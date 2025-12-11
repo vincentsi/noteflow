@@ -154,21 +154,28 @@ export default function TemplatesPage() {
 
       {/* Quota */}
       {quota && (
-        <Card>
+        <Card className={quota.limit === 0 ? 'border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20' : ''}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium">
                   {quota.limit === 'unlimited'
                     ? t('templates.quota.unlimited')
-                    : t('templates.quota.used', { used: quota.used, limit: quota.limit })}
+                    : quota.limit === 0
+                      ? t('templates.quota.upgrade')
+                      : t('templates.quota.used', { used: quota.used, limit: quota.limit })}
                 </p>
-                {!canCreateMore && (
+                {!canCreateMore && quota.limit !== 0 && (
                   <p className="text-sm text-muted-foreground mt-1">
                     {t('templates.messages.quotaReached')}
                   </p>
                 )}
               </div>
+              {quota.limit === 0 && (
+                <Button asChild variant="default" size="sm">
+                  <a href="/pricing">{t('common.actions.upgrade')}</a>
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

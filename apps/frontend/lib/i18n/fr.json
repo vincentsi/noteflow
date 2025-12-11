@@ -21,7 +21,8 @@
       "refresh": "Actualiser",
       "copy": "Copier",
       "share": "Partager",
-      "viewMore": "Voir plus"
+      "viewMore": "Voir plus",
+      "upgrade": "Améliorer mon plan"
     },
     "messages": {
       "success": "Opération réussie",
@@ -307,7 +308,7 @@
     "quota": {
       "used": "{{used}} sur {{limit}} modèles utilisés",
       "unlimited": "Modèles illimités",
-      "upgrade": "Passez à une offre supérieure pour créer des modèles personnalisés"
+      "upgrade": "Passez à STARTER (3 modèles) ou PRO (illimités) pour créer des modèles personnalisés"
     },
     "form": {
       "namePlaceholder": "Nom du modèle",

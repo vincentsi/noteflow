@@ -21,7 +21,8 @@
       "refresh": "Refresh",
       "copy": "Copy",
       "share": "Share",
-      "viewMore": "View more"
+      "viewMore": "View more",
+      "upgrade": "Upgrade Plan"
     },
     "messages": {
       "success": "Operation successful",
@@ -307,7 +308,7 @@
     "quota": {
       "used": "{{used}} of {{limit}} templates used",
       "unlimited": "Unlimited templates",
-      "upgrade": "Upgrade to create custom templates"
+      "upgrade": "Upgrade to STARTER (3 templates) or PRO (unlimited) to create custom templates"
     },
     "form": {
       "namePlaceholder": "Template name",

@@ -92,8 +92,8 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
   }
 
   const handleStyleOrTemplateChange = (styleOrTemplateId: SummaryStyle | string) => {
-    // Check if it's a template ID (UUID format)
-    const isTemplateId = styleOrTemplateId.length > 10 && styleOrTemplateId.includes('-')
+    // Check if it's a template ID (CUID format - 25 characters)
+    const isTemplateId = styleOrTemplateId.length === 25
 
     if (isTemplateId) {
       setTemplateId(styleOrTemplateId)
