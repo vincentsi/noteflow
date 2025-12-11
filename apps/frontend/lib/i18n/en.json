@@ -289,6 +289,55 @@
       "sharing": "Generating link..."
     }
   },
+  "templates": {
+    "title": "Summary Templates",
+    "subtitle": "Create custom templates for personalized summaries",
+    "myTemplates": "My templates",
+    "systemTemplates": "System templates",
+    "createTemplate": "New template",
+    "editTemplate": "Edit template",
+    "empty": "No custom templates",
+    "emptySubtitle": "Create your first custom template to personalize your summaries",
+    "quota": {
+      "used": "{{used}} of {{limit}} templates used",
+      "unlimited": "Unlimited templates",
+      "upgrade": "Upgrade to create custom templates"
+    },
+    "form": {
+      "namePlaceholder": "Template name",
+      "nameLabel": "Name",
+      "descriptionPlaceholder": "Description (optional)",
+      "descriptionLabel": "Description",
+      "promptPlaceholder": "Enter your custom AI prompt instructions...",
+      "promptLabel": "Custom prompt",
+      "promptHint": "Example: Summarize this text in bullet points with emojis, focusing on key takeaways",
+      "iconPlaceholder": "Icon (emoji)",
+      "iconLabel": "Icon",
+      "saveButton": "Save template",
+      "saving": "Saving...",
+      "cancelButton": "Cancel",
+      "createButton": "Create template",
+      "creating": "Creating..."
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "use": "Use template"
+    },
+    "messages": {
+      "createSuccess": "Template created successfully",
+      "createError": "Failed to create template",
+      "updateSuccess": "Template updated successfully",
+      "updateError": "Failed to update template",
+      "deleteSuccess": "Template deleted successfully",
+      "deleteError": "Failed to delete template",
+      "deleteConfirmTitle": "Delete template?",
+      "deleteConfirmMessage": "This action is irreversible. The template will be permanently deleted.",
+      "cannotDeleteSystem": "System templates cannot be deleted",
+      "cannotEditSystem": "System templates cannot be edited",
+      "quotaReached": "Template limit reached. Upgrade your plan to create more templates."
+    }
+  },
   "notes": {
     "title": "MyNote",
     "subtitle": "Your Markdown notes",

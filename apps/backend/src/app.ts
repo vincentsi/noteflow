@@ -27,6 +27,7 @@ import { articleRoutes } from '@/routes/article.route'
 import { summaryRoutes } from '@/routes/summary.route'
 import { publicSummaryRoutes } from '@/routes/public-summary.route'
 import { noteRoutes } from '@/routes/note.route'
+import { templateRoutes } from '@/routes/template.route'
 import { transcriptionRoutes } from '@/routes/transcription.route'
 
 /**
@@ -111,6 +112,7 @@ export async function createApp(): Promise<FastifyInstance> {
         { name: 'Articles', description: 'Article management endpoints (RSS feed articles)' },
         { name: 'Summaries', description: 'AI summary generation endpoints' },
         { name: 'Notes', description: 'Note management endpoints (markdown notes with tags)' },
+        { name: 'Templates', description: 'Custom summary template endpoints' },
         {
           name: 'Transcriptions',
           description: 'Audio transcription endpoints (STARTER and PRO plans only)',
@@ -197,6 +199,7 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(summaryRoutes, { prefix: '/api/summaries' })
   await app.register(publicSummaryRoutes, { prefix: '/api/public/summaries' }) // Public routes (no auth)
   await app.register(noteRoutes, { prefix: '/api/notes' })
+  await app.register(templateRoutes, { prefix: '/api/templates' })
   await app.register(transcriptionRoutes, { prefix: '/api/transcriptions' })
 
   // SECURITY: Only register test routes in test mode OR development with explicit flag

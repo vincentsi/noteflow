@@ -43,6 +43,7 @@ model User {
   subscriptions      Subscription[]
   savedArticles      SavedArticle[]
   summaries          Summary[]
+  summaryTemplates   SummaryTemplate[]
   notes              Note[]
   posts              Post[]
   transcriptions     Transcription[]
@@ -241,6 +242,26 @@ model Summary {
   @@index([userId, style, createdAt(sort: Desc)]) // Optimizes filtered queries
   @@index([userId, deletedAt, style, createdAt(sort: Desc)]) // Optimizes queries with deletedAt + style filter
   @@map("summaries")
+}
+
+model SummaryTemplate {
+  id          String  @id @default(cuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String // Template name (e.g., "Executive Summary", "Meeting Notes")
+  description String? // Optional description of what this template does
+  prompt      String  @db.Text // Custom prompt instructions for the AI
+  icon        String? // Optional emoji or icon identifier
+
+  isDefault   Boolean @default(false) // System default templates (not deletable)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("summary_templates")
 }
 
 model Note {

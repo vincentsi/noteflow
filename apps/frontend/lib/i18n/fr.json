@@ -289,6 +289,55 @@
       "exportMarkdown": "Exporter en Markdown"
     }
   },
+  "templates": {
+    "title": "Modèles de résumé",
+    "subtitle": "Créez des modèles personnalisés pour des résumés sur mesure",
+    "myTemplates": "Mes modèles",
+    "systemTemplates": "Modèles système",
+    "createTemplate": "Nouveau modèle",
+    "editTemplate": "Modifier le modèle",
+    "empty": "Aucun modèle personnalisé",
+    "emptySubtitle": "Créez votre premier modèle personnalisé pour personnaliser vos résumés",
+    "quota": {
+      "used": "{{used}} sur {{limit}} modèles utilisés",
+      "unlimited": "Modèles illimités",
+      "upgrade": "Passez à une offre supérieure pour créer des modèles personnalisés"
+    },
+    "form": {
+      "namePlaceholder": "Nom du modèle",
+      "nameLabel": "Nom",
+      "descriptionPlaceholder": "Description (optionnelle)",
+      "descriptionLabel": "Description",
+      "promptPlaceholder": "Entrez vos instructions personnalisées pour l'IA...",
+      "promptLabel": "Prompt personnalisé",
+      "promptHint": "Exemple : Résumez ce texte en points clés avec des emojis, en mettant l'accent sur les points essentiels",
+      "iconPlaceholder": "Icône (emoji)",
+      "iconLabel": "Icône",
+      "saveButton": "Enregistrer le modèle",
+      "saving": "Enregistrement...",
+      "cancelButton": "Annuler",
+      "createButton": "Créer le modèle",
+      "creating": "Création..."
+    },
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "use": "Utiliser le modèle"
+    },
+    "messages": {
+      "createSuccess": "Modèle créé avec succès",
+      "createError": "Erreur lors de la création du modèle",
+      "updateSuccess": "Modèle mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour du modèle",
+      "deleteSuccess": "Modèle supprimé avec succès",
+      "deleteError": "Erreur lors de la suppression du modèle",
+      "deleteConfirmTitle": "Supprimer le modèle ?",
+      "deleteConfirmMessage": "Cette action est irréversible. Le modèle sera définitivement supprimé.",
+      "cannotDeleteSystem": "Les modèles système ne peuvent pas être supprimés",
+      "cannotEditSystem": "Les modèles système ne peuvent pas être modifiés",
+      "quotaReached": "Limite de modèles atteinte. Passez à une offre supérieure pour créer plus de modèles."
+    }
+  },
   "notes": {
     "title": "MyNote",
     "subtitle": "Vos notes en Markdown",
