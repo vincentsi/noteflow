@@ -19,6 +19,7 @@ export function DashboardNav() {
     { href: '/dashboard', label: t('common.navigation.dashboard') },
     { href: '/veille', label: t('common.navigation.veille') },
     { href: '/summaries', label: t('common.navigation.summaries') },
+    ...(isAuthenticated ? [{ href: '/templates', label: t('common.navigation.templates') }] : []),
     { href: '/notes', label: t('common.navigation.notes') },
     { href: '/pricing', label: t('common.navigation.pricing') },
     { href: '/contact', label: t('common.navigation.contact') },
