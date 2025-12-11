@@ -45,6 +45,7 @@ export class SummaryController {
       let text: string
       let style: SummaryStyle
       let language: 'fr' | 'en' | undefined
+      let templateId: string | undefined
 
       if (isMultipart) {
         // Handle multipart file upload with streaming
@@ -85,6 +86,7 @@ export class SummaryController {
           // Get form fields
           style = (formFields.style || 'SHORT') as SummaryStyle
           language = formFields.language as 'fr' | 'en' | undefined
+          templateId = formFields.templateId
 
           // Extract text from PDF file
           text = await aiService.extractTextFromPDFFile(tempFilePath)
@@ -117,6 +119,7 @@ export class SummaryController {
         text = body.text
         style = body.style
         language = body.language
+        templateId = body.templateId
       }
 
       // Get user language if not provided
@@ -129,7 +132,7 @@ export class SummaryController {
       }
 
       // Create summary job
-      const result = await summaryService.createSummary(userId, text, style, language)
+      const result = await summaryService.createSummary(userId, text, style, language, templateId)
 
       return reply.status(202).send({
         success: true,

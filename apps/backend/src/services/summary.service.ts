@@ -18,10 +18,31 @@ export class SummaryService extends BaseCrudService<Summary> {
     userId: string,
     text: string,
     style: SummaryStyle,
-    language: 'fr' | 'en'
+    language: 'fr' | 'en',
+    templateId?: string
   ): Promise<{ jobId: string }> {
     // Check plan limits using centralized utility
     await PlanLimiter.checkLimit(userId, 'summary')
+
+    // If templateId is provided, fetch the template and verify access
+    let customPrompt: string | undefined
+    if (templateId) {
+      const template = await prisma.summaryTemplate.findFirst({
+        where: {
+          id: templateId,
+          OR: [
+            { userId }, // User's custom template
+            { isDefault: true }, // System default template
+          ],
+        },
+      })
+
+      if (!template) {
+        throw new Error('Template not found or you do not have access to it')
+      }
+
+      customPrompt = template.prompt
+    }
 
     // Queue the summary generation job
     const job = await queueSummary({
@@ -29,6 +50,7 @@ export class SummaryService extends BaseCrudService<Summary> {
       text,
       style,
       language,
+      customPrompt,
     })
 
     return { jobId: job.id }

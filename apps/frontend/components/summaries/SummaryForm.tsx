@@ -21,6 +21,7 @@ export interface SummaryFormData {
   style: SummaryStyle
   source: SourceType
   language?: 'fr' | 'en'
+  templateId?: string
 }
 
 export interface SummaryFormProps {
@@ -38,6 +39,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
   const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [style, setStyle] = useState<SummaryStyle>('SHORT')
+  const [templateId, setTemplateId] = useState<string | null>(null)
 
   // Preview state
   const [showPreview, setShowPreview] = useState(false)
@@ -89,6 +91,19 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
     setPreview(null)
   }
 
+  const handleStyleOrTemplateChange = (styleOrTemplateId: SummaryStyle | string) => {
+    // Check if it's a template ID (UUID format)
+    const isTemplateId = styleOrTemplateId.length > 10 && styleOrTemplateId.includes('-')
+
+    if (isTemplateId) {
+      setTemplateId(styleOrTemplateId)
+      setStyle('SHORT') // Set a default style when template is selected
+    } else {
+      setTemplateId(null)
+      setStyle(styleOrTemplateId as SummaryStyle)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -96,6 +111,7 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
       style,
       source,
       language: language as 'fr' | 'en',
+      templateId: templateId || undefined,
     }
 
     if (source === 'url') {
@@ -299,7 +315,11 @@ export function SummaryForm({ onSubmit, isLoading = false, initialUrl }: Summary
           <CardDescription className="text-sm">{t('summaries.form.styleDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <StyleSelector value={style} onChange={setStyle} />
+          <StyleSelector
+            value={templateId || style}
+            onChange={handleStyleOrTemplateChange}
+            selectedTemplateId={templateId}
+          />
         </CardContent>
       </Card>
 

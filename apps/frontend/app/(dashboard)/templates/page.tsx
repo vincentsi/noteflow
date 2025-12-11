@@ -16,7 +16,7 @@ import { useI18n } from '@/lib/i18n/provider'
 import type { SummaryTemplate, CreateTemplateParams } from '@/lib/api/templates'
 
 export default function TemplatesPage() {
-  const { user, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth()
   const { t } = useI18n()
   const queryClient = useQueryClient()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)

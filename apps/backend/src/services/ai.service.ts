@@ -257,6 +257,38 @@ export class AIService {
     return response.choices[0]?.message?.content || ''
   }
 
+  /**
+   * Generate summary with custom prompt from template
+   */
+  async generateSummaryWithCustomPrompt(
+    text: string,
+    customPrompt: string,
+    language: 'fr' | 'en'
+  ): Promise<string> {
+    const languageInstruction =
+      language === 'fr'
+        ? '\n\nImportant: Réponds en français.'
+        : '\n\nImportant: Respond in English.'
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: customPrompt + languageInstruction,
+        },
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+    })
+
+    return response.choices[0]?.message?.content || ''
+  }
+
   async extractTextFromPDF(buffer: Buffer): Promise<string> {
     try {
       const uint8Array = new Uint8Array(buffer)

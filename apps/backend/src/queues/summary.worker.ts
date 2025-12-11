@@ -69,11 +69,13 @@ export async function processSummary(
   data: SummaryJob,
   prisma: PrismaClient = defaultPrisma
 ): Promise<{ summaryId: string }> {
-  const { userId, text, style, language } = data
+  const { userId, text, style, language, customPrompt } = data
 
   const aiService = new AIService()
 
-  logger.info(`Generating ${style} summary for user ${userId}`)
+  logger.info(
+    `Generating ${style} summary for user ${userId}${customPrompt ? ' (with custom template)' : ''}`
+  )
 
   // Check rate limit for OpenAI API calls
   const allowed = await WorkerRateLimiter.checkRateLimit('openai', userId)
@@ -95,7 +97,10 @@ export async function processSummary(
   contentToSummarize = sanitizeText(contentToSummarize)
 
   // Generate summary with AI (rate limited)
-  const summaryText = await aiService.generateSummary(contentToSummarize, style, language)
+  // If custom prompt is provided, use it; otherwise use the default style
+  const summaryText = customPrompt
+    ? await aiService.generateSummaryWithCustomPrompt(contentToSummarize, customPrompt, language)
+    : await aiService.generateSummary(contentToSummarize, style, language)
 
   // Generate title from the original content
   logger.info(`Generating title for summary`)

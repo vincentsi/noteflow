@@ -19,6 +19,7 @@ export type CreateSummaryParams = {
   file?: File
   style: SummaryStyle
   language?: 'fr' | 'en'
+  templateId?: string
 }
 
 export type CreateSummaryResponse = ApiResponse<{
@@ -78,6 +79,9 @@ export const summariesApi = {
       if (params.language) {
         formData.append('language', params.language)
       }
+      if (params.templateId) {
+        formData.append('templateId', params.templateId)
+      }
 
       const response = await apiClient.post<CreateSummaryResponse>('/api/summaries', formData, {
         headers: {
@@ -93,6 +97,7 @@ export const summariesApi = {
       text: params.text,
       style: params.style,
       language: params.language,
+      templateId: params.templateId,
     })
     return response.data
   },

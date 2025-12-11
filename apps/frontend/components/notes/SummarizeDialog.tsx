@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button'
 import { StyleSelector, type SummaryStyle } from '@/components/summaries/StyleSelector'
 import { useCreateSummaryFromNote } from '@/lib/hooks/useSummaries'
-import { useAuth } from '@/providers/auth.provider'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
@@ -23,6 +22,22 @@ export function SummarizeDialog({ note, open, onOpenChange }: SummarizeDialogPro
   const router = useRouter()
   const [selectedStyle, setSelectedStyle] = useState<SummaryStyle>('SHORT')
   const createSummary = useCreateSummaryFromNote()
+
+  const handleStyleChange = (styleOrTemplateId: SummaryStyle | string) => {
+    // Only accept SummaryStyle values (not template IDs)
+    // This dialog is for note summarization and doesn't support custom templates
+    if (
+      styleOrTemplateId === 'SHORT' ||
+      styleOrTemplateId === 'TWEET' ||
+      styleOrTemplateId === 'THREAD' ||
+      styleOrTemplateId === 'BULLET_POINT' ||
+      styleOrTemplateId === 'TOP3' ||
+      styleOrTemplateId === 'MAIN_POINTS' ||
+      styleOrTemplateId === 'EDUCATIONAL'
+    ) {
+      setSelectedStyle(styleOrTemplateId)
+    }
+  }
 
   const handleSummarize = async () => {
     if (!note) return
@@ -60,7 +75,7 @@ export function SummarizeDialog({ note, open, onOpenChange }: SummarizeDialogPro
         <div className="space-y-4 py-4">
           <div>
             <h4 className="text-sm font-medium mb-3">{t('summaries.selectStyle')}</h4>
-            <StyleSelector value={selectedStyle} onChange={setSelectedStyle} />
+            <StyleSelector value={selectedStyle} onChange={handleStyleChange} />
           </div>
 
           {note && (

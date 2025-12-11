@@ -26,6 +26,7 @@ export interface SummaryJob {
   text: string
   style: SummaryStyle
   language: 'fr' | 'en'
+  customPrompt?: string
 }
 
 /**

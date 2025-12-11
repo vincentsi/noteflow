@@ -14,6 +14,7 @@ export const createSummarySchema = z.object({
     .max(50000, 'Text must not exceed 50,000 characters'),
   style: z.nativeEnum(SummaryStyle),
   language: z.enum(['fr', 'en']).optional(),
+  templateId: z.string().cuid().optional(),
 })
 
 export type CreateSummaryDTO = z.infer<typeof createSummarySchema>

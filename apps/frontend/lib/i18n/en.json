@@ -225,6 +225,11 @@
       "characters": "characters",
       "styleTitle": "Summary style",
       "styleDescription": "Choose the format of your summary",
+      "defaultStyles": "Default Styles",
+      "customTemplates": "Custom Templates",
+      "manageTemplates": "Manage templates",
+      "noTemplates": "No custom templates yet",
+      "createFirstTemplate": "Create your first template",
       "preview": {
         "invalidUrl": "Invalid URL",
         "success": "Preview loaded successfully",

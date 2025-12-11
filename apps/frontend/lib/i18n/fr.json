@@ -225,6 +225,11 @@
       "characters": "caractères",
       "styleTitle": "Style de résumé",
       "styleDescription": "Choisissez le format de votre résumé",
+      "defaultStyles": "Styles par défaut",
+      "customTemplates": "Modèles personnalisés",
+      "manageTemplates": "Gérer les modèles",
+      "noTemplates": "Aucun modèle personnalisé",
+      "createFirstTemplate": "Créer votre premier modèle",
       "preview": {
         "invalidUrl": "URL invalide",
         "success": "Aperçu chargé avec succès",
