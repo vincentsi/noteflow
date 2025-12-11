@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { PlanUsageCard } from '@/components/dashboard/PlanUsageCard'
 import { useUserStats } from '@/lib/hooks/useUserStats'
 import { useI18n } from '@/lib/i18n/provider'
-import { Rss, Sparkles, FileText, ArrowRight } from 'lucide-react'
+import { Rss, Sparkles, FileText, ArrowRight, Mail, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardPage() {
@@ -36,6 +36,20 @@ export default function DashboardPage() {
       description: 'Write and organize markdown notes',
       icon: FileText,
       href: '/notes',
+      color: 'text-foreground'
+    },
+    {
+      title: t('common.navigation.contact'),
+      description: 'Get in touch with our team',
+      icon: Mail,
+      href: '/contact',
+      color: 'text-foreground'
+    },
+    {
+      title: t('common.navigation.settings'),
+      description: 'Manage your account settings',
+      icon: Settings,
+      href: '/settings',
       color: 'text-foreground'
     }
   ]
@@ -81,7 +95,7 @@ export default function DashboardPage() {
         {/* Quick Actions - Show preview */}
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {quickActions.map((action) => {
               const Icon = action.icon
               return (
@@ -125,7 +139,7 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {quickActions.map((action) => {
             const Icon = action.icon
             return (
