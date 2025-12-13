@@ -108,7 +108,7 @@ export function PlanUsageCard({ stats, plan }: PlanUsageCardProps) {
           />
           {stats.summaries.current > 0 && (
             <Button asChild variant="outline" size="sm" className="w-full mt-2">
-              <Link href="/summaries?my=true">
+              <Link href="/summaries?my=true" prefetch={false}>
                 {t('dashboard.planUsage.viewSummaries')}
               </Link>
             </Button>

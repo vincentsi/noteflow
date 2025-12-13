@@ -54,7 +54,7 @@ export function SummarizeDialog({ note, open, onOpenChange }: SummarizeDialogPro
 
       // Navigate to summary creation page with progress
       if (result.data.jobId) {
-        router.push(`/summaries/create?jobId=${result.data.jobId}`)
+        router.replace(`/summaries/create?jobId=${result.data.jobId}`)
       }
     } catch (error: unknown) {
       const errorMessage =

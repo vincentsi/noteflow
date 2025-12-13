@@ -54,7 +54,7 @@ export default function HomePage() {
             </p>
             <div className="flex gap-4 justify-center pt-4">
               <Button asChild size="lg" className="text-base px-8 h-12">
-                <Link href="/summaries/create">
+                <Link href="/summaries">
                   {t('home.hero.ctaPrimary')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>

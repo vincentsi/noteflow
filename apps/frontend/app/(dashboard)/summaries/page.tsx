@@ -65,7 +65,7 @@ export default function SummariesPage() {
       onSuccess: (response) => {
         if (response.success && response.data.jobId) {
           // Redirect to the creation page with progress bar
-          router.push(`/summaries/create?jobId=${response.data.jobId}`)
+          router.replace(`/summaries/create?jobId=${response.data.jobId}`)
         }
       },
       onError: (error: Error) => {

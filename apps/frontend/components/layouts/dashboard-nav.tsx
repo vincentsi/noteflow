@@ -60,7 +60,7 @@ export function DashboardNav() {
                           ? 'bg-primary/10 text-primary'
                           : 'text-foreground hover:bg-muted'
                       )}
-                      prefetch
+                      prefetch={link.href !== '/summaries'}
                     >
                       {link.label}
                     </Link>
@@ -102,7 +102,7 @@ export function DashboardNav() {
                       ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
                       : 'text-foreground hover:text-primary'
                   )}
-                  prefetch
+                  prefetch={link.href !== '/summaries'}
                 >
                   {link.label}
                 </Link>
