@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/providers/auth.provider'
@@ -50,6 +50,9 @@ export default function NotesPage() {
   const [showAudioUpload, setShowAudioUpload] = useState(false)
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
 
+  // Ref for search input
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
   const params: GetNotesParams = { sortBy, sortOrder }
   const { data: notes = [], isLoading } = useNotes(params)
   const { data: searchResults = [], isLoading: isSearching } = useSearchNotes(searchQuery)
@@ -65,6 +68,20 @@ export default function NotesPage() {
   if (selectedTag) {
     displayedNotes = displayedNotes.filter(note => note.tags.includes(selectedTag))
   }
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K to focus search (only when not in my-only mode)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k' && !showMyOnly) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showMyOnly])
 
   const handleCreate = async () => {
     if (!isAuthenticated) {
@@ -187,6 +204,7 @@ export default function NotesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={searchInputRef}
                 placeholder={t('notes.search.placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

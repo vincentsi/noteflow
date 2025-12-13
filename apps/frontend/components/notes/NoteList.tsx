@@ -112,8 +112,8 @@ export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, 
             </div>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm dark:prose-invert max-w-none mb-3 line-clamp-3 overflow-hidden">
-              <ReactMarkdown className="text-sm">
+            <div className="prose prose-sm dark:prose-invert max-w-none mb-3 line-clamp-3 overflow-hidden text-sm">
+              <ReactMarkdown>
                 {note.content}
               </ReactMarkdown>
             </div>

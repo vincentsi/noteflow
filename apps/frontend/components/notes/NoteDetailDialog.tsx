@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Copy, X, Edit, Save } from 'lucide-react'
+import { Copy, X, Edit, Save, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n/provider'
 import { useUpdateNote } from '@/lib/hooks/useNotes'
@@ -44,12 +44,54 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
     }
   }, [note])
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S to save (only in edit mode)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && isEditing) {
+        e.preventDefault()
+        handleSave()
+      }
+      // Escape to cancel edit mode
+      if (e.key === 'Escape' && isEditing) {
+        e.preventDefault()
+        handleCancel()
+      }
+    }
+
+    if (open) {
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, isEditing])
+
   if (!note) return null
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(note.content)
       toast.success(t('common.messages.copied'))
+    } catch {
+      toast.error(t('common.messages.error'))
+    }
+  }
+
+  const handleExport = () => {
+    try {
+      // Create markdown content with metadata
+      const markdownContent = `# ${note.title}\n\n**Tags:** ${note.tags.map(t => `#${t}`).join(', ')}\n**Date:** ${new Date(note.updatedAt).toLocaleDateString('fr-FR')}\n\n---\n\n${note.content}`
+
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${note.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      toast.success('Note exportée avec succès')
     } catch {
       toast.error(t('common.messages.error'))
     }
@@ -173,10 +215,16 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
         <div className="flex gap-2 justify-between border-t pt-4">
           <div className="flex gap-2">
             {!isEditing && (
-              <Button variant="outline" size="sm" onClick={handleCopy}>
-                <Copy className="h-4 w-4 mr-2" />
-                {t('summaries.buttons.copyText')}
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={handleCopy}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  {t('summaries.buttons.copyText')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter
+                </Button>
+              </>
             )}
           </div>
           <div className="flex gap-2">
