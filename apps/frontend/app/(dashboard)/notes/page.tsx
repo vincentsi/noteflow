@@ -197,6 +197,41 @@ export default function NotesPage() {
         </p>
       </div>
 
+      {/* Statistics Widget */}
+      {!showMyOnly && notes.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">{notes.length}</div>
+              <p className="text-xs text-muted-foreground">Notes totales</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">{allTags.length}</div>
+              <p className="text-xs text-muted-foreground">Tags uniques</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">{notes.filter(n => n.pinned).length}</div>
+              <p className="text-xs text-muted-foreground">Notes épinglées</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">
+                {notes.length > 0
+                  ? new Date(Math.max(...notes.map(n => new Date(n.updatedAt).getTime()))).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+                  : '-'
+                }
+              </div>
+              <p className="text-xs text-muted-foreground">Dernière modification</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Search and Controls Bar */}
       {!showMyOnly && (
         <>

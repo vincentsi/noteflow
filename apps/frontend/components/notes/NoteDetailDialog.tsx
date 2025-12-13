@@ -44,6 +44,36 @@ export function NoteDetailDialog({ note, open, onOpenChange }: NoteDetailDialogP
     }
   }, [note])
 
+  // Auto-save with debounce (only in edit mode)
+  useEffect(() => {
+    if (!isEditing || !note) return
+
+    // Don't auto-save if content hasn't changed
+    if (title === note.title && content === note.content && tags === note.tags.join(', ')) {
+      return
+    }
+
+    // Debounce auto-save by 2 seconds
+    const timer = setTimeout(() => {
+      if (title.trim() && content.trim()) {
+        updateNote.mutateAsync({
+          id: note.id,
+          data: {
+            title,
+            content,
+            tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+          },
+        }).then(() => {
+          toast.success('Sauvegarde automatique', { duration: 1500 })
+        }).catch(() => {
+          toast.error(t('common.messages.error'))
+        })
+      }
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [title, content, tags, isEditing, note])
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
