@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import type { Note } from '@/lib/api/notes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -111,10 +112,10 @@ export function NoteList({ notes, onSelect, onDelete, onTogglePin, onSummarize, 
             </div>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm dark:prose-invert max-w-none mb-3">
-              <pre className="whitespace-pre-wrap text-sm bg-muted p-3 rounded-md line-clamp-3 font-mono">
+            <div className="prose prose-sm dark:prose-invert max-w-none mb-3 line-clamp-3 overflow-hidden">
+              <ReactMarkdown className="text-sm">
                 {note.content}
-              </pre>
+              </ReactMarkdown>
             </div>
             {note.tags.length > 0 && (
               <div className="flex gap-2 flex-wrap">

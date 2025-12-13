@@ -48,6 +48,7 @@ export default function NotesPage() {
   const [sortBy, setSortBy] = useState<'updatedAt' | 'createdAt' | 'title'>('updatedAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [showAudioUpload, setShowAudioUpload] = useState(false)
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
 
   const params: GetNotesParams = { sortBy, sortOrder }
   const { data: notes = [], isLoading } = useNotes(params)
@@ -56,7 +57,14 @@ export default function NotesPage() {
   const deleteNote = useDeleteNote()
   const togglePinned = useTogglePinned()
 
-  const displayedNotes = searchQuery ? searchResults : notes
+  // Get all unique tags from notes
+  const allTags = Array.from(new Set(notes.flatMap(note => note.tags)))
+
+  // Filter by search query and selected tag
+  let displayedNotes = searchQuery ? searchResults : notes
+  if (selectedTag) {
+    displayedNotes = displayedNotes.filter(note => note.tags.includes(selectedTag))
+  }
 
   const handleCreate = async () => {
     if (!isAuthenticated) {
@@ -174,42 +182,68 @@ export default function NotesPage() {
 
       {/* Search and Controls Bar */}
       {!showMyOnly && (
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t('notes.search.placeholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+        <>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('notes.search.placeholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select
+                className="border border-border rounded-md px-3 py-2 bg-background text-foreground text-sm"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'updatedAt' | 'createdAt' | 'title')}
+              >
+                <option value="updatedAt">{t('notes.sort.updatedAt')}</option>
+                <option value="createdAt">{t('notes.sort.createdAt')}</option>
+                <option value="title">{t('notes.sort.title')}</option>
+              </select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleSort}
+              >
+                <ArrowUpDown className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSplitView(!splitView)}
+              >
+                {splitView ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <select
-              className="border border-border rounded-md px-3 py-2 bg-background text-foreground text-sm"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'updatedAt' | 'createdAt' | 'title')}
-            >
-              <option value="updatedAt">{t('notes.sort.updatedAt')}</option>
-              <option value="createdAt">{t('notes.sort.createdAt')}</option>
-              <option value="title">{t('notes.sort.title')}</option>
-            </select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleSort}
-            >
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSplitView(!splitView)}
-            >
-              {splitView ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
+
+          {/* Tag Filters */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-medium text-muted-foreground">Filtrer par tag:</span>
+              <Button
+                variant={selectedTag === null ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedTag(null)}
+              >
+                Tous ({notes.length})
+              </Button>
+              {allTags.map(tag => (
+                <Button
+                  key={tag}
+                  variant={selectedTag === tag ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedTag(tag)}
+                >
+                  #{tag} ({notes.filter(n => n.tags.includes(tag)).length})
+                </Button>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Audio Upload - Hide when in my-only mode */}
