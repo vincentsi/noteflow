@@ -60,12 +60,19 @@ export function requireStripeIPWhitelist() {
     try {
       const allowedIPs = env.STRIPE_WEBHOOK_ALLOWED_IPS
 
-      // If no IPs configured, allow all (relies on Stripe signature verification)
+      // If no IPs configured, block in production, allow in dev
       if (!allowedIPs || allowedIPs.length === 0) {
-        request.log.warn(
-          '⚠️  Stripe IP whitelist: No IPs configured, allowing all requests (relying on signature verification only)'
-        )
-        return // Allow all IPs when whitelist is empty
+        if (env.NODE_ENV === 'production') {
+          request.log.error(
+            '🚨 SECURITY: Stripe IP whitelist not configured in production - blocking request'
+          )
+          return reply.status(500).send({
+            success: false,
+            error: 'Server misconfiguration',
+          })
+        }
+        request.log.debug('Stripe IP whitelist: No IPs configured, allowing all (dev mode)')
+        return // Allow all IPs in development
       }
 
       // Get client IP (supports X-Forwarded-For from reverse proxy)
