@@ -165,6 +165,7 @@ const envSchema = z.object({
     }),
 
   // Stripe Webhook Security
+  // Optional: Empty array = allow all IPs (relies on Stripe signature verification)
   STRIPE_WEBHOOK_ALLOWED_IPS: z
     .string()
     .optional()
@@ -178,22 +179,16 @@ const envSchema = z.object({
     })
     .refine(
       val => {
-        // In production with Railway/actual deployment, require at least one valid IP address
-        // Skip validation during CI builds (GitHub Actions sets CI=true)
-        const isActualProduction = process.env.NODE_ENV === 'production' && !process.env.CI
+        // If empty, allow (signature verification is sufficient)
+        if (val.length === 0) return true
 
-        if (isActualProduction) {
-          if (val.length === 0) return false
-
-          // Validate IP format (basic IPv4 or CIDR notation)
-          const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/
-          return val.every(ip => ipRegex.test(ip))
-        }
-        return true
+        // If IPs are provided, validate format
+        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/
+        return val.every(ip => ipRegex.test(ip))
       },
       {
         message:
-          'STRIPE_WEBHOOK_ALLOWED_IPS must contain at least one valid IP address in production (format: 1.2.3.4 or 1.2.3.0/24)',
+          'STRIPE_WEBHOOK_ALLOWED_IPS must contain valid IP addresses if provided (format: 1.2.3.4 or 1.2.3.0/24)',
       }
     ),
 
