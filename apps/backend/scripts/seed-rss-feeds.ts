@@ -34,6 +34,13 @@ async function seedRSSFeeds() {
       tags: ['programming', 'career', 'best-practices', 'community'],
       active: true,
     },
+    // ===== WEB PERFORMANCE & BEST PRACTICES =====
+    {
+      name: 'web.dev',
+      url: 'https://web.dev/feed.xml',
+      tags: ['performance', 'best-practices', 'webdev', 'google'],
+      active: true,
+    },
 
     // ===== JAVASCRIPT & FRONTEND FRAMEWORKS =====
     {
@@ -359,7 +366,7 @@ async function seedRSSFeeds() {
 }
 
 seedRSSFeeds()
-  .catch((e) => {
+  .catch(e => {
     console.error('❌ Error seeding feeds:', e)
     process.exit(1)
   })
